@@ -52,9 +52,9 @@ $tokenStorage = new TokenStorage(__DIR__ . '/token.bin');
 $onPayAPI = new \OnPay\OnPayAPI($tokenStorage, [
     'base_uri' => 'http://api.onlinepay.io',
     'base_authorize_uri' => 'http://manage.onlinepay.io',
-    'client_id' => 'test',
+    'client_id' => 'example.com', // It is recommended to set it to the domain name the integration resides on
     'redirect_uri' => 'http://localhost/onpay-php-sdk/example2.php?auth',
-    'gateway_id' => '1978551',
+    'gateway_id' => '1234', // Should be set to the gateway id you are integrating with
 ]);
 
 // Special handling if we are about to auth against the API
