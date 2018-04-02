@@ -43,16 +43,16 @@ class OnPayAPI {
         $this->oauth2Provider = new GenericProvider([
             'clientId' => $this->options['client_id'],
             'redirectUri' => $this->options['redirect_uri'],
-            'urlAuthorize' => $this->options['base_authorize_uri'] . '1978551/oauth2/authorize',
-            'urlAccessToken' => $this->options['base_uri'] . 'oauth2/access_token',
-            'urlResourceOwnerDetails' => 'http://manage.onlinepay.io/',
+            'urlAuthorize' => $this->options['base_authorize_uri'] . '/' . $this->options['gateway_id'] . '/oauth2/authorize',
+            'urlAccessToken' => $this->options['base_uri'] . '/oauth2/access_token',
+            'urlResourceOwnerDetails' => $this->options['base_uri'] . '/oauth2/resource_owner',
             'scopes' => ['full'],
         ]);
 
     }
 
     protected function getAccessToken(): ?AccessToken {
-        $options = json_decode($this->tokenStorage->getToken(), true);
+        $options = json_decode($this->tokenStorage->getToken() ?? '', true);
         if (null !== $options) {
             $accessToken = new AccessToken($options);
             return $accessToken;
@@ -81,7 +81,7 @@ class OnPayAPI {
             return false;
         }
 
-        if ($accessToken->getExpires() < time()) {
+        if ($accessToken->hasExpired()) {
             // Token expired, attempt to refresh it
             $this->refreshToken();
         }
@@ -106,6 +106,12 @@ class OnPayAPI {
         $this->tokenStorage->saveToken(json_encode($accessToken));
     }
 
+    /**
+     * Simple method that just checks if API requests can be made
+     *
+     * @return string
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function ping() {
         $request = $this->oauth2Provider->getAuthenticatedRequest(
             'GET',
