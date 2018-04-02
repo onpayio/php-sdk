@@ -1,5 +1,9 @@
 # OnPay.io PHP SDK
 
+[![Latest Stable Version](https://poser.pugx.org/onpayio/php-sdk/v/stable)](https://packagist.org/packages/onpayio/php-sdk)
+[![Total Downloads](https://poser.pugx.org/onpayio/php-sdk/downloads)](https://packagist.org/packages/onpayio/php-sdk)
+[![License](https://poser.pugx.org/onpayio/php-sdk/license)](https://packagist.org/packages/onpayio/php-sdk)
+
 *Notice: Early unstable development version!*
 
 A PHP-SDK for developing against the OnPay.io platform.
