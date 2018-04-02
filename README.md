@@ -5,7 +5,7 @@
 A PHP-SDK for developing against the OnPay.io platform.
 API documentation at: https://manage.onpay.io/docs/api_v1.html 
 
-## Requirements````
+## Requirements
 
 PHP 7.1 and later.
 
