@@ -157,6 +157,17 @@ class OnPayAPI {
     }
 
     /**
+     * Returns info about the gateway
+     *
+     * @return array
+     */
+    public function gatewayInfo() {
+        $result = $this->oauth2Provider->getResourceOwner($this->getAccessToken());
+
+        return $result->toArray();
+    }
+
+    /**
      * @internal
      * @param $url
      * @return mixed
