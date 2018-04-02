@@ -7,6 +7,8 @@ namespace OnPay;
 use GuzzleHttp\Client;
 use League\OAuth2\Client\Provider\GenericProvider;
 use League\OAuth2\Client\Token\AccessToken;
+use OnPay\API\TransactionService;
+use Psr\Http\Message\RequestInterface;
 
 class OnPayAPI {
     /**
@@ -17,6 +19,17 @@ class OnPayAPI {
     protected $options = [];
 
     protected $oauth2Provider;
+
+    /**
+     * @var Client
+     */
+    protected $client;
+
+    /**
+     * @var TransactionService
+     */
+    protected $transactionService;
+
     public function __construct(TokenStorageInterface $tokenStorage, array $options) {
         $this->tokenStorage = $tokenStorage;
 
@@ -58,6 +71,27 @@ class OnPayAPI {
             return $accessToken;
         }
         return null;
+    }
+
+    protected function getClient(): Client {
+        if (!isset($this->client)) {
+            $this->client = new Client();
+        }
+
+        return $this->client;
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    protected function sendRequest(RequestInterface $request) {
+        $response = $this->getClient()->send($request);
+
+        $result = json_decode($response->getBody()->getContents(), true);
+
+        return $result['data'];
     }
 
     protected function refreshToken() {
@@ -119,9 +153,32 @@ class OnPayAPI {
             $this->getAccessToken()
         );
 
-        $client = new Client();
-        $response = $client->send($request);
+        return $this->sendRequest($request);
+    }
 
-        return $response->getBody()->getContents();
+    /**
+     * @internal
+     * @param $url
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function _get($url) {
+        $request = $this->oauth2Provider->getAuthenticatedRequest(
+            'GET',
+            $this->options['base_uri'] . '/v1/' . $url,
+            $this->getAccessToken()
+        );
+
+        return $this->sendRequest($request);
+    }
+
+    /**
+     * @return TransactionService
+     */
+    public function transaction(): TransactionService {
+        if (!isset($this->transactionService)) {
+            $this->transactionService = new TransactionService($this);
+        }
+        return $this->transactionService;
     }
 }
