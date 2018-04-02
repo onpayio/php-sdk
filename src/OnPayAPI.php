@@ -98,7 +98,7 @@ class OnPayAPI {
         return $this->oauth2Provider->getAuthorizationUrl();
     }
 
-    public function finnishAuthorize(string $code) {
+    public function finishAuthorize(string $code) {
         $accessToken = $this->oauth2Provider->getAccessToken('authorization_code',[
             'code' => $code,
         ]);

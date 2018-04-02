@@ -65,7 +65,7 @@ if (isset($_GET['auth'])) {
         $authUrl = $onPayAPI->authorize();
         header('Location: ' . $authUrl);
     } else {
-        $onPayAPI->finnishAuthorize($_GET['code']);
+        $onPayAPI->finishAuthorize($_GET['code']);
         echo 'Authorized :tada:' . PHP_EOL;
     }
     exit;
