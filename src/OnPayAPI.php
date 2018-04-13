@@ -173,7 +173,7 @@ class OnPayAPI {
      * @return mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function _get($url) {
+    public function get($url) {
         $request = $this->oauth2Provider->getAuthenticatedRequest(
             'GET',
             $this->options['base_uri'] . '/v1/' . $url,
