@@ -21,6 +21,60 @@ composer require onpayio/php-sdk
 ```
 
 ## Getting started
+
+
+
+### Creating a payment window V3
+
+A simple example of how to create a payment window v3.
+
+Read more about the fields here: https://manage.onpay.io/docs/paymentwindow_v3.html
+
+```php 
+<?php 
+declare(strict_types=1);
+require_once 'vendor/autoload.php';
+
+$paymentWindow = new \OnPay\API\PaymentWindow();
+$paymentWindow->setGatewayId("YourGatewayId");
+$paymentWindow->setSecret("YourSecret");
+$paymentWindow->setCurrency("DKK");
+$paymentWindow->setAmount("123400");
+// Reference must be unique (eg. invoice number)
+$paymentWindow->setReference("UniqieReferenceId");
+$paymentWindow->setAcceptUrl("https://example.com/payment?success=1");
+$paymentWindow->setDeclineUrl("https://example.com/payment?success=0");
+$paymentWindow->setType("payment");
+$paymentWindow->setDesign("DesignName");
+// Force 3D secure
+$paymentWindow->setSecureEnabled(true);
+// Set payment method to be card
+$paymentWindow->setMethod(\OnPay\API\PaymentWindow::METHOD_CARD);
+// Enable testmode
+$paymentWindow->setTestMode(true);
+$paymentWindow->setLanguage("en");
+
+?>
+
+<?php if($paymentWindow->isValid()) { ?>
+<form method="post" action="<?php echo $paymentWindow->getActionUrl(); ?>">
+    <?php
+        foreach ($paymentWindow->getFormFields() as $key => $value) { ?>
+            <input type="hidden" name="<?php echo $key;?>" value="<?php echo $value;?>">
+    <?php } ?>
+    <input type="submit" value="Make payment">
+</form>
+
+<?php } else { ?>
+    <h1>Payment window is not configured correct</h1>
+<?php } ?>
+
+```
+
+
+
+### Using the API 
+
 A simple usage example looks like:
 
 ```php
@@ -80,50 +134,5 @@ if (!$onPayAPI->isAuthorized()) {
 
 // Execute API method
 var_dump($onPayAPI->ping());
-
-```
-
-## Creating a payment window
-
-Creating a payment window . Read more about the fields here: https://manage.onpay.io/docs/paymentwindow_v3.html
-
-```php 
-<?php 
-declare(strict_types=1);
-require_once 'vendor/autoload.php';
-
-$paymentWindow = new \OnPay\API\PaymentWindow();
-$paymentWindow->setGatewayId("YourGatewayId");
-$paymentWindow->setSecret("YourSecret");
-$paymentWindow->setCurrency("DKK");
-$paymentWindow->setAmount("123400");
-// Reference must be unique (eg. invoice number)
-$paymentWindow->setReference("UniqieReferenceId");
-$paymentWindow->setAcceptUrl("https://example.com/payment?success=1");
-$paymentWindow->setDeclineUrl("https://example.com/payment?success=0");
-$paymentWindow->setType("payment");
-$paymentWindow->setDesign("DesignName");
-// Force 3D secure
-$paymentWindow->setSecureEnabled(true);
-// Set payment method to be card
-$paymentWindow->setMethod(\OnPay\API\PaymentWindow::METHOD_CARD);
-// Enable testmode
-$paymentWindow->setTestMode(true);
-$paymentWindow->setLanguage("en");
-
-?>
-
-<?php if($paymentWindow->isValid()) { ?>
-<form method="post" action="<?php echo $paymentWindow->getActionUrl(); ?>">
-    <?php
-        foreach ($paymentWindow->getFormFields() as $key => $value) { ?>
-            <input type="hidden" name="<?php echo $key;?>" value="<?php echo $value;?>">
-    <?php } ?>
-    <input type="submit" value="Make payment">
-</form>
-
-<?php } else { ?>
-    <h1>Payment window is not configured correct</h1>
-<?php } ?>
 
 ```
