@@ -3,6 +3,8 @@ declare(strict_types=1);
 namespace OnPay\API;
 
 
+use function GuzzleHttp\Psr7\str;
+
 class PaymentWindow
 {
     const METHOD_CARD = 'card';
@@ -234,5 +236,37 @@ class PaymentWindow
      */
     public function getActionUrl() {
         return $this->actionUrl;
+    }
+
+
+    /**
+     * Validate payment
+     * @param array $fields
+     * @return bool
+     */
+    public function validatePayment(array $fields) {
+
+        $validFields = [];
+
+        foreach ($fields as $key => $value) {
+            if(strpos($key, 'onpay') !== false) {
+                $validFields[$key] = $value;
+            }
+        }
+
+        $verify = $validFields['onpay_hmac_sha1'];
+
+        unset($validFields['onpay_hmac_sha1']);
+
+        ksort($validFields);
+
+        $queryString = http_build_query($validFields);
+        $hmac = hash_hmac('sha1', $queryString, $this->secret);
+
+        if($verify === $hmac) {
+            return true;
+        }
+
+        return false;
     }
 }
