@@ -28,7 +28,7 @@ class TransactionService {
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getTransaction(string $identifier): DetailedTransaction {
-        $result = $this->api->_get('transaction/' . urlencode($identifier));
+        $result = $this->api->get('transaction/' . urlencode($identifier));
 
         $detailedTransaction = new DetailedTransaction();
 
@@ -61,6 +61,70 @@ class TransactionService {
         return $detailedTransaction;
     }
 
+    /**
+     * @param null $page
+     * @param null $pageSize
+     * @param null $orderBy
+     * @param null $query
+     * @param null $status
+     * @param null $dateAfter
+     * @param null $dateBefore
+     * @return array
+     */
+    public function getTransactions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) {
+
+        $queryString = http_build_query(['page' => $page, 'page_size' => $pageSize, 'order_by' => $orderBy, 'query' => $query, 'status' => $status, 'date_after' => $dateAfter, 'date_before' => $dateBefore]);
+        $results = $this->api->get('transaction?' . $queryString);
+
+        $data = [];
+
+        foreach ($results as $result) {
+            $transaction = new SimpleTransaction();
+            $this->setSimpleTransactionProperties($result, $transaction);
+            $data[] = $transaction;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Capture a transaction
+     * @param string $transactionNumber
+     * @return DetailedTransaction
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function captureTransaction(string $transactionNumber, int $amount = null) {
+
+        if(null == $amount) {
+            $result = $this->api->post('transaction/' . $transactionNumber . '/capture');
+        } else {
+
+            $jsonBody = [
+                'data' => [
+                    'amount' => (int) $amount
+                ]
+            ];
+
+            $result = $this->api->post('transaction/' . $transactionNumber . '/capture', $jsonBody);
+        }
+
+        $transaction = new DetailedTransaction();
+        $this->setDetailedTransactionProperties($result, $transaction);
+
+        return $transaction;
+    }
+
+    /**
+     * @param string $transactionNumber
+     * @return DetailedTransaction
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function cancelTransaction(string $transactionNumber) {
+        $result = $this->api->post('transaction/' . $transactionNumber . '/cancel');
+        $transaction = new DetailedTransaction();
+        $this->setDetailedTransactionProperties($result, $transaction);
+        return $transaction;
+    }
 
     private function setSimpleTransactionProperties(array $data, SimpleTransaction $simpleTransaction) {
         $simpleTransaction->uuid = $data['uuid'] ?? null;
@@ -78,4 +142,25 @@ class TransactionService {
         $simpleTransaction->transactionNumber = $data['transaction_number'] ?? null;
         $simpleTransaction->wallet = $data['wallet'] ?? null;
     }
+
+    private function setDetailedTransactionProperties(array $data, DetailedTransaction $detailedTransaction) {
+        $detailedTransaction->uuid = $data['uuid'] ?? null;
+        $detailedTransaction->threeDs = $data['3dsecure'] ?? null;
+        $detailedTransaction->amount = $data['amount'] ?? null;
+        $detailedTransaction->cardType = $data['card_type'] ?? null;
+        $detailedTransaction->charged = $data['charged'] ?? null;
+        if (isset($data['created'])) {
+            $detailedTransaction->created = Converter::toDateTimeFromString($data['created']);
+        }
+        $detailedTransaction->currencyCode = $data['currency_code'] ?? null;
+        $detailedTransaction->orderId = $data['order_id'] ?? null;
+        $detailedTransaction->refunded = $data['refunded'] ?? null;
+        $detailedTransaction->status = $data['status'] ?? null;
+        $detailedTransaction->transactionNumber = $data['transaction_number'] ?? null;
+        $detailedTransaction->wallet = $data['wallet'] ?? null;
+
+    }
+
+
+
 }

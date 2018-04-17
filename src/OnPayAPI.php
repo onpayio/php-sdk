@@ -5,6 +5,7 @@ namespace OnPay;
 
 
 use GuzzleHttp\Client;
+use GuzzleHttp\RequestOptions;
 use League\OAuth2\Client\Provider\GenericProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use OnPay\API\TransactionService;
@@ -178,6 +179,27 @@ class OnPayAPI {
             'GET',
             $this->options['base_uri'] . '/v1/' . $url,
             $this->getAccessToken()
+        );
+
+        return $this->sendRequest($request);
+    }
+
+
+    /**
+     * TODO: Fix post of JSON
+     * @param $url
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function post($url, $json = null) {
+
+        $request = $this->oauth2Provider->getAuthenticatedRequest(
+          'POST',
+          $this->options['base_uri'] . '/v1/' . $url,
+          $this->getAccessToken(),
+          [
+              'json' => $json,
+          ]
         );
 
         return $this->sendRequest($request);
