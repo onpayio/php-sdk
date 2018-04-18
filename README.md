@@ -75,7 +75,6 @@ Validating a payment from the accept page can be done as following.
 
 ```php 
 <?php
-
 $paymentWindow = new \OnPay\API\PaymentWindow();
 $paymentWindow->setSecret("YourSecret")
 
@@ -149,5 +148,44 @@ if (!$onPayAPI->isAuthorized()) {
 
 // Execute API method
 var_dump($onPayAPI->ping());
+
+```
+
+## Transactions 
+
+```php 
+<?php 
+if($onPayAPI->isAuthorized()) {
+
+    // Get list of transactions
+    $onPayAPI->transaction()->getTransactions();
+
+    // Get specific transaction
+    $onPayAPI->transaction()->getTransaction("uuid");
+
+    // Capture transaction
+    $onPayAPI->transaction()->captureTransaction("uuid");
+
+    // Cancel transaction 
+    $onPayAPI->transaction()->cancelTransaction("uuid");
+
+}
+
+```
+
+## Subscriptions
+
+```php
+<?php
+if($onPayAPI->isAuthorized()) {
+    // Lists subscriptions
+    $onPayAPI->subscription()->getSubscriptions();
+
+    // Get details about a specific subscription
+    $onPayAPI->subscription()->getSubscription("uuid");
+
+    // Create transaction from subscription
+    $onPayAPI->subscription()->createTransactionFromSubscription("subscriptionId", 100, "orderId");
+}
 
 ```
