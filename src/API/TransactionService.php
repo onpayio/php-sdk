@@ -125,7 +125,7 @@ class TransactionService {
         $this->setDetailedTransactionProperties($result, $transaction);
         return $transaction;
     }
-
+    
     private function setSimpleTransactionProperties(array $data, SimpleTransaction $simpleTransaction) {
         $simpleTransaction->uuid = $data['uuid'] ?? null;
         $simpleTransaction->threeDs = $data['3dsecure'] ?? null;

@@ -5,9 +5,9 @@ namespace OnPay;
 
 
 use GuzzleHttp\Client;
-use GuzzleHttp\RequestOptions;
 use League\OAuth2\Client\Provider\GenericProvider;
 use League\OAuth2\Client\Token\AccessToken;
+use OnPay\API\SubscriptionService;
 use OnPay\API\TransactionService;
 use Psr\Http\Message\RequestInterface;
 
@@ -30,6 +30,11 @@ class OnPayAPI {
      * @var TransactionService
      */
     protected $transactionService;
+
+    /**
+     * @var SubscriptionService
+     */
+    protected $subscriptionService;
 
     public function __construct(TokenStorageInterface $tokenStorage, array $options) {
         $this->tokenStorage = $tokenStorage;
@@ -184,9 +189,8 @@ class OnPayAPI {
         return $this->sendRequest($request);
     }
 
-
     /**
-     * TODO: Fix post of JSON
+     * @internal
      * @param $url
      * @return mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -198,7 +202,7 @@ class OnPayAPI {
           $this->options['base_uri'] . '/v1/' . $url,
           $this->getAccessToken(),
           [
-              'json' => $json,
+              'body' => json_encode($json),
           ]
         );
 
@@ -213,5 +217,15 @@ class OnPayAPI {
             $this->transactionService = new TransactionService($this);
         }
         return $this->transactionService;
+    }
+
+    /**
+     * @return SubscriptionService
+     */
+    public function subscription(): SubscriptionService {
+        if(!isset($this->subscriptionService)) {
+            $this->subscriptionService = new SubscriptionService($this);
+        }
+        return $this->subscriptionService;
     }
 }
