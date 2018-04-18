@@ -2,6 +2,8 @@
 namespace OnPay\API\Subscription;
 
 
+use OnPay\API\Util\Link;
+
 class SimpleSubscription
 {
     /**
@@ -55,7 +57,7 @@ class SimpleSubscription
     public $wallet;
 
     /**
-     * @var $links
+     * @var Link[]
      */
     public $links;
 }

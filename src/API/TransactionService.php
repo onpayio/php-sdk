@@ -8,6 +8,7 @@ use OnPay\API\Transaction\DetailedTransaction;
 use OnPay\API\Transaction\SimpleTransaction;
 use OnPay\API\Transaction\TransactionHistory;
 use OnPay\API\Util\Converter;
+use OnPay\API\Util\Link;
 use OnPay\OnPayAPI;
 
 class TransactionService {
@@ -31,32 +32,7 @@ class TransactionService {
         $result = $this->api->get('transaction/' . urlencode($identifier));
 
         $detailedTransaction = new DetailedTransaction();
-
-        $this->setSimpleTransactionProperties($result, $detailedTransaction);
-
-        $detailedTransaction->acquirer = $result['acquirer'] ?? null;
-        $detailedTransaction->cardBin = $result['card_bin'] ?? null;
-        $detailedTransaction->expiryMonth = $result['expiry_month'] ?? null;
-        $detailedTransaction->expiryYear = $result['expiry_year'] ?? null;
-        $detailedTransaction->ip = $result['ip'] ?? null;
-        $detailedTransaction->subscriptionUuid = $result['subscription_uuid'] ?? null;
-
-        foreach ($result['history'] as $history) {
-            $historyItem = new TransactionHistory();
-
-            $historyItem->uuid = $history['uuid'] ?? null;
-            $historyItem->action = $history['action'] ?? null;
-            $historyItem->amount = $history['amount'] ?? null;
-            $historyItem->author = $history['author'] ?? null;
-            if (isset($history['date_time'])) {
-                $historyItem->dateTime = Converter::toDateTimeFromString($history['date_time']);
-            }
-            $historyItem->ip = $history['ip'] ?? null;
-            $historyItem->resultCode = $history['result_code'] ?? null;
-            $historyItem->resultText = $history['result_text'] ?? null;
-
-            $detailedTransaction->history[] = $historyItem;
-        }
+        self::setDetailedTransactionProperties($result, $detailedTransaction);
 
         return $detailedTransaction;
     }
@@ -70,6 +46,7 @@ class TransactionService {
      * @param null $dateAfter
      * @param null $dateBefore
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getTransactions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) {
 
@@ -109,7 +86,6 @@ class TransactionService {
         }
 
         $transaction = new DetailedTransaction();
-
         self::setDetailedTransactionProperties($result, $transaction);
 
         return $transaction;
@@ -142,6 +118,16 @@ class TransactionService {
         $simpleTransaction->status = $data['status'] ?? null;
         $simpleTransaction->transactionNumber = $data['transaction_number'] ?? null;
         $simpleTransaction->wallet = $data['wallet'] ?? null;
+
+        foreach ($data['links'] as $link) {
+
+            $linkItem = new Link();
+            $linkItem->rel = $link['rel'] ?? null;
+            $linkItem->uri = $link['uri'] ?? null;
+
+            $simpleTransaction->links[] = $linkItem;
+        }
+
     }
 
     /**
@@ -172,6 +158,7 @@ class TransactionService {
         $detailedTransaction->transactionNumber = $data['transaction_number'] ?? null;
         $detailedTransaction->wallet = $data['wallet'] ?? null;
         $detailedTransaction->charged = $data['charged'] ?? null;
+        $detailedTransaction->subscriptionUuid = $data['subscription_uuid'] ?? null;
 
 
         foreach ($data['history'] as $history) {
@@ -190,6 +177,15 @@ class TransactionService {
 
             $detailedTransaction->history[] = $historyItem;
         }
-    }
 
+        foreach ($data['links'] as $link) {
+
+            $linkItem = new Link();
+            $linkItem->rel = $link['rel'] ?? null;
+            $linkItem->uri = $link['uri'] ?? null;
+
+            $detailedTransaction->links[] = $linkItem;
+        }
+
+    }
 }

@@ -33,4 +33,8 @@ class DetailedTransaction extends SimpleTransaction {
      * @var TransactionHistory[]
      */
     public $history = [];
+
+    public $subscriptionNumber;
+
+
 }

@@ -7,6 +7,7 @@ use OnPay\API\Subscription\SimpleSubscription;
 use OnPay\API\Transaction\DetailedTransaction;
 use OnPay\API\Transaction\TransactionHistory;
 use OnPay\API\Util\Converter;
+use OnPay\API\Util\Link;
 use OnPay\OnPayAPI;
 
 class SubscriptionService
@@ -33,6 +34,7 @@ class SubscriptionService
      * @param null $dateAfter
      * @param null $dateBefore
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getSubscriptions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) {
 
@@ -64,6 +66,7 @@ class SubscriptionService
      * Get specific subscription
      * @param $subscriptionId
      * @return DetailedSubscription
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getSubscription($subscriptionId) {
 
@@ -127,6 +130,15 @@ class SubscriptionService
         $subscription->uuid = $data['uuid'] ?? null;
         $subscription->wallet = $data['wallet'] ?? null;
         $subscription->created = Converter::toDateTimeFromString($data['created']) ?? null;
+
+        foreach ($data['links'] as $link) {
+            $linkItem = new Link();
+            $linkItem->uri = $link['uri'] ?? null;
+            $linkItem->rel = $link['rel'] ?? null;
+
+            $subscription->links[] = $linkItem;
+        }
+
     }
 
     /**
@@ -185,6 +197,16 @@ class SubscriptionService
 
             $subscription->transactions[] = $transactionItem;
         }
+
+
+        foreach ($data['links'] as $link) {
+            $linkItem = new Link();
+            $linkItem->uri = $link['uri'] ?? null;
+            $linkItem->rel = $link['rel'] ?? null;
+
+            $subscription->links[] = $linkItem;
+        }
+
     }
 
 }

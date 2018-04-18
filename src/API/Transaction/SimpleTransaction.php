@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace OnPay\API\Transaction;
 
 
+use OnPay\API\Util\Link;
+
 class SimpleTransaction {
     /**
      * @var string
@@ -53,4 +55,9 @@ class SimpleTransaction {
      * @var string
      */
     public $wallet;
+
+    /**
+     * @var Link[]
+     */
+    public $links;
 }
