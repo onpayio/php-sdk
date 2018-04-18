@@ -95,7 +95,7 @@ class TransactionService {
      */
     public function captureTransaction(string $transactionNumber, int $amount = null) {
 
-        if(null == $amount) {
+        if(null === $amount) {
             $result = $this->api->post('transaction/' . $transactionNumber . '/capture');
         } else {
 
@@ -109,7 +109,8 @@ class TransactionService {
         }
 
         $transaction = new DetailedTransaction();
-        $this->setDetailedTransactionProperties($result, $transaction);
+
+        self::setDetailedTransactionProperties($result, $transaction);
 
         return $transaction;
     }
@@ -143,7 +144,19 @@ class TransactionService {
         $simpleTransaction->wallet = $data['wallet'] ?? null;
     }
 
-    private function setDetailedTransactionProperties(array $data, DetailedTransaction $detailedTransaction) {
+    /**
+     * @internal shall not be used outside the library
+     * @param array $data
+     * @param DetailedTransaction $detailedTransaction
+     */
+    public static function setDetailedTransactionProperties(array $data, DetailedTransaction $detailedTransaction) {
+
+        $detailedTransaction->expiryYear = $data['expiry_year'] ?? null;
+        $detailedTransaction->expiryMonth = $data['expiry_month'] ?? null;
+        $detailedTransaction->acquirer = $data['acquirer'] ?? null;
+        $detailedTransaction->cardBin = $data['card_bin'] ?? null;
+        $detailedTransaction->ip = $data['ip'] ?? null;
+
         $detailedTransaction->uuid = $data['uuid'] ?? null;
         $detailedTransaction->threeDs = $data['3dsecure'] ?? null;
         $detailedTransaction->amount = $data['amount'] ?? null;
@@ -158,9 +171,25 @@ class TransactionService {
         $detailedTransaction->status = $data['status'] ?? null;
         $detailedTransaction->transactionNumber = $data['transaction_number'] ?? null;
         $detailedTransaction->wallet = $data['wallet'] ?? null;
+        $detailedTransaction->charged = $data['charged'] ?? null;
 
+
+        foreach ($data['history'] as $history) {
+
+            $historyItem = new TransactionHistory();
+            $historyItem->uuid = $history['uuid'] ?? null;
+            $historyItem->action = $history['action'] ?? null;
+            $historyItem->amount = $history['amount'] ?? null;
+            $historyItem->author = $history['author'] ?? null;
+            if(isset($history['date_time'])) {
+                $historyItem->dateTime = Converter::toDateTimeFromString($history['date_time']);
+            }
+            $historyItem->ip = $history['ip'] ?? null;
+            $historyItem->resultText = $history['result_text'];
+            $historyItem->resultCode = $history['result_code'];
+
+            $detailedTransaction->history[] = $historyItem;
+        }
     }
-
-
 
 }

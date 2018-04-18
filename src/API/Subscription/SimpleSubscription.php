@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: mmu
- * Date: 17/04/2018
- * Time: 11.08
- */
-
 namespace OnPay\API\Subscription;
 
 

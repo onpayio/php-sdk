@@ -1,15 +1,39 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: mmu
- * Date: 17/04/2018
- * Time: 11.12
- */
-
 namespace OnPay\API\Subscription;
 
 
+use OnPay\API\Transaction\SimpleTransaction;
+
 class DetailedSubscription extends SimpleSubscription
 {
+    /**
+     * @var $cardBin
+     */
+    public $cardBin;
+
+    /**
+     * @var $expiryMonth
+     */
+    public $expiryMonth;
+
+    /**
+     * @var $expiryYear
+     */
+    public $expiryYear;
+
+    /**
+     * @var $ip
+     */
+    public $ip;
+
+    /**
+     * @var $history
+     */
+    public $history;
+
+    /**
+     * @var SimpleTransaction[] $transactions
+     */
+    public $transactions = [];
 
 }

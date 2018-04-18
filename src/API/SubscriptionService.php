@@ -1,17 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: mmu
- * Date: 17/04/2018
- * Time: 10.49
- */
-
 namespace OnPay\API;
 
 
 use OnPay\API\Subscription\DetailedSubscription;
 use OnPay\API\Subscription\SimpleSubscription;
 use OnPay\API\Transaction\DetailedTransaction;
+use OnPay\API\Transaction\TransactionHistory;
 use OnPay\API\Util\Converter;
 use OnPay\OnPayAPI;
 
@@ -74,7 +68,6 @@ class SubscriptionService
     public function getSubscription($subscriptionId) {
 
         $result = $this->api->get('subscription/' . $subscriptionId);
-
         $subscription = new DetailedSubscription();
         $this->setDetailedSubscription($result, $subscription);
 
@@ -115,7 +108,7 @@ class SubscriptionService
         $result = $this->api->post('subscription/' . $uuid . '/authorize', $json);
 
         $transaction = new DetailedTransaction();
-        $this->setDetailedTransactionProperties($result, $transaction);
+        TransactionService::setDetailedTransactionProperties($result, $transaction);
 
         return $transaction;
     }
@@ -150,29 +143,48 @@ class SubscriptionService
         $subscription->uuid = $data['uuid'] ?? null;
         $subscription->wallet = $data['wallet'] ?? null;
         $subscription->created = Converter::toDateTimeFromString($data['created']) ?? null;
-    }
+        $subscription->cardBin = $data['card_bin'] ?? null;
+        $subscription->expiryMonth = $data['expiry_month'] ?? null;
+        $subscription->expiryYear = $data['expiry_year'] ?? null;
+        $subscription->ip = $data['ip'] ?? null;
 
-    // TODO: Remove this part since its dublicated from SubscriptionService
+        foreach ($data['history'] as $history) {
+            $historyItem = new TransactionHistory();
+            $historyItem->uuid = $history['uuid'] ?? null;
+            $historyItem->action = $history['action'] ?? null;
+            $historyItem->amount = $history['amount'] ?? null;
+            $historyItem->author = $history['author'] ?? null;
+            if(isset($history['date_time'])) {
+                $historyItem->dateTime = Converter::toDateTimeFromString($history['date_time']);
+            }
+            $historyItem->ip = $history['ip'] ?? null;
+            $historyItem->resultText = $history['result_text'];
+            $historyItem->resultCode = $history['result_code'];
 
-    /**
-     * @param array $data
-     * @param DetailedTransaction $detailedTransaction
-     */
-    private function setDetailedTransactionProperties(array $data, DetailedTransaction $detailedTransaction) {
-        $detailedTransaction->uuid = $data['uuid'] ?? null;
-        $detailedTransaction->threeDs = $data['3dsecure'] ?? null;
-        $detailedTransaction->amount = $data['amount'] ?? null;
-        $detailedTransaction->cardType = $data['card_type'] ?? null;
-        $detailedTransaction->charged = $data['charged'] ?? null;
-        if (isset($data['created'])) {
-            $detailedTransaction->created = Converter::toDateTimeFromString($data['created']);
+            $subscription->history[] = $historyItem;
         }
-        $detailedTransaction->currencyCode = $data['currency_code'] ?? null;
-        $detailedTransaction->orderId = $data['order_id'] ?? null;
-        $detailedTransaction->refunded = $data['refunded'] ?? null;
-        $detailedTransaction->status = $data['status'] ?? null;
-        $detailedTransaction->transactionNumber = $data['transaction_number'] ?? null;
-        $detailedTransaction->wallet = $data['wallet'] ?? null;
+
+        foreach ($data['transactions'] as $transaction) {
+            $transactionItem = new Transaction\SimpleTransaction();
+            $transactionItem->uuid = $transaction['uuid'] ?? null;
+            $transactionItem->threeDs = $transaction['3dsecure'] ?? null;
+            $transactionItem->amount = $transaction['amount'] ?? null;
+            $transactionItem->cardType = $transaction['card_type'] ?? null;
+            $transactionItem->charged = $transaction['charged'] ?? null;
+
+            if (isset($transaction['created'])) {
+                $transactionItem->created = Converter::toDateTimeFromString($transaction['created']);
+            }
+
+            $transactionItem->currencyCode = $transaction['currency_code'] ?? null;
+            $transactionItem->orderId = $transaction['order_id'] ?? null;
+            $transactionItem->refunded = $transaction['refunded'] ?? null;
+            $transactionItem->status = $transaction['status'] ?? null;
+            $transactionItem->transactionNumber = $transaction['transaction_number'] ?? null;
+            $transactionItem->wallet = $transaction['wallet'] ?? null;
+
+            $subscription->transactions[] = $transactionItem;
+        }
     }
 
 }
