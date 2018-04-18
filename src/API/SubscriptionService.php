@@ -36,7 +36,7 @@ class SubscriptionService
      * @return array
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getSubscriptions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) {
+    public function getSubscriptions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) : array {
 
         $queryString = http_build_query(
             [
@@ -83,7 +83,7 @@ class SubscriptionService
      * @return DetailedSubscription
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function cancelSubscription($subscriptionId) {
+    public function cancelSubscription($subscriptionId) : DetailedSubscription {
         $result = $this->api->post('subscription/' . $subscriptionId . '/cancel');
 
         $subscription = new DetailedSubscription();
@@ -99,7 +99,7 @@ class SubscriptionService
      * @return DetailedTransaction
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function createTransactionFromSubscription($uuid, int $amount, string $orderId) {
+    public function createTransactionFromSubscription($uuid, int $amount, string $orderId) : DetailedTransaction {
 
         $json = [
             'data' => [
@@ -135,7 +135,6 @@ class SubscriptionService
             $linkItem = new Link();
             $linkItem->uri = $link['uri'] ?? null;
             $linkItem->rel = $link['rel'] ?? null;
-
             $subscription->links[] = $linkItem;
         }
 
@@ -170,8 +169,8 @@ class SubscriptionService
                 $historyItem->dateTime = Converter::toDateTimeFromString($history['date_time']);
             }
             $historyItem->ip = $history['ip'] ?? null;
-            $historyItem->resultText = $history['result_text'];
-            $historyItem->resultCode = $history['result_code'];
+            $historyItem->resultText = $history['result_text'] ?? null;
+            $historyItem->resultCode = $history['result_code'] ?? null;
 
             $subscription->history[] = $historyItem;
         }

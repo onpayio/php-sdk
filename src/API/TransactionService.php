@@ -48,7 +48,7 @@ class TransactionService {
      * @return array
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getTransactions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) {
+    public function getTransactions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) : array {
 
         $queryString = http_build_query(['page' => $page, 'page_size' => $pageSize, 'order_by' => $orderBy, 'query' => $query, 'status' => $status, 'date_after' => $dateAfter, 'date_before' => $dateBefore]);
         $results = $this->api->get('transaction?' . $queryString);
@@ -70,7 +70,7 @@ class TransactionService {
      * @return DetailedTransaction
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function captureTransaction(string $transactionNumber, int $amount = null) {
+    public function captureTransaction(string $transactionNumber, int $amount = null) : DetailedTransaction {
 
         if(null === $amount) {
             $result = $this->api->post('transaction/' . $transactionNumber . '/capture');
@@ -96,7 +96,7 @@ class TransactionService {
      * @return DetailedTransaction
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function cancelTransaction(string $transactionNumber) {
+    public function cancelTransaction(string $transactionNumber) : DetailedTransaction {
         $result = $this->api->post('transaction/' . $transactionNumber . '/cancel');
         $transaction = new DetailedTransaction();
         $this->setDetailedTransactionProperties($result, $transaction);
