@@ -5,52 +5,52 @@ namespace OnPay\API\Subscription;
 class SimpleSubscription
 {
     /**
-     * @var $uuid
+     * @var string
      */
     public $uuid;
 
     /**
-     * @var $threeDs
+     * @var string
      */
     public $threeDs;
 
     /**
-     * @var $archived
+     * @var string
      */
     public $archived;
 
     /**
-     * @var $cardType
+     * @var string
      */
     public $cardType;
 
     /**
-     * @var $created
+     * @var \DateTime
      */
     public $created;
 
     /**
-     * @var $currencyCode
+     * @var string
      */
     public $currencyCode;
 
     /**
-     * @var $orderId
+     * @var string
      */
     public $orderId;
 
     /**
-     * @var $status
+     * @var string
      */
     public $status;
 
     /**
-     * @var $subscriptionNumber
+     * @var string
      */
     public $subscriptionNumber;
 
     /**
-     * @var $wallet
+     * @var string
      */
     public $wallet;
 

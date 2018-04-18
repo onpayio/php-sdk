@@ -3,36 +3,37 @@ namespace OnPay\API\Subscription;
 
 
 use OnPay\API\Transaction\SimpleTransaction;
+use OnPay\API\Transaction\TransactionHistory;
 
 class DetailedSubscription extends SimpleSubscription
 {
     /**
-     * @var $cardBin
+     * @var string
      */
     public $cardBin;
 
     /**
-     * @var $expiryMonth
+     * @var string
      */
     public $expiryMonth;
 
     /**
-     * @var $expiryYear
+     * @var string
      */
     public $expiryYear;
 
     /**
-     * @var $ip
+     * @var string
      */
     public $ip;
 
     /**
-     * @var $history
+     * @var TransactionHistory[]
      */
-    public $history;
+    public $history = [];
 
     /**
-     * @var SimpleTransaction[] $transactions
+     * @var SimpleTransaction[]
      */
     public $transactions = [];
 
