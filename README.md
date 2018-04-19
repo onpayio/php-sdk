@@ -87,6 +87,25 @@ if($paymentWindow->validatePayment($_GET)) {
 ?>
 ```
 
+Verifying payment from the payment page can easily be done
+
+```php
+
+$payment = new \OnPay\API\PaymentWindow();
+$payment->setSecret('YourSecret');
+
+
+if($payment->validatePayment($_GET)) {
+    echo "Payment was successfull";
+} else {
+    echo "There was an error with the payment";
+}
+
+
+```
+
+
+
 ### Using the API 
 
 A simple usage example looks like:
@@ -150,6 +169,9 @@ if (!$onPayAPI->isAuthorized()) {
 var_dump($onPayAPI->ping());
 
 ```
+
+
+
 
 ## Transactions 
 
