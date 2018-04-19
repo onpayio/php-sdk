@@ -32,11 +32,7 @@ class SimpleTransaction {
         $this->wallet = $data['wallet'] ?? null;
 
         foreach ($data['links'] as $link) {
-
-            $linkItem = new Link();
-            $linkItem->rel = $link['rel'] ?? null;
-            $linkItem->uri = $link['uri'] ?? null;
-
+            $linkItem = new Link($link);
             $this->links[] = $linkItem;
         }
     }

@@ -25,9 +25,7 @@ class SimpleSubscription
         $this->created = Converter::toDateTimeFromString($data['created']) ?? null;
 
         foreach ($data['links'] as $link) {
-            $linkItem = new Link();
-            $linkItem->uri = $link['uri'] ?? null;
-            $linkItem->rel = $link['rel'] ?? null;
+            $linkItem = new Link($link);
             $this->links[] = $linkItem;
         }
     }
