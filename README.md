@@ -87,7 +87,7 @@ if($paymentWindow->validatePayment($_GET)) {
 ?>
 ```
 
-Verifying payment from the payment page can easily be done
+Verifying a payment from the acceptment page can easily be done as following: 
 
 ```php
 
