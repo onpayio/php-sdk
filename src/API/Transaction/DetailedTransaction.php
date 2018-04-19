@@ -42,17 +42,7 @@ class DetailedTransaction extends SimpleTransaction {
 
         foreach ($data['history'] as $history) {
 
-            $historyItem = new TransactionHistory();
-            $historyItem->uuid = $history['uuid'] ?? null;
-            $historyItem->action = $history['action'] ?? null;
-            $historyItem->amount = $history['amount'] ?? null;
-            $historyItem->author = $history['author'] ?? null;
-            if(isset($history['date_time'])) {
-                $historyItem->dateTime = Converter::toDateTimeFromString($history['date_time']);
-            }
-            $historyItem->ip = $history['ip'] ?? null;
-            $historyItem->resultText = $history['result_text'];
-            $historyItem->resultCode = $history['result_code'];
+            $historyItem = new TransactionHistory($history);
 
             $this->history[] = $historyItem;
         }

@@ -69,7 +69,6 @@ class SubscriptionService
         $result = $this->api->get('subscription/' . $subscriptionId);
         $subscription = new DetailedSubscription($result);
 
-
         return $subscription;
     }
 
