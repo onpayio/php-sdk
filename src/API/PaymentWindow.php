@@ -67,11 +67,25 @@ class PaymentWindow
     }
 
     /**
+     * @return string
+     */
+    public function getGatewayId() {
+        return $this->gatewayId;
+    }
+
+    /**
      * @param string $currency
      */
     public function setCurrency(string $currency): void
     {
         $this->currency = $currency;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCurrency() {
+        return $this->currency;
     }
 
     /**
@@ -83,11 +97,25 @@ class PaymentWindow
     }
 
     /**
+     * @return mixed
+     */
+    public function getAmount() {
+        return $this->amount;
+    }
+
+    /**
      * @param string $reference
      */
     public function setReference(string $reference): void
     {
         $this->reference = $reference;
+    }
+
+    /**
+     * @return string
+     */
+    public function getReference() {
+        return $this->reference;
     }
 
     /**
@@ -99,6 +127,13 @@ class PaymentWindow
     }
 
     /**
+     * @return string
+     */
+    public function getAcceptUrl() {
+        return $this->acceptUrl;
+    }
+
+    /**
      * @param string $type
      */
     public function setType(string $type): void
@@ -107,11 +142,25 @@ class PaymentWindow
     }
 
     /**
+     * @return string
+     */
+    public function getType() {
+        return $this->type;
+    }
+
+    /**
      * @param string $method
      */
     public function setMethod(string $method): void
     {
         $this->method = $method;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMethod() {
+        return $this->method;
     }
 
     /**
@@ -127,11 +176,29 @@ class PaymentWindow
     }
 
     /**
+     * @return bool
+     */
+    public function hasSecureEnabled() {
+        if($this->secureEnabled === "force") {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * @param mixed $language
      */
     public function setLanguage($language): void
     {
         $this->language = $language;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLanguage() {
+        return $this->language;
     }
 
     /**
@@ -143,11 +210,22 @@ class PaymentWindow
     }
 
     /**
+     * @return string
+     */
+    public function getDeclineUrl() {
+        return $this->declineUrl;
+    }
+
+    /**
      * @param mixed $callbackUrl
      */
     public function setCallbackUrl($callbackUrl): void
     {
         $this->callbackUrl = $callbackUrl;
+    }
+
+    public function getCallbackUrl() {
+        return $this->callbackUrl;
     }
 
     /**
@@ -159,6 +237,13 @@ class PaymentWindow
     }
 
     /**
+     * @return string
+     */
+    public function getDesign() {
+        return $this->design;
+    }
+
+    /**
      * @param mixed $testMode
      */
     public function setTestMode($testMode): void
@@ -166,6 +251,12 @@ class PaymentWindow
         $this->testMode = $testMode;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getTestMode() {
+        return $this->testMode;
+    }
 
     /**
      * @param mixed $secret
@@ -173,6 +264,10 @@ class PaymentWindow
     public function setSecret($secret): void
     {
         $this->secret = $secret;
+    }
+
+    public function getSecret() {
+        return $this->secret;
     }
 
     /**

@@ -101,7 +101,6 @@ if($payment->validatePayment($_GET)) {
     echo "There was an error with the payment";
 }
 
-
 ```
 
 
