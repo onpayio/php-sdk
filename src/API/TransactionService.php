@@ -6,9 +6,6 @@ namespace OnPay\API;
 
 use OnPay\API\Transaction\DetailedTransaction;
 use OnPay\API\Transaction\SimpleTransaction;
-use OnPay\API\Transaction\TransactionHistory;
-use OnPay\API\Util\Converter;
-use OnPay\API\Util\Link;
 use OnPay\OnPayAPI;
 
 class TransactionService {
@@ -30,10 +27,7 @@ class TransactionService {
      */
     public function getTransaction(string $identifier): DetailedTransaction {
         $result = $this->api->get('transaction/' . urlencode($identifier));
-
-        $detailedTransaction = new DetailedTransaction();
-        self::setDetailedTransactionProperties($result, $detailedTransaction);
-
+        $detailedTransaction = new DetailedTransaction($result);
         return $detailedTransaction;
     }
 
@@ -56,8 +50,7 @@ class TransactionService {
         $data = [];
 
         foreach ($results as $result) {
-            $transaction = new SimpleTransaction();
-            $this->setSimpleTransactionProperties($result, $transaction);
+            $transaction = new SimpleTransaction($result);
             $data[] = $transaction;
         }
 
@@ -85,8 +78,7 @@ class TransactionService {
             $result = $this->api->post('transaction/' . $transactionNumber . '/capture', $jsonBody);
         }
 
-        $transaction = new DetailedTransaction();
-        self::setDetailedTransactionProperties($result, $transaction);
+        $transaction = new DetailedTransaction($result);
 
         return $transaction;
     }
@@ -98,94 +90,8 @@ class TransactionService {
      */
     public function cancelTransaction(string $transactionNumber) : DetailedTransaction {
         $result = $this->api->post('transaction/' . $transactionNumber . '/cancel');
-        $transaction = new DetailedTransaction();
-        $this->setDetailedTransactionProperties($result, $transaction);
+        $transaction = new DetailedTransaction($result);
         return $transaction;
     }
-    
-    private function setSimpleTransactionProperties(array $data, SimpleTransaction $simpleTransaction) {
-        $simpleTransaction->uuid = $data['uuid'] ?? null;
-        $simpleTransaction->threeDs = $data['3dsecure'] ?? null;
-        $simpleTransaction->amount = $data['amount'] ?? null;
-        $simpleTransaction->cardType = $data['card_type'] ?? null;
-        $simpleTransaction->charged = $data['charged'] ?? null;
-        if (isset($data['created'])) {
-            $simpleTransaction->created = Converter::toDateTimeFromString($data['created']);
-        }
-        $simpleTransaction->currencyCode = $data['currency_code'] ?? null;
-        $simpleTransaction->orderId = $data['order_id'] ?? null;
-        $simpleTransaction->refunded = $data['refunded'] ?? null;
-        $simpleTransaction->status = $data['status'] ?? null;
-        $simpleTransaction->transactionNumber = $data['transaction_number'] ?? null;
-        $simpleTransaction->wallet = $data['wallet'] ?? null;
 
-        foreach ($data['links'] as $link) {
-
-            $linkItem = new Link();
-            $linkItem->rel = $link['rel'] ?? null;
-            $linkItem->uri = $link['uri'] ?? null;
-
-            $simpleTransaction->links[] = $linkItem;
-        }
-
-    }
-
-    /**
-     * @internal shall not be used outside the library
-     * @param array $data
-     * @param DetailedTransaction $detailedTransaction
-     */
-    public static function setDetailedTransactionProperties(array $data, DetailedTransaction $detailedTransaction) {
-
-        $detailedTransaction->expiryYear = $data['expiry_year'] ?? null;
-        $detailedTransaction->expiryMonth = $data['expiry_month'] ?? null;
-        $detailedTransaction->acquirer = $data['acquirer'] ?? null;
-        $detailedTransaction->cardBin = $data['card_bin'] ?? null;
-        $detailedTransaction->ip = $data['ip'] ?? null;
-
-        $detailedTransaction->uuid = $data['uuid'] ?? null;
-        $detailedTransaction->threeDs = $data['3dsecure'] ?? null;
-        $detailedTransaction->amount = $data['amount'] ?? null;
-        $detailedTransaction->cardType = $data['card_type'] ?? null;
-        $detailedTransaction->charged = $data['charged'] ?? null;
-        if (isset($data['created'])) {
-            $detailedTransaction->created = Converter::toDateTimeFromString($data['created']);
-        }
-        $detailedTransaction->currencyCode = $data['currency_code'] ?? null;
-        $detailedTransaction->orderId = $data['order_id'] ?? null;
-        $detailedTransaction->refunded = $data['refunded'] ?? null;
-        $detailedTransaction->status = $data['status'] ?? null;
-        $detailedTransaction->transactionNumber = $data['transaction_number'] ?? null;
-        $detailedTransaction->wallet = $data['wallet'] ?? null;
-        $detailedTransaction->charged = $data['charged'] ?? null;
-        $detailedTransaction->subscriptionUuid = $data['subscription_uuid'] ?? null;
-
-
-        foreach ($data['history'] as $history) {
-
-            $historyItem = new TransactionHistory();
-            $historyItem->uuid = $history['uuid'] ?? null;
-            $historyItem->action = $history['action'] ?? null;
-            $historyItem->amount = $history['amount'] ?? null;
-            $historyItem->author = $history['author'] ?? null;
-            if(isset($history['date_time'])) {
-                $historyItem->dateTime = Converter::toDateTimeFromString($history['date_time']);
-            }
-            $historyItem->ip = $history['ip'] ?? null;
-            $historyItem->resultText = $history['result_text'];
-            $historyItem->resultCode = $history['result_code'];
-
-            $detailedTransaction->history[] = $historyItem;
-        }
-
-        foreach ($data['links'] as $link) {
-
-            $linkItem = new Link();
-            $linkItem->rel = $link['rel'] ?? null;
-            $linkItem->uri = $link['uri'] ?? null;
-
-            $detailedTransaction->links[] = $linkItem;
-        }
-
-    }
 }
