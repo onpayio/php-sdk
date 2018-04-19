@@ -31,8 +31,22 @@ class SimpleTransaction {
         $this->transactionNumber = $data['transaction_number'] ?? null;
         $this->wallet = $data['wallet'] ?? null;
 
-        foreach ($data['links'] as $link) {
+        if(array_key_exists('links', $data)) {
+            foreach ($data['links'] as $link) {
+                $linkItem = new Link($link);
+                $this->links[] = $linkItem;
+            }
+        }
+    }
+
+    /**
+     * @internal Shall not be used outside the library
+     * @param array $links
+     */
+    public function setLinks(array $links) {
+        foreach ($links as $link) {
             $linkItem = new Link($link);
+
             $this->links[] = $linkItem;
         }
     }

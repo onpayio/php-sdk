@@ -4,7 +4,9 @@ namespace OnPay\API;
 
 use OnPay\API\Subscription\DetailedSubscription;
 use OnPay\API\Subscription\SimpleSubscription;
+use OnPay\API\Subscription\SubscriptionCollection;
 use OnPay\API\Transaction\DetailedTransaction;
+use OnPay\API\Util\Pagination;
 use OnPay\OnPayAPI;
 
 class SubscriptionService
@@ -30,10 +32,10 @@ class SubscriptionService
      * @param null $status
      * @param null $dateAfter
      * @param null $dateBefore
-     * @return array
+     * @return SubscriptionCollection
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getSubscriptions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) : array {
+    public function getSubscriptions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) : SubscriptionCollection  {
 
         $queryString = http_build_query(
             [
@@ -47,15 +49,19 @@ class SubscriptionService
             ]);
 
         $results = $this->api->get('subscription?' . $queryString);
-
         $subscriptions = [];
 
-        foreach ($results as $result) {
+        foreach ($results['data'] as $result) {
             $subscription = new SimpleSubscription($result);
+            $subscription->setLinks($result['links']);
             $subscriptions[] = $subscription;
         }
 
-        return $subscriptions;
+        $collection = new SubscriptionCollection();
+        $collection->subscriptions = $subscriptions;
+        $collection->pagination = new Pagination($results['meta']['pagination']);
+
+        return $collection;
     }
 
     /**
@@ -67,7 +73,8 @@ class SubscriptionService
     public function getSubscription($subscriptionId) {
 
         $result = $this->api->get('subscription/' . $subscriptionId);
-        $subscription = new DetailedSubscription($result);
+        $subscription = new DetailedSubscription($result['data']);
+        $subscription->setLinks($result['links']);
 
         return $subscription;
     }
@@ -80,11 +87,13 @@ class SubscriptionService
      */
     public function cancelSubscription($subscriptionId) : DetailedSubscription {
         $result = $this->api->post('subscription/' . $subscriptionId . '/cancel');
-        $subscription = new DetailedSubscription($result);
+        $subscription = new DetailedSubscription($result['data']);
+        $subscription->setLinks($result['links']);
         return $subscription;
     }
 
     /**
+     * Create transaction from subscription
      * @param $uuid
      * @param int $amount
      * @param string $orderId
@@ -102,7 +111,8 @@ class SubscriptionService
 
         $result = $this->api->post('subscription/' . $uuid . '/authorize', $json);
 
-        $transaction = new DetailedTransaction($result);
+        $transaction = new DetailedTransaction($result['data']);
+        $transaction->setLinks($result['links']);
 
         return $transaction;
     }

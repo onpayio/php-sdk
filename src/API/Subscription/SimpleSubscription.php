@@ -23,8 +23,14 @@ class SimpleSubscription
         $this->uuid = $data['uuid'] ?? null;
         $this->wallet = $data['wallet'] ?? null;
         $this->created = Converter::toDateTimeFromString($data['created']) ?? null;
+    }
 
-        foreach ($data['links'] as $link) {
+    /**
+     * @internal Shall not be used outside the library
+     * @param $links
+     */
+    public function setLinks($links) {
+        foreach ($links as $link) {
             $linkItem = new Link($link);
             $this->links[] = $linkItem;
         }

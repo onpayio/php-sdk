@@ -6,6 +6,8 @@ namespace OnPay\API;
 
 use OnPay\API\Transaction\DetailedTransaction;
 use OnPay\API\Transaction\SimpleTransaction;
+use OnPay\API\Transaction\TransactionCollection;
+use OnPay\API\Util\Pagination;
 use OnPay\OnPayAPI;
 
 class TransactionService {
@@ -28,7 +30,9 @@ class TransactionService {
      */
     public function getTransaction(string $identifier): DetailedTransaction {
         $result = $this->api->get('transaction/' . urlencode($identifier));
-        $detailedTransaction = new DetailedTransaction($result);
+
+        $detailedTransaction = new DetailedTransaction($result['data']);
+        $detailedTransaction->setLinks($result['links']);
         return $detailedTransaction;
     }
 
@@ -43,19 +47,25 @@ class TransactionService {
      * @return array
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getTransactions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) : array {
+    public function getTransactions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) : TransactionCollection {
 
         $queryString = http_build_query(['page' => $page, 'page_size' => $pageSize, 'order_by' => $orderBy, 'query' => $query, 'status' => $status, 'date_after' => $dateAfter, 'date_before' => $dateBefore]);
         $results = $this->api->get('transaction?' . $queryString);
 
-        $data = [];
+        $transactions = [];
 
-        foreach ($results as $result) {
+        foreach ($results['data'] as $result) {
             $transaction = new SimpleTransaction($result);
-            $data[] = $transaction;
+
+            $transaction->setLinks($result['links']);
+            $transactions[] = new SimpleTransaction($result);
         }
 
-        return $data;
+        $collection = new TransactionCollection();
+        $collection->transactions = $transactions;
+        $collection->pagination = new Pagination($results['meta']['pagination']);
+
+        return $collection;
     }
 
     /**
@@ -79,7 +89,8 @@ class TransactionService {
             $result = $this->api->post('transaction/' . $transactionNumber . '/capture', $jsonBody);
         }
 
-        $transaction = new DetailedTransaction($result);
+        $transaction = new DetailedTransaction($result['data']);
+        $transaction->setLinks($result['links']);
 
         return $transaction;
     }
@@ -91,7 +102,8 @@ class TransactionService {
      */
     public function cancelTransaction(string $transactionNumber) : DetailedTransaction {
         $result = $this->api->post('transaction/' . $transactionNumber . '/cancel');
-        $transaction = new DetailedTransaction($result);
+        $transaction = new DetailedTransaction($result['data']);
+        $transaction->setLinks($result['data']);
         return $transaction;
     }
 

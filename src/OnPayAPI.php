@@ -97,7 +97,7 @@ class OnPayAPI {
 
         $result = json_decode($response->getBody()->getContents(), true);
 
-        return $result['data'];
+        return $result;
     }
 
     protected function refreshToken() {
