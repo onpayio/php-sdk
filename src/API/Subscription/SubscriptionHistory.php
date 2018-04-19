@@ -27,31 +27,49 @@ class SubscriptionHistory
         }
     }
 
-    /** @var string  */
+    /**
+     * @var string
+     */
     public $uuid;
 
-    /** @var $action */
+    /**
+     * @var string
+     */
     public $action;
 
-    /** @var $author */
+    /**
+     * @var string
+     */
     public $author;
 
-    /** @var $date */
+    /**
+     * @var \DateTime
+     */
     public $date;
 
-    /** @var $ip */
+    /**
+     * @var string
+     */
     public $ip;
 
-    /** @var $resultCode */
+    /**
+     * @var string
+     */
     public $resultCode;
 
-    /** @var $resultText */
+    /**
+     * @var string
+     */
     public $resultText;
 
-    /** @var $subscriptionNumber */
+    /**
+     * @var string
+     */
     public $subscriptionNumber;
 
-    /** @var $subscriptionUuid */
+    /**
+     * @var string
+     */
     public $subscriptionUuid;
 
 }
