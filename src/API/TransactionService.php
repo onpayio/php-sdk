@@ -103,7 +103,7 @@ class TransactionService {
     public function cancelTransaction(string $transactionNumber) : DetailedTransaction {
         $result = $this->api->post('transaction/' . $transactionNumber . '/cancel');
         $transaction = new DetailedTransaction($result['data']);
-        $transaction->setLinks($result['data']);
+        $transaction->setLinks($result['links']);
         return $transaction;
     }
 
