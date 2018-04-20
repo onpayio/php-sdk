@@ -69,23 +69,6 @@ $paymentWindow->setLanguage("en");
     <h1>Payment window is not configured correct</h1>
 <?php } ?>
 
-```
-
-Validating a payment from the accept page can be done as following. 
-
-```php 
-<?php
-$paymentWindow = new \OnPay\API\PaymentWindow();
-$paymentWindow->setSecret("YourSecret")
-
-if($paymentWindow->validatePayment($_GET)) {
-    echo "Payment was valid";
-} else {
-    echo "Payment was invalid!";
-}
-
-?>
-```
 
 Verifying a payment from the acceptment page can easily be done as following: 
 
