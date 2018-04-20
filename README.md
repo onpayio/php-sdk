@@ -87,7 +87,7 @@ if($paymentWindow->validatePayment($_GET)) {
 ?>
 ```
 
-Verifying payment from the payment page can easily be done
+Verifying a payment from the acceptment page can easily be done as following: 
 
 ```php
 
@@ -179,8 +179,10 @@ var_dump($onPayAPI->ping());
 if($onPayAPI->isAuthorized()) {
 
     // Get list of transactions
-    $onPayAPI->transaction()->getTransactions();
-
+    $onPayAPI->transaction()->getTransactions()->transactions;
+    // Get the pagination object
+    $onPayAPI->transaction()->getTransactions()->pagination;
+    
     // Get specific transaction
     $onPayAPI->transaction()->getTransaction("00000000-0000-0000-0000-000000000000");
 
@@ -199,9 +201,12 @@ if($onPayAPI->isAuthorized()) {
 ```php
 <?php
 if($onPayAPI->isAuthorized()) {
-    // Lists subscriptions
-    $onPayAPI->subscription()->getSubscriptions();
-
+    // Get list of subscriptions
+    $onPayAPI->subscription()->getSubscriptions()->subscriptions;
+    // Get the pagination object
+     $onPayAPI->subscription()->getSubscriptions()->pagination;
+   
+   
     // Get details about a specific subscription
     $onPayAPI->subscription()->getSubscription("00000000-0000-0000-0000-000000000000");
 
