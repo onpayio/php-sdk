@@ -182,13 +182,13 @@ if($onPayAPI->isAuthorized()) {
     $onPayAPI->transaction()->getTransactions();
 
     // Get specific transaction
-    $onPayAPI->transaction()->getTransaction("uuid");
+    $onPayAPI->transaction()->getTransaction("00000000-0000-0000-0000-000000000000");
 
     // Capture transaction
-    $onPayAPI->transaction()->captureTransaction("uuid");
+    $onPayAPI->transaction()->captureTransaction("00000000-0000-0000-0000-000000000000");
 
     // Cancel transaction 
-    $onPayAPI->transaction()->cancelTransaction("uuid");
+    $onPayAPI->transaction()->cancelTransaction("00000000-0000-0000-0000-000000000000");
 
 }
 
@@ -203,10 +203,10 @@ if($onPayAPI->isAuthorized()) {
     $onPayAPI->subscription()->getSubscriptions();
 
     // Get details about a specific subscription
-    $onPayAPI->subscription()->getSubscription("uuid");
+    $onPayAPI->subscription()->getSubscription("00000000-0000-0000-0000-000000000000");
 
     // Create transaction from subscription
-    $onPayAPI->subscription()->createTransactionFromSubscription("subscriptionId", 100, "orderId");
+    $onPayAPI->subscription()->createTransactionFromSubscription("00000000-0000-0000-0000-000000000000", 100, "orderId");
 }
 
 ```
