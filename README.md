@@ -117,9 +117,9 @@ class TokenStorage implements \OnPay\TokenStorageInterface {
     }
 }
 
-// TODO: It is extremely important that the token.bin file is not accessible from the internet.
+// TODO: It is extremely important that the .token.bin file is not accessible from the internet.
 // It gives complete API access to anyone that gets a hold of it, treat it like a database password!
-$tokenStorage = new TokenStorage(__DIR__ . '/token.bin');
+$tokenStorage = new TokenStorage(__DIR__ . '/.token.bin');
 
 $onPayAPI = new \OnPay\OnPayAPI($tokenStorage, [
     'client_id' => 'example.com', // It is recommended to set it to the domain name the integration resides on
