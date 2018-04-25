@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 namespace OnPay\API\Transaction;
 
@@ -16,20 +15,20 @@ class SimpleTransaction {
      */
     public function __construct(array $data)
     {
-        $this->uuid = $data['uuid'] ?? null;
-        $this->threeDs = $data['3dsecure'] ?? null;
-        $this->amount = $data['amount'] ?? null;
-        $this->cardType = $data['card_type'] ?? null;
-        $this->charged = $data['charged'] ?? null;
+        $this->uuid = (isset($data['uuid'])) ? $data['uuid'] : null;
+        $this->threeDs = (isset($data['3dsecure'])) ? $data['3dsecure'] : null;
+        $this->amount = (isset($data['amount'])) ? $data['amount'] : null;
+        $this->cardType = (isset($data['card_type'])) ? $data['card_type'] : null;
+        $this->charged = (isset($data['charged'])) ? $data['charged'] : null;
         if (isset($data['created'])) {
             $this->created = Converter::toDateTimeFromString($data['created']);
         }
-        $this->currencyCode = $data['currency_code'] ?? null;
-        $this->orderId = $data['order_id'] ?? null;
-        $this->refunded = $data['refunded'] ?? null;
-        $this->status = $data['status'] ?? null;
-        $this->transactionNumber = $data['transaction_number'] ?? null;
-        $this->wallet = $data['wallet'] ?? null;
+        $this->currencyCode = (isset($data['currency_code'])) ? $data['currency_code'] : null;
+        $this->orderId = (isset($data['order_id'])) ? $data['order_id'] :  null;
+        $this->refunded = (isset($data['refunded'])) ? $data['refunded'] :  null;
+        $this->status = (isset($data['status'])) ? $data['status'] :  null;
+        $this->transactionNumber = (isset($data['transaction_number'])) ? $data['transaction_number'] :  null;
+        $this->wallet = (isset($data['wallet'])) ? $data['wallet'] : null;
 
         if(array_key_exists('links', $data)) {
             foreach ($data['links'] as $link) {

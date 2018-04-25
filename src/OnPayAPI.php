@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 namespace OnPay;
 
@@ -70,8 +69,8 @@ class OnPayAPI {
 
     }
 
-    protected function getAccessToken(): ?AccessToken {
-        $options = json_decode($this->tokenStorage->getToken() ?? '', true);
+    protected function getAccessToken() {
+        $options = json_decode(($this->tokenStorage->getToken()), true);
         if (null !== $options) {
             $accessToken = new AccessToken($options);
             return $accessToken;
@@ -79,7 +78,7 @@ class OnPayAPI {
         return null;
     }
 
-    protected function getClient(): Client {
+    protected function getClient() {
         if (!isset($this->client)) {
             $this->client = new Client();
         }
@@ -115,15 +114,14 @@ class OnPayAPI {
      *
      * @return bool
      */
-    public function isAuthorized(): bool {
+    public function isAuthorized() {
         $accessToken = $this->getAccessToken();
         if (null === $accessToken) {
             return false;
         }
 
         if ($accessToken->hasExpired()) {
-            // Token expired, attempt to refresh it
-            $this->refreshToken();
+                $this->refreshToken();
         }
 
         return true;
@@ -134,11 +132,11 @@ class OnPayAPI {
      *
      * @return string
      */
-    public function authorize(): string {
+    public function authorize() {
         return $this->oauth2Provider->getAuthorizationUrl();
     }
 
-    public function finishAuthorize(string $code) {
+    public function finishAuthorize($code) {
         $accessToken = $this->oauth2Provider->getAccessToken('authorization_code',[
             'code' => $code,
         ]);
@@ -212,7 +210,7 @@ class OnPayAPI {
     /**
      * @return TransactionService
      */
-    public function transaction(): TransactionService {
+    public function transaction() {
         if (!isset($this->transactionService)) {
             $this->transactionService = new TransactionService($this);
         }
@@ -222,7 +220,7 @@ class OnPayAPI {
     /**
      * @return SubscriptionService
      */
-    public function subscription(): SubscriptionService {
+    public function subscription() {
         if(!isset($this->subscriptionService)) {
             $this->subscriptionService = new SubscriptionService($this);
         }

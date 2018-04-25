@@ -15,13 +15,13 @@ class TransactionHistory {
      */
     public function __construct(array $data)
     {
-        $this->uuid = $data['uuid'] ?? null;
-        $this->action = $data['action'] ?? null;
-        $this->amount = $data['amount'] ?? null;
-        $this->author = $data['author'] ?? null;
-        $this->ip = $history['ip'] ?? null;
-        $this->resultText = $history['result_text'] ?? null;
-        $this->resultCode = $history['result_code'] ?? null;
+        $this->uuid = isset($data['uuid']) ? $data['uuid'] : null;
+        $this->action = isset($data['action']) ? $data['action'] : null;
+        $this->amount = isset($data['amount']) ? $data['amount'] : null;
+        $this->author = isset($data['author']) ? $data['author'] : null;
+        $this->ip = isset($history['ip']) ? $history['ip'] :  null;
+        $this->resultText = (isset($history['result_text'])) ? $history['result_text'] : null;
+        $this->resultCode = (isset($history['result_code'])) ? $history['result_code'] : null;
 
         if(isset($data['date_time'])) {
             $this->dateTime = Converter::toDateTimeFromString($data['date_time']);

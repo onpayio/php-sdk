@@ -13,14 +13,14 @@ class SubscriptionHistory
      */
     public function __construct(array $data)
     {
-        $this->uuid = $data['uuid'] ?? null;
-        $this->action = $data['action'] ?? null;
-        $this->author = $data['author'] ?? null;
-        $this->ip = $history['ip'] ?? null;
-        $this->resultText = $history['result_text'] ?? null;
-        $this->resultCode = $history['result_code'] ?? null;
-        $this->subscriptionNumber = $data['subscription_number'] ?? null;
-        $this->subscriptionUuid = $data['subscription_uuid'] ?? null;
+        $this->uuid = isset($data['uuid']) ? $data['uuid'] : null;
+        $this->action = isset($data['action']) ? $data['action'] : null;
+        $this->author = isset($data['author']) ? $data['author'] : null;
+        $this->ip = isset($history['ip']) ? $history['ip'] : null;
+        $this->resultText = isset($history['result_text']) ? $history['result_text'] : null;
+        $this->resultCode = isset($history['result_code']) ? $history['result_code'] : null;
+        $this->subscriptionNumber = isset($data['subscription_number']) ? $data['subscription_number'] :  null;
+        $this->subscriptionUuid = isset($data['subscription_uuid']) ? $data['subscription_uuid'] : null;
 
         if(isset($data['date_time'])) {
             $this->date = Converter::toDateTimeFromString($data['date_time']);

@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 namespace OnPay;
 
@@ -10,7 +9,7 @@ interface TokenStorageInterface {
      *
      * @return null|string
      */
-    public function getToken(): ?string;
+    public function getToken();
 
     /**
      * This method is responsible for saving the token to permanent storage.
@@ -21,5 +20,5 @@ interface TokenStorageInterface {
      * @param string $token
      * @return mixed
      */
-    public function saveToken(string $token);
+    public function saveToken($token);
 }
