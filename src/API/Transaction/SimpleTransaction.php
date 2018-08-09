@@ -44,9 +44,8 @@ class SimpleTransaction {
      * @param array $links
      */
     public function setLinks(array $links) {
-        foreach ($links as $key=>$link) {
-            $linkData = ["rel"=>$key, "uri"=>$link];
-            $linkItem = new Link($linkData);
+        foreach ($links as $link) {
+            $linkItem = new Link($link);
 
             $this->links[] = $linkItem;
         }
