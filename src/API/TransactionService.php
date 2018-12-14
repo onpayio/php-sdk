@@ -107,4 +107,28 @@ class TransactionService {
         return $transaction;
     }
 
+    /**
+     * @param string $transactionNumber
+     * @param int|null $amount
+     * @return DetailedTransaction
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function refundTransaction(string $transactionNumber, int $amount = null) {
+
+        if(null === $amount) {
+            $result = $this->api->post('transaction/' . $transactionNumber . '/refund');
+        } else {
+            $jsonBody = [
+                'data' => [
+                    'amount' => (int) $amount
+                ]
+            ];
+            $result = $this->api->post('transaction/' . $transactionNumber . '/refund', $jsonBody);
+        }
+
+        $transaction = new DetailedTransaction($result['data']);
+        $transaction->setLinks($result['links']);
+
+        return $transaction;
+    }
 }
