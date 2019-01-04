@@ -5,10 +5,10 @@ namespace OnPay\API\Util;
 
 class Link
 {
-    public function __construct(string $link)
+    public function __construct($link = null)
     {
         $this->rel = null;
-        $this->uri = $link ?? null;
+        $this->uri = $link;
     }
 
     /**

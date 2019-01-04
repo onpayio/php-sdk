@@ -35,7 +35,7 @@ class SubscriptionService
      * @return SubscriptionCollection
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getSubscriptions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) : SubscriptionCollection  {
+    public function getSubscriptions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null)  {
 
         $queryString = http_build_query(
             [
@@ -85,7 +85,7 @@ class SubscriptionService
      * @return DetailedSubscription
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function cancelSubscription($subscriptionId) : DetailedSubscription {
+    public function cancelSubscription($subscriptionId) {
         $result = $this->api->post('subscription/' . $subscriptionId . '/cancel');
         $subscription = new DetailedSubscription($result['data']);
         $subscription->setLinks($result['links']);
@@ -100,7 +100,7 @@ class SubscriptionService
      * @return DetailedTransaction
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function createTransactionFromSubscription($uuid, int $amount, string $orderId) : DetailedTransaction {
+    public function createTransactionFromSubscription($uuid, $amount, $orderId) {
 
         $json = [
             'data' => [

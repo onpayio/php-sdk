@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 namespace OnPay\API;
 
 
@@ -61,7 +60,7 @@ class PaymentWindow
     /**
      * @param string $gatewayId
      */
-    public function setGatewayId($gatewayId): void
+    public function setGatewayId($gatewayId)
     {
         $this->gatewayId = $gatewayId;
     }
@@ -76,7 +75,7 @@ class PaymentWindow
     /**
      * @param string $currency
      */
-    public function setCurrency(string $currency): void
+    public function setCurrency($currency)
     {
         $this->currency = $currency;
     }
@@ -91,7 +90,7 @@ class PaymentWindow
     /**
      * @param string $amount
      */
-    public function setAmount($amount): void
+    public function setAmount($amount)
     {
         $this->amount = $amount;
     }
@@ -106,7 +105,7 @@ class PaymentWindow
     /**
      * @param string $reference
      */
-    public function setReference(string $reference): void
+    public function setReference($reference)
     {
         $this->reference = $reference;
     }
@@ -121,7 +120,7 @@ class PaymentWindow
     /**
      * @param string $acceptUrl
      */
-    public function setAcceptUrl(string $acceptUrl): void
+    public function setAcceptUrl($acceptUrl)
     {
         $this->acceptUrl = $acceptUrl;
     }
@@ -136,7 +135,7 @@ class PaymentWindow
     /**
      * @param string $type
      */
-    public function setType(string $type): void
+    public function setType($type)
     {
         $this->type = $type;
     }
@@ -151,7 +150,7 @@ class PaymentWindow
     /**
      * @param string $method
      */
-    public function setMethod(string $method): void
+    public function setMethod($method)
     {
         $this->method = $method;
     }
@@ -166,7 +165,7 @@ class PaymentWindow
     /**
      * @param bool $secureEnabled
      */
-    public function setSecureEnabled(bool $secureEnabled): void
+    public function setSecureEnabled($secureEnabled)
     {
         if($secureEnabled) {
             $this->secureEnabled = "force";
@@ -189,7 +188,7 @@ class PaymentWindow
     /**
      * @param mixed $language
      */
-    public function setLanguage($language): void
+    public function setLanguage($language)
     {
         $this->language = $language;
     }
@@ -204,7 +203,7 @@ class PaymentWindow
     /**
      * @param mixed $declineUrl
      */
-    public function setDeclineUrl($declineUrl): void
+    public function setDeclineUrl($declineUrl)
     {
         $this->declineUrl = $declineUrl;
     }
@@ -219,7 +218,7 @@ class PaymentWindow
     /**
      * @param mixed $callbackUrl
      */
-    public function setCallbackUrl($callbackUrl): void
+    public function setCallbackUrl($callbackUrl)
     {
         $this->callbackUrl = $callbackUrl;
     }
@@ -231,7 +230,7 @@ class PaymentWindow
     /**
      * @param mixed $design
      */
-    public function setDesign($design): void
+    public function setDesign($design)
     {
         $this->design = $design;
     }
@@ -246,7 +245,7 @@ class PaymentWindow
     /**
      * @param mixed $testMode
      */
-    public function setTestMode($testMode): void
+    public function setTestMode($testMode)
     {
         $this->testMode = $testMode;
     }
@@ -261,7 +260,7 @@ class PaymentWindow
     /**
      * @param mixed $secret
      */
-    public function setSecret($secret): void
+    public function setSecret($secret)
     {
         $this->secret = $secret;
     }

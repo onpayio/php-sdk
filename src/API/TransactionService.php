@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 namespace OnPay\API;
 
@@ -28,7 +27,7 @@ class TransactionService {
      * @return DetailedTransaction
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getTransaction(string $identifier): DetailedTransaction {
+    public function getTransaction($identifier) {
         $result = $this->api->get('transaction/' . urlencode($identifier));
 
         $detailedTransaction = new DetailedTransaction($result['data']);
@@ -47,7 +46,7 @@ class TransactionService {
      * @return array
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getTransactions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) : TransactionCollection {
+    public function getTransactions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) {
 
         $queryString = http_build_query(['page' => $page, 'page_size' => $pageSize, 'order_by' => $orderBy, 'query' => $query, 'status' => $status, 'date_after' => $dateAfter, 'date_before' => $dateBefore]);
         $results = $this->api->get('transaction?' . $queryString);
@@ -74,7 +73,7 @@ class TransactionService {
      * @return DetailedTransaction
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function captureTransaction(string $transactionNumber, int $amount = null) : DetailedTransaction {
+    public function captureTransaction($transactionNumber, $amount = null) {
 
         if(null === $amount) {
             $result = $this->api->post('transaction/' . $transactionNumber . '/capture');
@@ -100,7 +99,7 @@ class TransactionService {
      * @return DetailedTransaction
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function cancelTransaction(string $transactionNumber) : DetailedTransaction {
+    public function cancelTransaction($transactionNumber) {
         $result = $this->api->post('transaction/' . $transactionNumber . '/cancel');
         $transaction = new DetailedTransaction($result['data']);
         $transaction->setLinks($result['links']);
@@ -113,7 +112,7 @@ class TransactionService {
      * @return DetailedTransaction
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function refundTransaction(string $transactionNumber, int $amount = null) {
+    public function refundTransaction($transactionNumber, $amount = null) {
 
         if(null === $amount) {
             $result = $this->api->post('transaction/' . $transactionNumber . '/refund');

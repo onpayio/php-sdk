@@ -14,15 +14,18 @@ class SimpleSubscription
      */
     public function __construct(array $data)
     {
-        $this->threeDs = $data['3dsecure'] ?? null;
-        $this->cardType = $data['card_type'] ?? null;
-        $this->currencyCode = $data['currency_code'] ?? null;
-        $this->orderId = $data['order_id'] ?? null;
-        $this->subscriptionNumber = $data['subscription_number'] ?? null;
-        $this->status = $data['status'] ?? null;
-        $this->uuid = $data['uuid'] ?? null;
-        $this->wallet = $data['wallet'] ?? null;
-        $this->created = Converter::toDateTimeFromString($data['created']) ?? null;
+        $this->threeDs = isset($data['3dsecure']) ? $data['3dsecure'] : null;
+        $this->cardType = isset($data['card_type']) ? $data['card_type'] : null;
+        $this->currencyCode = isset($data['currency_code']) ? $data['currency_code'] : null;
+        $this->orderId = isset($data['order_id']) ? $data['order_id'] : null;
+        $this->subscriptionNumber = isset($data['subscription_number']) ? $data['subscription_number'] : null;
+        $this->status = isset($data['status']) ? $data['status'] : null;
+        $this->uuid = isset($data['uuid']) ? $data['uuid'] : null;
+        $this->wallet = isset($data['wallet']) ? $data['wallet'] : null;
+
+        if(isset($data['created'])) {
+            $this->created = Converter::toDateTimeFromString($data['created']);
+        }
     }
 
     /**

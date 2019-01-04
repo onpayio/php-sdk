@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 namespace OnPay\API\Transaction;
 
@@ -14,14 +13,14 @@ class DetailedTransaction extends SimpleTransaction {
     {
         parent::__construct($data);
 
-        $this->expiryYear = $data['expiry_year'] ?? null;
-        $this->expiryMonth = $data['expiry_month'] ?? null;
-        $this->acquirer = $data['acquirer'] ?? null;
-        $this->cardBin = $data['card_bin'] ?? null;
-        $this->ip = $data['ip'] ?? null;
+        $this->expiryYear = isset($data['expiry_year']) ? $data['expiry_year'] :  null;
+        $this->expiryMonth = isset($data['expiry_month']) ? $data['expiry_month'] : null;
+        $this->acquirer = isset($data['acquirer']) ? $data['acquirer'] :  null;
+        $this->cardBin = isset($data['card_bin']) ? $data['card_bin'] : null;
+        $this->ip = isset($data['ip']) ? $data['ip'] : null;
 
-        $this->subscriptionUuid = $data['subscription_uuid'] ?? null;
-        $this->subscriptionNumber = $data['transaction_number'] ?? null;
+        $this->subscriptionUuid = isset($data['subscription_uuid']) ? $data['subscription_uuid'] : null;
+        $this->subscriptionNumber = isset($data['transaction_number']) ? $data['transaction_number'] :  null;
 
         foreach ($data['history'] as $history) {
             $historyItem = new TransactionHistory($history);

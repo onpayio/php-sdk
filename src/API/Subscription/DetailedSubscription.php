@@ -18,10 +18,10 @@ class DetailedSubscription extends SimpleSubscription
     {
         parent::__construct($data);
 
-        $this->cardBin = $data['card_bin'] ?? null;
-        $this->expiryMonth = $data['expiry_month'] ?? null;
-        $this->expiryYear = $data['expiry_year'] ?? null;
-        $this->ip = $data['ip'] ?? null;
+        $this->cardBin = isset($data['card_bin']) ? $data['card_bin'] :  null;
+        $this->expiryMonth = isset($data['expiry_month']) ? $data['expiry_month'] : null;
+        $this->expiryYear = isset($data['expiry_year']) ? $data['expiry_year'] : null;
+        $this->ip = isset($data['ip']) ? $data['ip'] : null;
 
         foreach ($data['history'] as $history) {
             $historyItem = new SubscriptionHistory($history);
