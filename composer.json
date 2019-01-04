@@ -10,7 +10,7 @@
         }
     },
     "require": {
-        "php": ">=7.1",
+        "php": ">=5.6",
         "league/oauth2-client": "^2.3"
     }
 }
