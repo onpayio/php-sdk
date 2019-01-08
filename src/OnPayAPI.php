@@ -121,7 +121,11 @@ class OnPayAPI {
         }
 
         if ($accessToken->hasExpired()) {
-                $this->refreshToken();
+		try {
+                	$this->refreshToken();
+		} catch(\Exception $exception) {
+			return false;
+		}
         }
 
         return true;
