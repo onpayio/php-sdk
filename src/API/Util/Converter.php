@@ -13,6 +13,6 @@ class Converter {
      * @return bool|\DateTime
      */
     public static function toDateTimeFromString($string) {
-        return \DateTime::createFromFormat('Y-m-d H:i:s', $string, new \DateTimeZone('Europe/Copenhagen'));
+        return \DateTime::createFromFormat('Y-m-d H:i:s', $string, new \DateTimeZone('UTC'));
     }
 }
