@@ -4,8 +4,15 @@ namespace OnPay;
 
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ConnectException;
+use http\Exception\InvalidArgumentException;
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\GenericProvider;
 use League\OAuth2\Client\Token\AccessToken;
+use OnPay\API\Exception\ApiException;
+use OnPay\API\Exception\TokenException;
+use OnPay\API\Exception\ConnectionException;
 use OnPay\API\SubscriptionService;
 use OnPay\API\TransactionService;
 use Psr\Http\Message\RequestInterface;
@@ -16,8 +23,14 @@ class OnPayAPI {
      */
     protected $tokenStorage;
 
+    /**
+     * @var array
+     */
     protected $options = [];
 
+    /**
+     * @var GenericProvider
+     */
     protected $oauth2Provider;
 
     /**
@@ -35,6 +48,11 @@ class OnPayAPI {
      */
     protected $subscriptionService;
 
+    /**
+     * OnPayAPI constructor.
+     * @param TokenStorageInterface $tokenStorage
+     * @param array $options
+     */
     public function __construct(TokenStorageInterface $tokenStorage, array $options) {
         $this->tokenStorage = $tokenStorage;
 
@@ -69,8 +87,12 @@ class OnPayAPI {
 
     }
 
+    /**
+     * @return AccessToken|null
+     */
     protected function getAccessToken() {
-        $options = json_decode(($this->tokenStorage->getToken()), true);
+        $storageToken = $this->tokenStorage->getToken();
+        $options = json_decode($storageToken ? $storageToken : '', true);
         if (null !== $options) {
             $accessToken = new AccessToken($options);
             return $accessToken;
@@ -78,6 +100,9 @@ class OnPayAPI {
         return null;
     }
 
+    /**
+     * @return Client
+     */
     protected function getClient() {
         if (!isset($this->client)) {
             $this->client = new Client();
@@ -99,12 +124,23 @@ class OnPayAPI {
         return $result;
     }
 
+    /**
+     * @throws TokenException
+     * @throws ConnectionException
+     */
     protected function refreshToken() {
         $oldAccessToken = $this->getAccessToken();
-        $accessToken = $this->oauth2Provider->getAccessToken('refresh_token', [
-            'refresh_token' => $oldAccessToken->getRefreshToken(),
-        ]);
-
+        try {
+            $accessToken = $this->oauth2Provider->getAccessToken('refresh_token', [
+                'refresh_token' => $oldAccessToken->getRefreshToken(),
+            ]);
+        } catch (IdentityProviderException $e) {
+            throw new TokenException('Token is invalid', 0, $e);
+        } catch (\UnexpectedValueException $e) {
+            throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
+        } catch (ConnectException $e) {
+            throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
+        }
         $this->tokenStorage->saveToken(json_encode($accessToken));
     }
 
@@ -121,9 +157,15 @@ class OnPayAPI {
         }
 
         if ($accessToken->hasExpired()) {
+            // Token expired, attempt to refresh it
+            try {
                 $this->refreshToken();
+            } catch (TokenException $e) {
+                return false;
+            } catch (ConnectionException $e) {
+                return false;
+            }
         }
-
         return true;
     }
 
@@ -136,10 +178,20 @@ class OnPayAPI {
         return $this->oauth2Provider->getAuthorizationUrl();
     }
 
-    public function finishAuthorize($code) {
-        $accessToken = $this->oauth2Provider->getAccessToken('authorization_code',[
-            'code' => $code,
-        ]);
+    /**
+     * @param string $code
+     * @throws ConnectionException
+     */
+    public function finishAuthorize(string $code) {
+        try {
+            $accessToken = $this->oauth2Provider->getAccessToken('authorization_code', [
+                'code' => $code,
+            ]);
+        } catch (\UnexpectedValueException $e) {
+            throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
+        } catch (ConnectException $e) {
+            throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
+        }
 
         $this->tokenStorage->saveToken(json_encode($accessToken));
     }
@@ -148,16 +200,10 @@ class OnPayAPI {
      * Simple method that just checks if API requests can be made
      *
      * @return string
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws ApiException
      */
     public function ping() {
-        $request = $this->oauth2Provider->getAuthenticatedRequest(
-            'GET',
-            $this->options['base_uri'] . '/v1/ping',
-            $this->getAccessToken()
-        );
-
-        return $this->sendRequest($request);
+        return $this->get('ping');
     }
 
     /**
@@ -175,7 +221,7 @@ class OnPayAPI {
      * @internal
      * @param $url
      * @return mixed
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws ApiException
      */
     public function get($url) {
         $request = $this->oauth2Provider->getAuthenticatedRequest(
@@ -184,27 +230,42 @@ class OnPayAPI {
             $this->getAccessToken()
         );
 
-        return $this->sendRequest($request);
+        try {
+            $response = $this->sendRequest($request);
+        } catch (ClientException $e) {
+            throw new ApiException($e->getResponse()->getReasonPhrase(), $e->getCode(), $e);
+        } catch (ConnectException $e) {
+            throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
+        }
+
+        return $response;
     }
 
     /**
      * @internal
      * @param $url
      * @return mixed
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws ApiException
      */
     public function post($url, $json = null) {
-
         $request = $this->oauth2Provider->getAuthenticatedRequest(
-          'POST',
-          $this->options['base_uri'] . '/v1/' . $url,
-          $this->getAccessToken(),
-          [
-              'body' => json_encode($json),
-          ]
+            'POST',
+            $this->options['base_uri'] . '/v1/' . $url,
+            $this->getAccessToken(),
+            [
+                'body' => json_encode($json),
+            ]
         );
 
-        return $this->sendRequest($request);
+        try {
+            $response = $this->sendRequest($request);
+        } catch (ClientException $e) {
+            throw new ApiException($e->getResponse()->getReasonPhrase(), $e->getCode(), $e);
+        } catch (ConnectException $e) {
+            throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
+        }
+
+        return $response;
     }
 
     /**

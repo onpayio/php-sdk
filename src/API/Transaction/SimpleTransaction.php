@@ -29,13 +29,6 @@ class SimpleTransaction {
         $this->status = (isset($data['status'])) ? $data['status'] :  null;
         $this->transactionNumber = (isset($data['transaction_number'])) ? $data['transaction_number'] :  null;
         $this->wallet = (isset($data['wallet'])) ? $data['wallet'] : null;
-
-        if(array_key_exists('links', $data)) {
-            foreach ($data['links'] as $link) {
-                $linkItem = new Link($link);
-                $this->links[] = $linkItem;
-            }
-        }
     }
 
     /**
@@ -43,21 +36,12 @@ class SimpleTransaction {
      * @param array $links
      */
     public function setLinks(array $links) {
-        foreach ($links as $link) {
-            $linkItem = new Link($link);
-
+        foreach ($links as $rel => $link) {
+            $linkItem = new Link($rel, $link);
             $this->links[] = $linkItem;
         }
     }
 
-    /**
-     * @var string
-     */
-    public $uuid;
-    /**
-     * @var bool
-     */
-    public $threeDs;
     /**
      * @var int
      */
@@ -91,9 +75,17 @@ class SimpleTransaction {
      */
     public $status;
     /**
+     * @var bool
+     */
+    public $threeDs;
+    /**
      * @var string
      */
     public $transactionNumber;
+    /**
+     * @var string
+     */
+    public $uuid;
     /**
      * @var string
      */

@@ -13,24 +13,18 @@ class SubscriptionHistory
      */
     public function __construct(array $data)
     {
-        $this->uuid = isset($data['uuid']) ? $data['uuid'] : null;
         $this->action = isset($data['action']) ? $data['action'] : null;
         $this->author = isset($data['author']) ? $data['author'] : null;
-        $this->ip = isset($history['ip']) ? $history['ip'] : null;
-        $this->resultText = isset($history['result_text']) ? $history['result_text'] : null;
-        $this->resultCode = isset($history['result_code']) ? $history['result_code'] : null;
-        $this->subscriptionNumber = isset($data['subscription_number']) ? $data['subscription_number'] :  null;
-        $this->subscriptionUuid = isset($data['subscription_uuid']) ? $data['subscription_uuid'] : null;
+        $this->ip = isset($data['ip']) ? $data['ip'] : null;
+        $this->resultText = isset($data['result_text']) ? $data['result_text'] : null;
+        $this->resultCode = isset($data['result_code']) ? $data['result_code'] : null;
+        $this->successful = isset($data['successful']) ? $data['successful'] : false;
 
         if(isset($data['date_time'])) {
             $this->date = Converter::toDateTimeFromString($data['date_time']);
         }
     }
 
-    /**
-     * @var string
-     */
-    public $uuid;
 
     /**
      * @var string
@@ -63,13 +57,8 @@ class SubscriptionHistory
     public $resultText;
 
     /**
-     * @var string
+     * @var bool
      */
-    public $subscriptionNumber;
-
-    /**
-     * @var string
-     */
-    public $subscriptionUuid;
+    public $successful;
 
 }
