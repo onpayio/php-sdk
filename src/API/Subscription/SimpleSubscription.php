@@ -32,22 +32,13 @@ class SimpleSubscription
      * @internal Shall not be used outside the library
      * @param $links
      */
-    public function setLinks($links) {
-        foreach ($links as $link) {
-            $linkItem = new Link($link);
+    public function setLinks(array $links) {
+        foreach ($links as $rel => $link) {
+            $linkItem = new Link($rel, $link);
             $this->links[] = $linkItem;
         }
     }
 
-    /**
-     * @var string
-     */
-    public $uuid;
-
-    /**
-     * @var string
-     */
-    public $threeDs;
 
     /**
      * @var string
@@ -83,6 +74,16 @@ class SimpleSubscription
      * @var string
      */
     public $subscriptionNumber;
+
+    /**
+     * @var bool
+     */
+    public $threeDs;
+
+    /**
+     * @var string
+     */
+    public $uuid;
 
     /**
      * @var string

@@ -15,23 +15,18 @@ class TransactionHistory {
      */
     public function __construct(array $data)
     {
-        $this->uuid = isset($data['uuid']) ? $data['uuid'] : null;
         $this->action = isset($data['action']) ? $data['action'] : null;
         $this->amount = isset($data['amount']) ? $data['amount'] : null;
         $this->author = isset($data['author']) ? $data['author'] : null;
-        $this->ip = isset($history['ip']) ? $history['ip'] :  null;
-        $this->resultText = (isset($history['result_text'])) ? $history['result_text'] : null;
-        $this->resultCode = (isset($history['result_code'])) ? $history['result_code'] : null;
+        $this->ip = isset($data['ip']) ? $data['ip'] :  null;
+        $this->resultCode = isset($data['result_code']) ? $data['result_code'] : null;
+        $this->resultText = isset($data['result_text']) ? $data['result_text'] : null;
+        $this->successful = isset($data['successful']) ? $data['successful'] : false;
 
         if(isset($data['date_time'])) {
             $this->dateTime = Converter::toDateTimeFromString($data['date_time']);
         }
     }
-
-    /**
-     * @var string
-     */
-    public $uuid;
 
     /**
      * @var string
@@ -67,5 +62,10 @@ class TransactionHistory {
      * @var string
      */
     public $resultText;
+
+    /**
+     * @var bool
+     */
+    public $successful;
 }
 

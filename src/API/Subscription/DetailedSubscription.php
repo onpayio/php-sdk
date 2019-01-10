@@ -18,10 +18,12 @@ class DetailedSubscription extends SimpleSubscription
     {
         parent::__construct($data);
 
-        $this->cardBin = isset($data['card_bin']) ? $data['card_bin'] :  null;
         $this->expiryMonth = isset($data['expiry_month']) ? $data['expiry_month'] : null;
         $this->expiryYear = isset($data['expiry_year']) ? $data['expiry_year'] : null;
+        $this->cardCountry = isset($data['card_country']) ? $data['card_country'] : null;
+        $this->cardBin = isset($data['card_bin']) ? $data['card_bin'] : null;
         $this->ip = isset($data['ip']) ? $data['ip'] : null;
+        $this->ipCountry = isset($data['ip_country']) ? $data['ip_country'] : null;
 
         foreach ($data['history'] as $history) {
             $historyItem = new SubscriptionHistory($history);
@@ -40,6 +42,11 @@ class DetailedSubscription extends SimpleSubscription
     public $cardBin;
 
     /**
+     * @var int
+     */
+    public $cardCountry;
+
+    /**
      * @var string
      */
     public $expiryMonth;
@@ -53,6 +60,11 @@ class DetailedSubscription extends SimpleSubscription
      * @var string
      */
     public $ip;
+
+    /**
+     * @var int
+     */
+    public $ipCountry;
 
     /**
      * @var TransactionHistory[]
