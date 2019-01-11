@@ -32,7 +32,6 @@ Read more about the fields here: https://manage.onpay.io/docs/paymentwindow_v3.h
 
 ```php 
 <?php 
-declare(strict_types=1);
 require_once 'vendor/autoload.php';
 
 $paymentWindow = new \OnPay\API\PaymentWindow();
@@ -107,11 +106,11 @@ class TokenStorage implements \OnPay\TokenStorageInterface {
         }
     }
 
-    public function getToken(): ?string {
+    public function getToken() {
         return $this->token;
     }
 
-    public function saveToken(string $token) {
+    public function saveToken($token) {
         $this->token = $token;
         file_put_contents($this->fileName, $token);
     }
