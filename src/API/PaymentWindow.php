@@ -8,6 +8,7 @@ class PaymentWindow
 {
     const METHOD_CARD = 'card';
     const METHOD_MOBILEPAY = 'mobilepay';
+    const METHOD_VIABILL = 'viabill';
 
     private $gatewayId;
     private $currency;
