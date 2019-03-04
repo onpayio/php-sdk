@@ -135,11 +135,11 @@ class OnPayAPI {
                 'refresh_token' => $oldAccessToken->getRefreshToken(),
             ]);
         } catch (IdentityProviderException $e) {
-            throw new TokenException('Token is invalid', 0, $e);
+            throw new TokenException('Token is invalid', 0);
         } catch (\UnexpectedValueException $e) {
-            throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
+            throw new ConnectionException($e->getMessage(), $e->getCode());
         } catch (ConnectException $e) {
-            throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
+            throw new ConnectionException($e->getMessage(), $e->getCode());
         }
         $this->tokenStorage->saveToken(json_encode($accessToken));
     }
@@ -188,9 +188,9 @@ class OnPayAPI {
                 'code' => $code,
             ]);
         } catch (\UnexpectedValueException $e) {
-            throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
+            throw new ConnectionException($e->getMessage(), $e->getCode());
         } catch (ConnectException $e) {
-            throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
+            throw new ConnectionException($e->getMessage(), $e->getCode());
         }
 
         $this->tokenStorage->saveToken(json_encode($accessToken));
@@ -222,6 +222,7 @@ class OnPayAPI {
      * @param $url
      * @return mixed
      * @throws ApiException
+     * @throws ConnectionException
      */
     public function get($url) {
         $request = $this->oauth2Provider->getAuthenticatedRequest(
@@ -233,9 +234,9 @@ class OnPayAPI {
         try {
             $response = $this->sendRequest($request);
         } catch (ClientException $e) {
-            throw new ApiException($e->getResponse()->getReasonPhrase(), $e->getCode(), $e);
+            throw new ApiException($e->getResponse()->getReasonPhrase(), $e->getCode());
         } catch (ConnectException $e) {
-            throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
+            throw new ConnectionException($e->getMessage(), $e->getCode());
         }
 
         return $response;
@@ -246,6 +247,7 @@ class OnPayAPI {
      * @param $url
      * @return mixed
      * @throws ApiException
+     * @throws ConnectionException
      */
     public function post($url, $json = null) {
         $request = $this->oauth2Provider->getAuthenticatedRequest(
@@ -260,9 +262,9 @@ class OnPayAPI {
         try {
             $response = $this->sendRequest($request);
         } catch (ClientException $e) {
-            throw new ApiException($e->getResponse()->getReasonPhrase(), $e->getCode(), $e);
+            throw new ApiException($e->getResponse()->getReasonPhrase(), $e->getCode());
         } catch (ConnectException $e) {
-            throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
+            throw new ConnectionException($e->getMessage(), $e->getCode());
         }
 
         return $response;
