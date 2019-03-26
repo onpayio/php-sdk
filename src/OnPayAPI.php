@@ -13,6 +13,7 @@ use League\OAuth2\Client\Token\AccessToken;
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Exception\TokenException;
 use OnPay\API\Exception\ConnectionException;
+use OnPay\API\GatewayService;
 use OnPay\API\SubscriptionService;
 use OnPay\API\TransactionService;
 use Psr\Http\Message\RequestInterface;
@@ -47,6 +48,11 @@ class OnPayAPI {
      * @var SubscriptionService
      */
     protected $subscriptionService;
+
+    /**
+     * @var GatewayService
+     */
+    protected $gatewayService;
 
     /**
      * OnPayAPI constructor.
@@ -207,17 +213,6 @@ class OnPayAPI {
     }
 
     /**
-     * Returns info about the gateway
-     *
-     * @return array
-     */
-    public function gatewayInfo() {
-        $result = $this->oauth2Provider->getResourceOwner($this->getAccessToken());
-
-        return $result->toArray();
-    }
-
-    /**
      * @internal
      * @param $url
      * @return mixed
@@ -288,5 +283,15 @@ class OnPayAPI {
             $this->subscriptionService = new SubscriptionService($this);
         }
         return $this->subscriptionService;
+    }
+
+    /**
+     * @return GatewayService
+     */
+    public function gateway() {
+        if(!isset($this->gatewayService)) {
+            $this->gatewayService = new GatewayService($this);
+        }
+        return $this->gatewayService;
     }
 }
