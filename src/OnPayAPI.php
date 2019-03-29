@@ -70,7 +70,6 @@ class OnPayAPI {
         $requiredOptions = [
             'client_id',
             'redirect_uri',
-            'gateway_id'
         ];
 
         $missing = array_diff_key(array_flip($requiredOptions), $options);
