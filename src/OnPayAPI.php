@@ -81,10 +81,16 @@ class OnPayAPI {
 
         $this->options = array_merge($defaultOptions, $options);
 
+        if(isset($this->options['gateway_id'])) {
+            $authUrl = $this->options['base_authorize_uri'] . '/' . $this->options['gateway_id'] . '/oauth2/authorize';
+        } else {
+            $authUrl = $this->options['base_authorize_uri'] . '/oauth2/authorize';
+        }
+
         $this->oauth2Provider = new GenericProvider([
             'clientId' => $this->options['client_id'],
             'redirectUri' => $this->options['redirect_uri'],
-            'urlAuthorize' => $this->options['base_authorize_uri'] . '/' . $this->options['gateway_id'] . '/oauth2/authorize',
+            'urlAuthorize' => $authUrl,
             'urlAccessToken' => $this->options['base_uri'] . '/oauth2/access_token',
             'urlResourceOwnerDetails' => $this->options['base_uri'] . '/oauth2/resource_owner',
             'scopes' => ['full'],
