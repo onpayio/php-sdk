@@ -193,7 +193,7 @@ class OnPayAPI {
      * @param string $code
      * @throws ConnectionException
      */
-    public function finishAuthorize(string $code) {
+    public function finishAuthorize($code) {
         try {
             $accessToken = $this->oauth2Provider->getAccessToken('authorization_code', [
                 'code' => $code,
