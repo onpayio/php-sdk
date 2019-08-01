@@ -17,7 +17,7 @@ class PaymentWindow
     private $acceptUrl;
     private $type;
     private $method;
-    private $secureEnabled;
+    private $_3dsecure;
     private $language;
     private $declineUrl;
     private $callbackUrl;
@@ -40,7 +40,7 @@ class PaymentWindow
             "reference",
             "acceptUrl",
             "type",
-            "secureEnabled",
+            "_3dsecure",
             "language",
             "declineUrl",
             "callbackUrl",
@@ -165,25 +165,37 @@ class PaymentWindow
 
     /**
      * @param bool $secureEnabled
+     * @deprecated
      */
     public function setSecureEnabled($secureEnabled)
     {
-        if($secureEnabled) {
-            $this->secureEnabled = "force";
+        $this->set3DSecure($secureEnabled);
+    }
+
+    /**
+     * @return bool
+     * @deprecated
+     */
+    public function hasSecureEnabled() {
+        return $this->is3DSecure();
+    }
+
+    /**
+     * @param bool $threeDs
+     */
+    public function set3DSecure($threeDs) {
+        if ($threeDs) {
+            $this->_3dsecure = 'forced';
         } else {
-            $secureEnabled = null;
+            $this->_3dsecure = null;
         }
     }
 
     /**
      * @return bool
      */
-    public function hasSecureEnabled() {
-        if($this->secureEnabled === "force") {
-            return true;
-        } else {
-            return false;
-        }
+    public function is3DSecure() {
+        return 'forced' === $this->_3dsecure;
     }
 
     /**
@@ -292,7 +304,11 @@ class PaymentWindow
 
         foreach ($this->availableFields as $field) {
             if(property_exists($this, $field) && null !== $this->{$field}) {
-                $key = 'onpay_' . strtolower($field);
+                if (0 === strpos($field, '_')) {
+                    $key = 'onpay_' . strtolower(substr($field, 1));
+                } else {
+                    $key = 'onpay_' . strtolower($field);
+                }
                 $fields[$key] = $this->{$field};
             }
         }
