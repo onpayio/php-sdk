@@ -1,9 +1,6 @@
 <?php
 namespace OnPay\API;
 
-
-use function GuzzleHttp\Psr7\str;
-
 class PaymentWindow
 {
     const METHOD_CARD = 'card';
