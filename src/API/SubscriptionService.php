@@ -48,7 +48,7 @@ class SubscriptionService
                 'date_before' => $dateBefore
             ]);
 
-        $results = $this->api->get('subscription?' . $queryString);
+        $results = $this->api->get('subscription/?' . $queryString);
         $subscriptions = [];
 
         foreach ($results['data'] as $result) {

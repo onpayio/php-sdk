@@ -49,7 +49,7 @@ class TransactionService {
     public function getTransactions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) {
 
         $queryString = http_build_query(['page' => $page, 'page_size' => $pageSize, 'order_by' => $orderBy, 'query' => $query, 'status' => $status, 'date_after' => $dateAfter, 'date_before' => $dateBefore]);
-        $results = $this->api->get('transaction?' . $queryString);
+        $results = $this->api->get('transaction/?' . $queryString);
 
         $transactions = [];
 
