@@ -5,6 +5,7 @@ class PaymentWindow
 {
     const METHOD_CARD = 'card';
     const METHOD_MOBILEPAY = 'mobilepay';
+    const METHOD_MOBILEPAY_CHECKOUT = 'mobilepay_checkout';
     const METHOD_VIABILL = 'viabill';
 
     private $gatewayId;

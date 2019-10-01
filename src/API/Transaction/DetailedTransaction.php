@@ -21,12 +21,19 @@ class DetailedTransaction extends SimpleTransaction {
         $this->ip = isset($data['ip']) ? $data['ip'] : null;
         $this->ipCountry = isset($data['ip_country']) ? $data['ip_country'] : null;
 
+        $this->hasCardholderData = isset($data['has_cardholder_data']) ? $data['has_cardholder_data'] : false;
+
+        $this->cardholderData = null;
+        if(isset($data['cardholder_data']) && null !== $data['cardholder_data']) {
+            $this->hasCardholderData = new CardholderData($data['cardholder_data']);
+        }
+
         foreach ($data['history'] as $history) {
             $historyItem = new TransactionHistory($history);
             $this->history[] = $historyItem;
         }
 
-        $this->subscriptionNumber = isset($data['transaction_number']) ? $data['transaction_number'] :  null;
+        $this->subscriptionNumber = isset($data['subscription_number']) ? $data['subscription_number'] :  null;
         $this->subscriptionUuid = isset($data['subscription_uuid']) ? $data['subscription_uuid'] : null;
     }
 
@@ -64,6 +71,16 @@ class DetailedTransaction extends SimpleTransaction {
      * @var int
      */
     public $ipCountry;
+
+    /**
+     * @var bool
+     */
+    public $hasCardholderData = false;
+
+    /**
+     * @var CardholderData|null
+     */
+    public $cardholderData = null;
 
     /**
      * @var TransactionHistory[]
