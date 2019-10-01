@@ -26,7 +26,7 @@ class DetailedTransaction extends SimpleTransaction {
             $this->history[] = $historyItem;
         }
 
-        $this->subscriptionNumber = isset($data['transaction_number']) ? $data['transaction_number'] :  null;
+        $this->subscriptionNumber = isset($data['subscription_number']) ? $data['subscription_number'] :  null;
         $this->subscriptionUuid = isset($data['subscription_uuid']) ? $data['subscription_uuid'] : null;
     }
 
