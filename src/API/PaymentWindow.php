@@ -358,7 +358,7 @@ class PaymentWindow
         $validFields = [];
 
         foreach ($fields as $key => $value) {
-            if(strpos($key, 'onpay') !== false) {
+            if(strpos($key, 'onpay_') !== false) {
                 $validFields[$key] = $value;
             }
         }
@@ -369,7 +369,7 @@ class PaymentWindow
 
         ksort($validFields);
 
-        $queryString = http_build_query($validFields);
+        $queryString = strtolower(http_build_query($validFields));
         $hmac = hash_hmac('sha1', $queryString, $this->secret);
 
         if($verify === $hmac) {

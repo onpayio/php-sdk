@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - Fixed transaction and subscription lists API paths
+- Fixed bug with HMAC calculations (PR #19)
 
 ## [1.0.2] - 2019-09-19
 - Changed OAUTH2 client implementation (PR #15)
