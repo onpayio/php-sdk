@@ -10,8 +10,6 @@ use fkooman\OAuth\Client\Http\Request;
 use fkooman\OAuth\Client\Http\Response;
 use fkooman\OAuth\Client\OAuthClient;
 use fkooman\OAuth\Client\Provider;
-
-use GuzzleHttp\Client;
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Exception\TokenException;
 use OnPay\API\Exception\ConnectionException;
@@ -36,7 +34,7 @@ class OnPayAPI {
     protected $oauth2Provider;
 
     /**
-     * @var Client
+     * @var OAuthClient
      */
     protected $client;
 
