@@ -197,6 +197,8 @@ class OnPayAPI {
             return $this->handleResponse($response);
         } catch (CurlException $e) {
             throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
+        } catch (\fkooman\OAuth\Client\Exception\TokenException $e) {
+            throw new TokenException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -220,6 +222,8 @@ class OnPayAPI {
             return $this->handleResponse($response);
         } catch (CurlException $e) {
             throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
+        } catch (\fkooman\OAuth\Client\Exception\TokenException $e) {
+            throw new TokenException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
