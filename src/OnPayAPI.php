@@ -2,7 +2,6 @@
 
 namespace OnPay;
 
-
 use fkooman\OAuth\Client\ErrorLogger;
 use fkooman\OAuth\Client\Http\CurlHttpClient;
 use fkooman\OAuth\Client\Http\Exception\CurlException;
@@ -16,6 +15,8 @@ use OnPay\API\Exception\ConnectionException;
 use OnPay\API\GatewayService;
 use OnPay\API\SubscriptionService;
 use OnPay\API\TransactionService;
+use OnPay\API\Http\Request as HttpRequest;
+use OnPay\API\Http\Response as HttpResponse;
 
 class OnPayAPI {
     /**
@@ -64,6 +65,16 @@ class OnPayAPI {
      * @var string
      */
     protected $scope = 'full';
+
+    /**
+     * @var HttpRequest $request
+     */
+    protected $request;
+
+    /**
+     * @var HttpResponse $response
+     */
+    protected $response;
 
     /**
      * OnPayAPI constructor.
@@ -188,12 +199,15 @@ class OnPayAPI {
      */
     public function get($url) {
         try {
-            $response = $this->getClient()->get(
+            $request = Request::get($this->options['base_uri'] . '/v1/' . $url);
+            $this->setLastHttpRequest($request);
+            $response = $this->getClient()->send(
                 $this->oauth2Provider,
                 $this->userId,
                 $this->scope,
-                $this->options['base_uri'] . '/v1/' . $url
+                $request
             );
+            $this->setLastHttpResponse($response);
             return $this->handleResponse($response);
         } catch (CurlException $e) {
             throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
@@ -212,13 +226,20 @@ class OnPayAPI {
      */
     public function post($url, $postBody = null) {
         try {
-            $response = $this->postJson(
+            $request = new Request(
+                'POST',
+                $this->options['base_uri'] . '/v1/' . $url,
+                ['Content-Type' => 'application/json'],
+                json_encode($postBody)
+            );
+            $this->setLastHttpRequest($request);
+            $response = $this->getClient()->send(
                 $this->oauth2Provider,
                 $this->userId,
                 $this->scope,
-                $this->options['base_uri'] . '/v1/' . $url,
-                json_encode($postBody)
+                $request
             );
+            $this->setLastHttpResponse($response);
             return $this->handleResponse($response);
         } catch (CurlException $e) {
             throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
@@ -257,31 +278,6 @@ class OnPayAPI {
     }
 
     /**
-     * Since the oauth clients post method only url encodes the body, we'll supply our own method for posting json to the API.
-     *
-     * @param Provider $oauthProvider
-     * @param string $userId
-     * @param string $scope
-     * @param string $requestUri
-     * @param string $json
-     * @return false|Response
-     */
-    private function postJson($oauthProvider, $userId, $scope, $requestUri, $json) {
-        $request = new Request(
-            'POST',
-            $requestUri,
-            ['Content-Type' => 'application/json'],
-            $json
-        );
-        return $this->getClient()->send(
-            $oauthProvider,
-            $userId,
-            $scope,
-            $request
-        );
-    }
-
-    /**
      * @return TransactionService
      */
     public function transaction() {
@@ -309,5 +305,43 @@ class OnPayAPI {
             $this->gatewayService = new GatewayService($this);
         }
         return $this->gatewayService;
+    }
+
+    /**
+     * @param Request $request
+     */
+    private function setLastHttpRequest(Request $request) {
+        $httpRequest = new HttpRequest();
+        $httpRequest->setMethod($request->getMethod());
+        $httpRequest->setUri($request->getUri());
+        $httpRequest->setHeaders($request->getHeaders());
+        $httpRequest->setBody($request->getBody());
+        $this->request = $httpRequest;
+    }
+
+    /**
+     * @param Response $response
+     */
+    private function setLastHttpResponse(Response $response) {
+        $httpResponse = new HttpResponse();
+        $httpResponse->setStatusCode($response->getStatusCode());
+        $httpResponse->setBody($response->getBody());
+        $this->response = $httpResponse;
+    }
+
+    /**
+     * Returns the last HTTP Request send to the API
+     * @return HttpRequest
+     */
+    public function getLastHttpRequest() {
+        return $this->request;
+    }
+
+    /**
+     * Returns the last HTTP Response received from the API
+     * @return HttpResponse
+     */
+    public function getLastHttpResponse() {
+        return $this->response;
     }
 }
