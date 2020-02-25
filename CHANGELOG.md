@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.4] - 2020-02-25
+- Removed unused includes in OnPayAPI class (PR #20)
+- Handle TokenException thrown by fkooman repo (PR #20)
+- Added methods for getting latest http request and responses (PR #20)
+
 ## [1.0.3] - 2019-10-18
 - Fixed transaction and subscription lists API paths
 - Fixed bug with HMAC calculations (PR #19)
