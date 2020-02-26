@@ -308,24 +308,28 @@ class OnPayAPI {
     }
 
     /**
-     * @param Request $request
+     * @param mixed $request
      */
-    private function setLastHttpRequest(Request $request) {
+    private function setLastHttpRequest($request) {
         $httpRequest = new HttpRequest();
-        $httpRequest->setMethod($request->getMethod());
-        $httpRequest->setUri($request->getUri());
-        $httpRequest->setHeaders($request->getHeaders());
-        $httpRequest->setBody($request->getBody());
+        if ($request instanceof Request) {
+            $httpRequest->setMethod($request->getMethod());
+            $httpRequest->setUri($request->getUri());
+            $httpRequest->setHeaders($request->getHeaders());
+            $httpRequest->setBody($request->getBody());
+        }
         $this->request = $httpRequest;
     }
 
     /**
-     * @param Response $response
+     * @param mixed $response
      */
-    private function setLastHttpResponse(Response $response) {
+    private function setLastHttpResponse($response) {
         $httpResponse = new HttpResponse();
-        $httpResponse->setStatusCode($response->getStatusCode());
-        $httpResponse->setBody($response->getBody());
+        if ($response instanceof Response) {
+            $httpResponse->setStatusCode($response->getStatusCode());
+            $httpResponse->setBody($response->getBody());
+        }
         $this->response = $httpResponse;
     }
 

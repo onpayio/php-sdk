@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- Set last HTTP response/request methods less strict with param values. Sets empty value if supplied with invalid value.
 
 ## [1.0.4] - 2020-02-25
 - Removed unused includes in OnPayAPI class (PR #20)
