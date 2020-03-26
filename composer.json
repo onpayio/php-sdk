@@ -11,6 +11,7 @@
     },
     "require": {
         "php": ">=5.6",
-        "fkooman/oauth2-client": "^7.1"
+        "fkooman/oauth2-client": "^7.1",
+        "ext-json": "*"
     }
 }

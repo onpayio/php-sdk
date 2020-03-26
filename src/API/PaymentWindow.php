@@ -1,6 +1,8 @@
 <?php
 namespace OnPay\API;
 
+use OnPay\API\PaymentWindow\PaymentInfo;
+
 class PaymentWindow
 {
     const METHOD_CARD = 'card';
@@ -22,6 +24,10 @@ class PaymentWindow
     private $design;
     private $testMode;
     private $secret;
+    /**
+     * @var PaymentInfo
+     */
+    private $info;
     private $availableFields;
     private $requiredFields;
     private $actionUrl = "https://onpay.io/window/v3/";
@@ -301,6 +307,9 @@ class PaymentWindow
         $fields = [];
 
         foreach ($this->availableFields as $field) {
+            if (isset($this->info)) {
+                $fields = array_merge($fields, $this->info->getFields());
+            }
             if(property_exists($this, $field) && null !== $this->{$field}) {
                 if (0 === strpos($field, '_')) {
                     $key = 'onpay_' . strtolower(substr($field, 1));
@@ -377,5 +386,20 @@ class PaymentWindow
         }
 
         return false;
+    }
+
+    /**
+     * Set the PaymentInfo object
+     * @param PaymentWindow\PaymentInfo $paymentInfo
+     */
+    public function setInfo(PaymentWindow\PaymentInfo $paymentInfo) {
+        $this->info = $paymentInfo;
+    }
+
+    /**
+     * @return PaymentInfo|null
+     */
+    public function getInfo() {
+        return $this->info;
     }
 }
