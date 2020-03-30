@@ -51,10 +51,18 @@ $paymentWindow->setMethod(\OnPay\API\PaymentWindow::METHOD_CARD);
 $paymentWindow->setTestMode(true);
 $paymentWindow->setLanguage("en");
 
+// Add additional info
+$paymentInfo = new \OnPay\API\PaymentWindow\PaymentInfo();
+$paymentInfo->setName('Test Pærsån');
+$paymentInfo->setEmail('emil@example.com');
+// And so on, a lot more fields should be set if data available for it
+
+$paymentWindow->setInfo($paymentInfo);
+
 ?>
 
 <?php if($paymentWindow->isValid()) { ?>
-<form method="post" action="<?php echo $paymentWindow->getActionUrl(); ?>">
+<form method="post" action="<?php echo $paymentWindow->getActionUrl(); ?>" accept-charset="UTF-8">
     <?php
         foreach ($paymentWindow->getFormFields() as $key => $value) { ?>
             <input type="hidden" name="<?php echo $key;?>" value="<?php echo $value;?>">
