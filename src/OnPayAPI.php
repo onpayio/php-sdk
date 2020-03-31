@@ -77,6 +77,11 @@ class OnPayAPI {
     protected $response;
 
     /**
+     * @var CurlHttpClientLogger
+     */
+    protected $httpClient;
+
+    /**
      * OnPayAPI constructor.
      * @param \OnPay\TokenStorageInterface $tokenStorage
      * @param array $options
@@ -117,6 +122,8 @@ class OnPayAPI {
             $authUrl,
             $this->options['base_uri'] . '/oauth2/access_token'
         );
+
+        $this->httpClient = new CurlHttpClientLogger([], new ErrorLogger());
     }
 
     /**
@@ -126,7 +133,7 @@ class OnPayAPI {
         if (!isset($this->client)) {
             $this->client = new OAuthClient(
                 $this->tokenStorage,
-                new CurlHttpClient([], new ErrorLogger())
+                $this->httpClient
             );
             // Construct the session allowing the implementation to be sessionless.
             $session = new Session();
@@ -200,14 +207,16 @@ class OnPayAPI {
     public function get($url) {
         try {
             $request = Request::get($this->options['base_uri'] . '/v1/' . $url);
-            $this->setLastHttpRequest($request);
             $response = $this->getClient()->send(
                 $this->oauth2Provider,
                 $this->userId,
                 $this->scope,
                 $request
             );
-            $this->setLastHttpResponse($response);
+
+            $this->setLastHttpRequest($this->httpClient->getLastRequest());
+            $this->setLastHttpResponse($this->httpClient->getLastResponse());
+
             return $this->handleResponse($response);
         } catch (CurlException $e) {
             throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
@@ -232,14 +241,16 @@ class OnPayAPI {
                 ['Content-Type' => 'application/json'],
                 json_encode($postBody)
             );
-            $this->setLastHttpRequest($request);
             $response = $this->getClient()->send(
                 $this->oauth2Provider,
                 $this->userId,
                 $this->scope,
                 $request
             );
-            $this->setLastHttpResponse($response);
+
+            $this->setLastHttpRequest($this->httpClient->getLastRequest());
+            $this->setLastHttpResponse($this->httpClient->getLastResponse());
+
             return $this->handleResponse($response);
         } catch (CurlException $e) {
             throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
