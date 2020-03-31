@@ -17,6 +17,7 @@ class SimpleTransaction {
     {
         $this->uuid = (isset($data['uuid'])) ? $data['uuid'] : null;
         $this->threeDs = (isset($data['3dsecure'])) ? $data['3dsecure'] : null;
+        $this->acquirer = isset($data['acquirer']) ? $data['acquirer'] :  null;
         $this->amount = (isset($data['amount'])) ? $data['amount'] : null;
         $this->cardType = (isset($data['card_type'])) ? $data['card_type'] : null;
         $this->charged = (isset($data['charged'])) ? $data['charged'] : null;
@@ -29,6 +30,7 @@ class SimpleTransaction {
         $this->status = (isset($data['status'])) ? $data['status'] :  null;
         $this->transactionNumber = (isset($data['transaction_number'])) ? $data['transaction_number'] :  null;
         $this->wallet = (isset($data['wallet'])) ? $data['wallet'] : null;
+        $this->hasCardholderData = isset($data['has_cardholder_data']) ? $data['has_cardholder_data'] : false;
     }
 
     /**
@@ -46,6 +48,10 @@ class SimpleTransaction {
      * @var int
      */
     public $amount;
+    /**
+     * @var string
+     */
+    public $acquirer;
     /**
      * @var string
      */
@@ -90,7 +96,10 @@ class SimpleTransaction {
      * @var string
      */
     public $wallet;
-
+    /**
+     * @var bool
+     */
+    public $hasCardholderData;
     /**
      * @var Link[]
      */

@@ -15,6 +15,7 @@ class SimpleSubscription
     public function __construct(array $data)
     {
         $this->threeDs = isset($data['3dsecure']) ? $data['3dsecure'] : null;
+        $this->acquirer = isset($data['acquirer']) ? $data['acquirer'] :  null;
         $this->cardType = isset($data['card_type']) ? $data['card_type'] : null;
         $this->currencyCode = isset($data['currency_code']) ? $data['currency_code'] : null;
         $this->orderId = isset($data['order_id']) ? $data['order_id'] : null;
@@ -43,7 +44,7 @@ class SimpleSubscription
     /**
      * @var string
      */
-    public $archived;
+    public $acquirer;
 
     /**
      * @var string

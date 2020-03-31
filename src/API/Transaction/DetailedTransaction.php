@@ -15,7 +15,6 @@ class DetailedTransaction extends SimpleTransaction {
 
         $this->expiryYear = isset($data['expiry_year']) ? $data['expiry_year'] :  null;
         $this->expiryMonth = isset($data['expiry_month']) ? $data['expiry_month'] : null;
-        $this->acquirer = isset($data['acquirer']) ? $data['acquirer'] :  null;
         $this->cardCountry = isset($data['card_country']) ? $data['card_country'] : null;
         $this->cardBin = isset($data['card_bin']) ? $data['card_bin'] : null;
         $this->ip = isset($data['ip']) ? $data['ip'] : null;
@@ -36,11 +35,6 @@ class DetailedTransaction extends SimpleTransaction {
         $this->subscriptionNumber = isset($data['subscription_number']) ? $data['subscription_number'] :  null;
         $this->subscriptionUuid = isset($data['subscription_uuid']) ? $data['subscription_uuid'] : null;
     }
-
-    /**
-     * @var string
-     */
-    public $acquirer;
 
     /**
      * @var int
