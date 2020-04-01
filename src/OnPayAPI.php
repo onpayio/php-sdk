@@ -109,7 +109,11 @@ class OnPayAPI {
         $this->options = array_merge($defaultOptions, $options);
 
         if(isset($this->options['gateway_id'])) {
-            $authUrl = $this->options['base_authorize_uri'] . '/' . $this->options['gateway_id'] . '/oauth2/authorize';
+            $gatewayId = intval($this->options['gateway_id']);
+            if ($gatewayId === 0) {
+                throw new \InvalidArgumentException('gateway_id must be numeric value');
+            }
+            $authUrl = $this->options['base_authorize_uri'] . '/' . $gatewayId . '/oauth2/authorize';
         } else {
             $authUrl = $this->options['base_authorize_uri'] . '/oauth2/authorize';
         }
