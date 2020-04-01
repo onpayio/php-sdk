@@ -35,7 +35,6 @@ class DetailedSubscription extends SimpleSubscription
             $this->transactions[] = $transactionItem;
         }
     }
-
     /**
      * @var string
      */

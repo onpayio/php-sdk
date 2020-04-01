@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - Implemented the PaymentInfo object (PR #22)
+- Updated SDK to correspond correctly with API (PR #23)
+- Properly fetch requests and responses to/from API for logging purposes (PR #23)
+- Check that gateway_id is numeric value when constructing OnPayAPI. (Issue #16) (PR #23)
 
 ## [1.0.5] - 2020-02-26
 - Set last HTTP response/request methods less strict with param values. Sets empty value if supplied with invalid value.
