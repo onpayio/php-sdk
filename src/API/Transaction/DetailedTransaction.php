@@ -24,7 +24,7 @@ class DetailedTransaction extends SimpleTransaction {
 
         $this->cardholderData = null;
         if(isset($data['cardholder_data']) && null !== $data['cardholder_data']) {
-            $this->hasCardholderData = new CardholderData($data['cardholder_data']);
+            $this->cardholderData = new CardholderData($data['cardholder_data']);
         }
 
         foreach ($data['history'] as $history) {
