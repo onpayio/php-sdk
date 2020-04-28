@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.7] - 2020-04-28
+- Fixed cardholderData being set to hasCardholderData instead of cardholderData on detailedTransaction (PR #28)
+
 ## [1.0.6] - 2020-04-01
 - Implemented the PaymentInfo object (PR #22)
 - Updated SDK to correspond correctly with API (PR #23)
