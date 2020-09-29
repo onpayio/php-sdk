@@ -50,13 +50,12 @@ class PaymentWindow
             "callbackUrl",
             "design",
             "testMode",
-            "method"
+            "method",
         ];
 
         $this->requiredFields = [
             "gatewayId",
             "currency",
-            "amount",
             "reference",
             "acceptUrl",
         ];
@@ -339,7 +338,9 @@ class PaymentWindow
      * Checks if the PaymentWindow has the required fields to do a payment
      */
     public function isValid() {
-
+        if ('subscription' !== $this->type && null === $this->amount) {
+            return false;
+        }
         foreach ($this->requiredFields as $field) {
             if(property_exists($this, $field) && null === $this->{$field}) {
                 return false;
