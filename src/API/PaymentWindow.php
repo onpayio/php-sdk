@@ -10,6 +10,12 @@ class PaymentWindow
     const METHOD_MOBILEPAY_CHECKOUT = 'mobilepay_checkout';
     const METHOD_VIABILL = 'viabill';
 
+    const DELIVERY_DISABLED_NO_REASON = 'no-reason';
+    const DELIVERY_DISABLED_NOT_PHYSICAL = 'not-physical';
+    const DELIVERY_DISABLED_STORE_PICK_UP = 'store-pick-up';
+    const DELIVERY_DISABLED_PARCEL_SHOP_SELECTED = 'parcel-shop-selected';
+    const DELIVERY_DISABLED_PARCEL_SHOP_AUTO = 'parcel-shop-auto';
+
     private $gatewayId;
     private $currency;
     private $amount;
@@ -24,6 +30,7 @@ class PaymentWindow
     private $design;
     private $testMode;
     private $secret;
+    private $delivery_disabled;
     /**
      * @var PaymentInfo
      */
@@ -51,6 +58,7 @@ class PaymentWindow
             "design",
             "testMode",
             "method",
+            'delivery_disabled'
         ];
 
         $this->requiredFields = [
@@ -256,6 +264,20 @@ class PaymentWindow
      */
     public function getDesign() {
         return $this->design;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getDeliveryDisabled() {
+        return $this->delivery_disabled;
+    }
+
+    /**
+     * @param string|null $deliveryDisabled
+     */
+    public function setDeliveryDisabled($deliveryDisabled) {
+        $this->delivery_disabled = $deliveryDisabled;
     }
 
     /**
