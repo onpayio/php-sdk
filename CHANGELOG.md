@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.8] - 2020-09-30
+- Added address fields to CardholderData class.
+- Removed amount as required field in PaymentWindow class.
+- Added ability to disable delivery with different reasons in PaymentWindow class. Specifically for use with MobilePay Checkout.
+- Fixed broken dependencies.
+
 ## [1.0.7] - 2020-04-28
 - Fixed cardholderData being set to hasCardholderData instead of cardholderData on detailedTransaction (PR #28)
 
