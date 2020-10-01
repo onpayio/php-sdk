@@ -31,6 +31,7 @@ class PaymentWindow
     private $testMode;
     private $secret;
     private $delivery_disabled;
+    private $subscription_with_transaction;
     /**
      * @var PaymentInfo
      */
@@ -58,7 +59,8 @@ class PaymentWindow
             "design",
             "testMode",
             "method",
-            'delivery_disabled'
+            'delivery_disabled',
+            'subscription_with_transaction'
         ];
 
         $this->requiredFields = [
@@ -424,5 +426,23 @@ class PaymentWindow
      */
     public function getInfo() {
         return $this->info;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSubscriptionWithTransaction() {
+        return $this->subscription_with_transaction === '1';
+    }
+
+    /**
+     * @param bool $subscription_with_transaction
+     */
+    public function setSubscriptionWithTransaction($subscription_with_transaction) {
+        if (true === $subscription_with_transaction) {
+            $this->subscription_with_transaction = '1';
+        } else {
+            $this->subscription_with_transaction = null;
+        }
     }
 }
