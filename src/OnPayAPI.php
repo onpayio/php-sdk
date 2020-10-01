@@ -7,7 +7,6 @@ use fkooman\OAuth\Client\Http\CurlHttpClient;
 use fkooman\OAuth\Client\Http\Exception\CurlException;
 use fkooman\OAuth\Client\Http\Request;
 use fkooman\OAuth\Client\Http\Response;
-use fkooman\OAuth\Client\OAuthClient;
 use fkooman\OAuth\Client\Provider;
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Exception\TokenException;
@@ -17,6 +16,7 @@ use OnPay\API\SubscriptionService;
 use OnPay\API\TransactionService;
 use OnPay\API\Http\Request as HttpRequest;
 use OnPay\API\Http\Response as HttpResponse;
+use OnPay\OAuth\Client\OAuthClient;
 
 class OnPayAPI {
     /**
