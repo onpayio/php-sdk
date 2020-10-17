@@ -226,6 +226,8 @@ class OnPayAPI {
             throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
         } catch (\fkooman\OAuth\Client\Exception\TokenException $e) {
             throw new TokenException($e->getMessage(), $e->getCode(), $e);
+        } catch (\fkooman\OAUth\Client\Exception\AccessTokenException $e) {
+            throw new TokenException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
