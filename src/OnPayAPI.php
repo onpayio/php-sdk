@@ -274,7 +274,7 @@ class OnPayAPI {
     private function handleResponse($response) {
         if (false === $response) {
             // When response is false we're dealing with an invalid token.
-            throw new TokenException();
+            throw new TokenException('Invalid response. Possible invalid token.');
         }
 
         if ($response->isOkay()) {
