@@ -32,6 +32,7 @@ class PaymentWindow
     private $secret;
     private $delivery_disabled;
     private $subscription_with_transaction;
+    private $website;
     /**
      * @var PaymentInfo
      */
@@ -60,7 +61,8 @@ class PaymentWindow
             "testMode",
             "method",
             'delivery_disabled',
-            'subscription_with_transaction'
+            'subscription_with_transaction',
+            'website'
         ];
 
         $this->requiredFields = [
@@ -280,6 +282,20 @@ class PaymentWindow
      */
     public function setDeliveryDisabled($deliveryDisabled) {
         $this->delivery_disabled = $deliveryDisabled;
+    }
+
+    /**
+     * @param string|null $website
+     */
+    public function setWebsite($website) {
+        $this->website = $website;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getWebsite() {
+        return $this->website;
     }
 
     /**
