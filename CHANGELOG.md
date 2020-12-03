@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.11] - 2020-12-03
+- Introduced onpay_website field for payment window.
+- Added exception message for invalid OAUTH2 token.
+
 ## [1.0.10] - 2020-10-21
 - Handle if oauth2 token format is completely broken.
 - Implementing new flag for signaling a subscription should create a transaction.
