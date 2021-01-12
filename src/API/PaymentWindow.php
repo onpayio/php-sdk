@@ -9,6 +9,7 @@ class PaymentWindow
     const METHOD_MOBILEPAY = 'mobilepay';
     const METHOD_MOBILEPAY_CHECKOUT = 'mobilepay_checkout';
     const METHOD_VIABILL = 'viabill';
+    const METHOD_ANYDAY = 'anyday';
 
     const DELIVERY_DISABLED_NO_REASON = 'no-reason';
     const DELIVERY_DISABLED_NOT_PHYSICAL = 'not-physical';
