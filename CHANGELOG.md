@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.12] - 2021-01-12
+- Added Anyday Split as available method in payment window.
+
 ## [1.0.11] - 2020-12-03
 - Introduced onpay_website field for payment window.
 - Added exception message for invalid OAUTH2 token.
