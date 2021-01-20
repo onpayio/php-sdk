@@ -94,10 +94,7 @@ class OnPayAPI {
             'base_authorize_uri' => 'https://manage.onpay.io',
         ];
 
-        $requiredOptions = [
-            'client_id',
-            'redirect_uri',
-        ];
+        $requiredOptions = $this->getRequiredOptions($tokenStorage);
 
         $missing = array_diff_key(array_flip($requiredOptions), $options);
         if (!empty($missing)) {
@@ -263,6 +260,23 @@ class OnPayAPI {
         } catch (\fkooman\OAuth\Client\Exception\TokenException $e) {
             throw new TokenException($e->getMessage(), $e->getCode(), $e);
         }
+    }
+
+    /**
+     * @param TokenStorageInterface $tokenStorage
+     * @return string[]
+     */
+    private function getRequiredOptions(TokenStorageInterface $tokenStorage) {
+        $options = [
+            'client_id'
+        ];
+
+        if (!$tokenStorage instanceof StaticToken) {
+            // Redirect URI is not needed for static tokens
+            $options[] = 'redirect_uri';
+        }
+
+        return $options;
     }
 
     /**

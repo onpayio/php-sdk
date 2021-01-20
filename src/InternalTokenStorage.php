@@ -76,8 +76,13 @@ class InternalTokenStorage implements oauthTokenStorageInterface {
      * @throws \fkooman\OAuth\Client\Exception\AccessTokenException
      */
     private function getToken() {
-        $json = $this->onpayTokenInterface->getToken();
-        if('' !== $json && null !== $this->onpayTokenInterface->getToken()) {
+        if ($this->onpayTokenInterface instanceof StaticToken) {
+            // When a static token is used, we need to supply it with the Authorize URL and Client ID.
+            $json = $this->onpayTokenInterface->getToken($this->clientId, $this->authUrl);
+        } else {
+            $json = $this->onpayTokenInterface->getToken();
+        }
+        if(null !== $json && '' !== $json) {
             if (strpos($json, 'provider_id') !== false) {
                 // Json is of fkooman/oauth2-client format
                 $accessToken = AccessToken::fromJson($json);
