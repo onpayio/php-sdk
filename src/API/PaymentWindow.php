@@ -5,6 +5,8 @@ use OnPay\API\PaymentWindow\PaymentInfo;
 
 class PaymentWindow
 {
+    const SDK_VERSION = '1.0.13';
+
     const METHOD_CARD = 'card';
     const METHOD_MOBILEPAY = 'mobilepay';
     const METHOD_MOBILEPAY_CHECKOUT = 'mobilepay_checkout';
@@ -34,6 +36,7 @@ class PaymentWindow
     private $delivery_disabled;
     private $subscription_with_transaction;
     private $website;
+    private $platform;
     /**
      * @var PaymentInfo
      */
@@ -63,7 +66,8 @@ class PaymentWindow
             "method",
             'delivery_disabled',
             'subscription_with_transaction',
-            'website'
+            'website',
+            'platform'
         ];
 
         $this->requiredFields = [
@@ -72,6 +76,8 @@ class PaymentWindow
             "reference",
             "acceptUrl",
         ];
+
+        $this->platform = 'php-sdk' . '/' . self::SDK_VERSION;
     }
 
     /**
@@ -297,6 +303,36 @@ class PaymentWindow
      */
     public function getWebsite() {
         return $this->website;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPlatform() {
+        return $this->platform;
+    }
+
+    /**
+     * Name of platform, version of platform, version of system platform is running on.
+     * Concats platform parameters to a / delimited string
+     * Examples: 'php-sdk/1/1', 'php-sdk/1', 'php-sdk//1'
+     *
+     * @param $platform
+     * @param null $version
+     * @param null $systemVersion
+     */
+    public function setPlatform($platform, $version = null, $systemVersion = null): void {
+        $string = $platform;
+        if (null !== $version) {
+            $string .= '/' . $version;
+        }
+        if (null !== $systemVersion) {
+            if (null === $version) {
+                $string .= '/';
+            }
+            $string .= '/' . $systemVersion;
+        }
+        $this->platform = $string;
     }
 
     /**
