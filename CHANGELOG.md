@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.14] - 2021-01-26
+- Added platform field to payment window.
+
 ## [1.0.13] - 2021-01-20
 - Added static token object for use with static API tokens from OnPay.
 

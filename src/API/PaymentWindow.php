@@ -5,7 +5,7 @@ use OnPay\API\PaymentWindow\PaymentInfo;
 
 class PaymentWindow
 {
-    const SDK_VERSION = '1.0.13';
+    const SDK_VERSION = '1.0.14';
 
     const METHOD_CARD = 'card';
     const METHOD_MOBILEPAY = 'mobilepay';
