@@ -321,7 +321,7 @@ class PaymentWindow
      * @param null $version
      * @param null $systemVersion
      */
-    public function setPlatform($platform, $version = null, $systemVersion = null): void {
+    public function setPlatform($platform, $version = null, $systemVersion = null) {
         $string = $platform;
         if (null !== $version) {
             $string .= '/' . $version;
