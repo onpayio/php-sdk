@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.0.16] - 2021-01-28
 - When no redirect_uri value is sent to OnPayAPI, add an empty value to the option.
 
 ## [1.0.15] - 2021-01-27
