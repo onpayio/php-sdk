@@ -90,6 +90,7 @@ class OnPayAPI {
         $this->tokenStorage = $tokenStorage;
 
         $defaultOptions = [
+            'redirect_uri' => '',
             'base_uri' => 'https://api.onpay.io',
             'base_authorize_uri' => 'https://manage.onpay.io',
         ];
@@ -113,11 +114,6 @@ class OnPayAPI {
             $authUrl = $this->options['base_authorize_uri'] . '/' . $gatewayId . '/oauth2/authorize';
         } else {
             $authUrl = $this->options['base_authorize_uri'] . '/oauth2/authorize';
-        }
-
-        // Set redirect_uri to an empty value if none is sent
-        if (!array_key_exists('redirect_uri', $this->options)) {
-            $this->options['redirect_uri'] = '';
         }
 
         $this->tokenStorage = new InternalTokenStorage($tokenStorage, $authUrl, $options['client_id'], $this->scope);
