@@ -303,6 +303,9 @@ class OnPayAPI {
         $message = '';
         if ('' !== $response->getBody() && null !== $response->getBody()) {
             $body = json_decode($response->getBody(), true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new ApiException('Failed to decode JSON body-response: ' . json_last_error_msg(), $response->getStatusCode());   
+            }
             if (array_key_exists('errors', $body)) {
                 $message = $body['errors'][0]['message'];
             }
