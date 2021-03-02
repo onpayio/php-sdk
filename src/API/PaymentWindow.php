@@ -37,6 +37,7 @@ class PaymentWindow
     private $subscription_with_transaction;
     private $website;
     private $platform;
+    private $expiration;
     /**
      * @var PaymentInfo
      */
@@ -67,7 +68,8 @@ class PaymentWindow
             'delivery_disabled',
             'subscription_with_transaction',
             'website',
-            'platform'
+            'platform',
+            'expiration'
         ];
 
         $this->requiredFields = [
@@ -333,6 +335,20 @@ class PaymentWindow
             $string .= '/' . $systemVersion;
         }
         $this->platform = $string;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getExpiration() {
+        return $this->expiration;
+    }
+
+    /**
+     * @param int|null $expiration
+     */
+    public function setExpiration($expiration) {
+        $this->expiration = $expiration;
     }
 
     /**
