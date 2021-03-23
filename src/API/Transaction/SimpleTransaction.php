@@ -31,6 +31,7 @@ class SimpleTransaction {
         $this->transactionNumber = (isset($data['transaction_number'])) ? $data['transaction_number'] :  null;
         $this->wallet = (isset($data['wallet'])) ? $data['wallet'] : null;
         $this->hasCardholderData = isset($data['has_cardholder_data']) ? $data['has_cardholder_data'] : false;
+        $this->testMode = isset($data['testmode']) ? $data['testmode'] : false;
     }
 
     /**
@@ -100,6 +101,10 @@ class SimpleTransaction {
      * @var bool
      */
     public $hasCardholderData;
+    /**
+     * @var bool
+     */
+    public $testMode;
     /**
      * @var Link[]
      */

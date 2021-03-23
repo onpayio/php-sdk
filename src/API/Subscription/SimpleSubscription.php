@@ -23,6 +23,7 @@ class SimpleSubscription
         $this->status = isset($data['status']) ? $data['status'] : null;
         $this->uuid = isset($data['uuid']) ? $data['uuid'] : null;
         $this->wallet = isset($data['wallet']) ? $data['wallet'] : null;
+        $this->testMode = isset($data['testmode']) ? $data['testmode'] : false;
 
         if(isset($data['created'])) {
             $this->created = Converter::toDateTimeFromString($data['created']);
@@ -90,6 +91,11 @@ class SimpleSubscription
      * @var string
      */
     public $wallet;
+
+    /**
+     * @var bool
+     */
+    public $testMode;
 
     /**
      * @var Link[]
