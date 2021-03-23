@@ -55,9 +55,8 @@ class TransactionService {
 
         foreach ($results['data'] as $result) {
             $transaction = new SimpleTransaction($result);
-
             $transaction->setLinks($result['links']);
-            $transactions[] = new SimpleTransaction($result);
+            $transactions[] = $transaction;
         }
 
         $collection = new TransactionCollection();
