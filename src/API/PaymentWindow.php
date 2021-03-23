@@ -12,6 +12,8 @@ class PaymentWindow
     const METHOD_MOBILEPAY_CHECKOUT = 'mobilepay_checkout';
     const METHOD_VIABILL = 'viabill';
     const METHOD_ANYDAY = 'anyday';
+    const METHOD_APPLEPAY = 'applepay';
+    const METHOD_GOOGLEPAY = 'googlepay';
 
     const DELIVERY_DISABLED_NO_REASON = 'no-reason';
     const DELIVERY_DISABLED_NOT_PHYSICAL = 'not-physical';
