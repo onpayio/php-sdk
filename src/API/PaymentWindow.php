@@ -14,6 +14,7 @@ class PaymentWindow
     const METHOD_ANYDAY = 'anyday';
     const METHOD_APPLEPAY = 'applepay';
     const METHOD_GOOGLEPAY = 'googlepay';
+    const METHOD_VIPPS = 'vipps';
 
     const DELIVERY_DISABLED_NO_REASON = 'no-reason';
     const DELIVERY_DISABLED_NOT_PHYSICAL = 'not-physical';
