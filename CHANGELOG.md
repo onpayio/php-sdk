@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.19] - 2021-05-05
+- Added Vipps
+
 ## [1.0.18] - 2021-03-23
 - Fixed bug with no links being available when getting transactions
 - Added Apple pay and Google pay as methods available for payment window.
