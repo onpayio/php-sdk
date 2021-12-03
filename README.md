@@ -75,6 +75,11 @@ $paymentWindow->setInfo($paymentInfo);
 <?php } ?>
 
 ```
+You can create a transaction automatically when creating a new subscription using the following functions for the `$paymentWindow` variable:
+```php
+$paymentWindow->setType("subscription");
+$paymentWindow->setSubscriptionWithTransaction(true);
+```
 
 Verifying a payment from the acceptment page can easily be done as following: 
 
