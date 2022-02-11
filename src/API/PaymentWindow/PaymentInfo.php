@@ -238,10 +238,10 @@ class PaymentInfo {
 
     protected function validateField($name, $value) {
         if (isset($this->availableFields[$name])) {
-            if (1 === preg_match('/^' . $this->availableFields[$name] . '$/u', $value)) {
+            if (null === $value) {
                 return true;
             }
-            if (null === $value) {
+            if (1 === preg_match('/^' . $this->availableFields[$name] . '$/u', $value)) {
                 return true;
             }
         }
