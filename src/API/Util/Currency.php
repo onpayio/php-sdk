@@ -1,0 +1,62 @@
+<?php
+
+namespace OnPay\API\Util;
+
+use OnPay\API\Exception\ApiException;
+
+/**
+ * This currency helper class will assist with ensuring currencies used are supported and in the correct format
+ */
+class Currency extends Currencies {
+
+    /**
+     * @var string
+     */
+    private $alpha3;
+    /**
+     * @var int
+     */
+    private $ISO4217;
+    /**
+     * @var int
+     */
+    private $exponent;
+
+    /**
+     * @param string|int $currencyCode This can be either a valid ISO4217 value or a valid Alpha3 value.
+     * @throws ApiException
+     */
+    public function __construct($currencyCode) {
+        $this->alpha3 = $this->isValidAlpha3($currencyCode);
+        if (!$this->alpha3) {
+            $this->alpha3 = $this->isValidISO4217($currencyCode);
+        }
+        if (!$this->alpha3) {
+            throw new ApiException("Unsupported currency provided: " . $currencyCode);
+        }
+        $this->ISO4217 = self::CURRENCIES[$this->alpha3]['ISO4217'];
+        $this->exponent = self::CURRENCIES[$this->alpha3]['exponent'];
+    }
+
+    /**
+     * @return int
+     */
+    public function getExponent() {
+        return $this->exponent;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAlpha3() {
+        return $this->alpha3;
+    }
+
+    /**
+     * @return int
+     */
+    public function getISO4217() {
+        return $this->ISO4217;
+    }
+
+}
