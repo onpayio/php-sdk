@@ -43,7 +43,7 @@ class TransactionService {
      * @param null $status
      * @param null $dateAfter
      * @param null $dateBefore
-     * @return array
+     * @return TransactionCollection
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getTransactions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) {
