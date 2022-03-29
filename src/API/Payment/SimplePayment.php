@@ -4,7 +4,7 @@ namespace OnPay\API\Payment;
 
 class SimplePayment {
 
-    private $uuId;
+    private $uuid;
     private $amount;
     private $currency;
     private $expiration;
@@ -13,7 +13,7 @@ class SimplePayment {
     private $paymentLink;
 
     public function __construct($response) {
-        $this->uuId = $response['data']['payment_uuid'];
+        $this->uuid = $response['data']['payment_uuid'];
         $this->amount = $response['data']['amount'];
         $this->currency = $response['data']['currency_code'];
         $this->expiration = $response['data']['expiration'];
@@ -23,7 +23,7 @@ class SimplePayment {
     }
 
     public function getUuid() {
-        return $this->uuId;
+        return $this->uuid;
     }
 
     public function getAmount() {
