@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.21] - 2022-03-31
+- Introduce Currency classes (#59, #62, #63)
+- Fixed broken PHP doc (#61)
+- Fixed potential PHP 8.0 problem  (#58)
+
 ## [1.0.20] - 2021-12-07
 - Added Swish
 
