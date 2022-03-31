@@ -2,7 +2,7 @@
 
 namespace OnPay\API\Util;
 
-class Currencies {
+final class Currencies {
 
     /**
      * This array contains all the supported currencies and is based on the following documentation:
@@ -34,11 +34,15 @@ class Currencies {
         'BRL' => ['exponent' => 2, 'ISO4217' => 986],
     ];
 
+    private function __construct() {
+        // Static class, should never be instantiated
+    }
+
     /**
      * @param string $alpha3
      * @return bool|string
      */
-    public function isValidAlpha3($alpha3) {
+    public static function isValidAlpha3($alpha3) {
         $currencyArray = self::CURRENCIES;
         if (!isset($currencyArray[$alpha3])) {
             return false;
@@ -50,7 +54,7 @@ class Currencies {
      * @param int $ISO4217
      * @return bool|string
      */
-    public function isValidISO4217($ISO4217) {
+    public static function isValidISO4217($ISO4217) {
         $currencyArray = self::CURRENCIES;
         foreach ($currencyArray as $alpha3 => $currencyData) {
             if ($currencyData['ISO4217'] === $ISO4217) {
