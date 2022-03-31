@@ -7,7 +7,7 @@ use OnPay\API\Exception\ApiException;
 /**
  * This currency helper class will assist with ensuring currencies used are supported and in the correct format
  */
-class Currency extends Currencies {
+class Currency {
 
     /**
      * @var string
@@ -27,15 +27,15 @@ class Currency extends Currencies {
      * @throws ApiException
      */
     public function __construct($currencyCode) {
-        $this->alpha3 = $this->isValidAlpha3($currencyCode);
+        $this->alpha3 = Currencies::isValidAlpha3($currencyCode);
         if (!$this->alpha3) {
-            $this->alpha3 = $this->isValidISO4217($currencyCode);
+            $this->alpha3 = Currencies::isValidISO4217($currencyCode);
         }
         if (!$this->alpha3) {
             throw new ApiException("Unsupported currency provided: " . $currencyCode);
         }
-        $this->ISO4217 = self::CURRENCIES[$this->alpha3]['ISO4217'];
-        $this->exponent = self::CURRENCIES[$this->alpha3]['exponent'];
+        $this->ISO4217 = Currencies::CURRENCIES[$this->alpha3]['ISO4217'];
+        $this->exponent = Currencies::CURRENCIES[$this->alpha3]['exponent'];
     }
 
     /**
