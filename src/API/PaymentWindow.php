@@ -388,29 +388,52 @@ class PaymentWindow
      */
     public function generateSecret() {
 
-        $fields = $this->getAvailableFields();
+        $fields = $this->getAvailableFieldsWithPrefix();
         $queryString = strtolower(http_build_query($fields));
         $hmac = hash_hmac('sha1', $queryString, $this->secret);
         return $hmac;
     }
 
     /**
+     * @internal For Internal Use Only - Gets all filled fields
+     * @return array
+     */
+    public function getAvailableFields() {
+        return $this->buildAvailableFields(false);
+    }
+
+    /**
      * Gets all filled fields
      * @return array
      */
-    private function getAvailableFields() {
+    private function getAvailableFieldsWithPrefix() {
+        return $this->buildAvailableFields();
+    }
 
+    /**
+     * @param bool $withPrefix
+     * @return array
+     */
+    private function buildAvailableFields($withPrefix = true){
         $fields = [];
 
-        foreach ($this->availableFields as $field) {
-            if (isset($this->info)) {
+        if (isset($this->info)) {
+            if($withPrefix){
                 $fields = array_merge($fields, $this->info->getFields());
+            } else {
+                $fields = array_merge($fields, $this->info->getFieldsWithoutPrefix());
             }
+        }
+        foreach ($this->availableFields as $field) {
             if(property_exists($this, $field) && null !== $this->{$field}) {
+                $key = '';
+                if($withPrefix){
+                    $key = 'onpay_';
+                }
                 if (0 === strpos($field, '_')) {
-                    $key = 'onpay_' . strtolower(substr($field, 1));
+                    $key .= strtolower(substr($field, 1));
                 } else {
-                    $key = 'onpay_' . strtolower($field);
+                    $key .= strtolower($field);
                 }
                 $fields[$key] = $this->{$field};
             }
@@ -426,7 +449,7 @@ class PaymentWindow
      */
     public function getFormFields() {
 
-        $fields = $this->getAvailableFields();
+        $fields = $this->getAvailableFieldsWithPrefix();
         $fields['onpay_hmac_sha1'] = $this->generateSecret();
         return $fields;
     }

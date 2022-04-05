@@ -253,14 +253,32 @@ class PaymentInfo {
      * @internal Meant only for internal use
      */
     public function getFields() {
-        $fields = [];
+        return $this->buildFieldArray();
+    }
 
+    /**
+     * @internal Meant only for internal use
+     */
+    public function getFieldsWithoutPrefix() {
+        return $this->buildFieldArray(false);
+    }
+
+    /**
+     * @param bool $withPrefix
+     * @return array
+     */
+    private function buildFieldArray($withPrefix = true) {
+        $fields = [];
         foreach ($this->availableFields as $field => $pattern) {
             if(property_exists($this, $field) && null !== $this->{$field}) {
+                $key = '';
+                if($withPrefix) {
+                    $key = 'onpay_info_';
+                }
                 if (0 === strpos($field, '_')) {
-                    $key = 'onpay_info_' . strtolower(substr($field, 1));
+                    $key .= strtolower(substr($field, 1));
                 } else {
-                    $key = 'onpay_info_' . strtolower($field);
+                    $key .= strtolower($field);
                 }
                 $fields[$key] = $this->{$field};
             }
