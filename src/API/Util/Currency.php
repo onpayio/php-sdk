@@ -68,5 +68,19 @@ class Currency {
         return (new PaymentMethods())->getPaymentMethodsByCurrency($this);
     }
 
+    /**
+     * @param string $paymentMethodName
+     * @return bool
+     */
+    public function isPaymentMethodAvailable($paymentMethodName) {
+        $availablePaymentMethods = $this->getPaymentMethods();
+        foreach ($availablePaymentMethods as $availablePaymentMethod) {
+            if ($availablePaymentMethod->getName() === $paymentMethodName) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
 
