@@ -3,12 +3,12 @@
 namespace OnPay\API\Util\PaymentMethods\Methods;
 
 use OnPay\API\Util\CurrencyCodes;
-use OnPay\API\Util\PaymentMethods\Methods;
+use OnPay\API\Util\PaymentMethods\Enums\Methods;
 
 /**
  * @internal Internal use only
  */
-final class Mobilepay_checkout extends AbstractMethods {
+final class Mobilepay_checkout extends PaymentMethodAbstract {
     const CURRENCIES = [
         CurrencyCodes::DKK,
         CurrencyCodes::NOK,

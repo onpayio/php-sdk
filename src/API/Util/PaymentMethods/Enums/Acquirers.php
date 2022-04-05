@@ -1,6 +1,6 @@
 <?php
 
-namespace OnPay\API\Util\PaymentMethods;
+namespace OnPay\API\Util\PaymentMethods\Enums;
 
 final class Acquirers {
 

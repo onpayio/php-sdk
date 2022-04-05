@@ -4,7 +4,8 @@ namespace OnPay\API\Util\PaymentMethods;
 
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Util\Currency;
-use OnPay\API\Util\PaymentMethods\Methods\AbstractMethods;
+use OnPay\API\Util\PaymentMethods\Enums\Methods;
+use OnPay\API\Util\PaymentMethods\Methods\PaymentMethodAbstract;
 use OnPay\API\Util\PaymentMethods\Methods\PaymentMethodInterface;
 
 class PaymentMethods {
@@ -32,7 +33,7 @@ class PaymentMethods {
                 throw new ApiException($method . " is not a configured payment method.");
             }
             /**
-             * @var AbstractMethods $paymentMethod
+             * @var PaymentMethodAbstract $paymentMethod
              */
             $this->paymentMethods[] = new $className();
         }

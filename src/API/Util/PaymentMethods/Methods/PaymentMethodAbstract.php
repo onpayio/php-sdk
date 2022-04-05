@@ -10,7 +10,7 @@ use OnPay\API\Util\CurrencyCodes;
 /**
  * @internal Internal use only
  */
-abstract class AbstractMethods implements PaymentMethodInterface {
+abstract class PaymentMethodAbstract implements PaymentMethodInterface {
 
     const CURRENCIES = [];
     const METHOD_NAME = '';
