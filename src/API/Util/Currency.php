@@ -3,6 +3,8 @@
 namespace OnPay\API\Util;
 
 use OnPay\API\Exception\ApiException;
+use OnPay\API\Util\PaymentMethods\Methods\PaymentMethodInterface;
+use OnPay\API\Util\PaymentMethods\PaymentMethods;
 
 /**
  * This currency helper class will assist with ensuring currencies used are supported and in the correct format
@@ -59,4 +61,12 @@ class Currency {
         return $this->ISO4217;
     }
 
+    /**
+     * @return PaymentMethodInterface[]
+     */
+    public function getPaymentMethods() {
+        return (new PaymentMethods())->getPaymentMethodsByCurrency($this);
+    }
+
 }
+
