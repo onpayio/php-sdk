@@ -5,7 +5,7 @@ namespace OnPay\API\Util\PaymentMethods\Methods;
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Util\Currencies;
 use OnPay\API\Util\Currency;
-use OnPay\API\Util\CurrencyCodes;
+use OnPay\API\Util\PaymentMethods\Enums\CurrencyCodes;
 
 /**
  * @internal Internal use only

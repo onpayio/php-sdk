@@ -1,6 +1,6 @@
 <?php
 
-namespace OnPay\API\Util;
+namespace OnPay\API\Util\PaymentMethods\Enums;
 
 final class CurrencyCodes {
     const AUD = 'AUD';

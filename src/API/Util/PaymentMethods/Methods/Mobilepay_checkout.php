@@ -2,7 +2,7 @@
 
 namespace OnPay\API\Util\PaymentMethods\Methods;
 
-use OnPay\API\Util\CurrencyCodes;
+use OnPay\API\Util\PaymentMethods\Enums\CurrencyCodes;
 use OnPay\API\Util\PaymentMethods\Enums\Methods;
 
 /**

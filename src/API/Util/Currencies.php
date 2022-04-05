@@ -2,6 +2,8 @@
 
 namespace OnPay\API\Util;
 
+use OnPay\API\Util\PaymentMethods\Enums\CurrencyCodes;
+
 final class Currencies {
 
     /**
