@@ -148,6 +148,7 @@ class OnPayAPI {
             $session->set('user_id', $this->userId);
             $session->set('redirect_uri', $this->options['redirect_uri']);
             $session->set('scope', $this->scope);
+            $session->set('code_verifier', '');
             $this->client->setSession($session);
         }
 
