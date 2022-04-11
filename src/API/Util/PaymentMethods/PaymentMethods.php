@@ -4,9 +4,17 @@ namespace OnPay\API\Util\PaymentMethods;
 
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Util\Currency;
-use OnPay\API\Util\PaymentMethods\Enums\Methods;
-use OnPay\API\Util\PaymentMethods\Methods\PaymentMethodAbstract;
+use OnPay\API\Util\PaymentMethods\Methods\AnyDay;
+use OnPay\API\Util\PaymentMethods\Methods\Applepay;
+use OnPay\API\Util\PaymentMethods\Methods\Card;
+use OnPay\API\Util\PaymentMethods\Methods\GooglePay;
+use OnPay\API\Util\PaymentMethods\Methods\MobilePay;
+use OnPay\API\Util\PaymentMethods\Methods\MobilePayCheckout;
 use OnPay\API\Util\PaymentMethods\Methods\PaymentMethodInterface;
+use OnPay\API\Util\PaymentMethods\Methods\PayPal;
+use OnPay\API\Util\PaymentMethods\Methods\Swish;
+use OnPay\API\Util\PaymentMethods\Methods\ViaBill;
+use OnPay\API\Util\PaymentMethods\Methods\Vipps;
 
 class PaymentMethods {
 
@@ -27,16 +35,16 @@ class PaymentMethods {
      * @throws ApiException
      */
     private function populatePaymentMethods() {
-        foreach (Methods::ALL_METHODS as $method) {
-            $className = 'OnPay\\API\\Util\\PaymentMethods\\Methods\\' . ucfirst($method);
-            if (!class_exists($className)) {
-                throw new ApiException($method . " is not a configured payment method.");
-            }
-            /**
-             * @var PaymentMethodAbstract $paymentMethod
-             */
-            $this->paymentMethods[] = new $className();
-        }
+        $this->paymentMethods[] = new AnyDay();
+        $this->paymentMethods[] = new Applepay();
+        $this->paymentMethods[] = new Card();
+        $this->paymentMethods[] = new GooglePay();
+        $this->paymentMethods[] = new MobilePay();
+        $this->paymentMethods[] = new MobilePayCheckout();
+        $this->paymentMethods[] = new PayPal();
+        $this->paymentMethods[] = new Swish();
+        $this->paymentMethods[] = new ViaBill();
+        $this->paymentMethods[] = new Vipps();
     }
 
     /**

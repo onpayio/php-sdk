@@ -8,7 +8,7 @@ use OnPay\API\Util\PaymentMethods\Enums\CurrencyCodes;
 /**
  * @internal Internal use only
  */
-final class Anyday extends PaymentMethodAbstract {
+final class AnyDay extends PaymentMethodAbstract {
     const CURRENCIES = [CurrencyCodes::DKK];
     const METHOD_NAME = Acquirers::ANYDAY;
 }

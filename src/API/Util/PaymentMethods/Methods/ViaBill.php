@@ -8,7 +8,7 @@ use OnPay\API\Util\PaymentMethods\Enums\CurrencyCodes;
 /**
  * @internal Internal use only
  */
-final class Viabill extends PaymentMethodAbstract {
+final class ViaBill extends PaymentMethodAbstract {
     const CURRENCIES = [CurrencyCodes::DKK, CurrencyCodes::EUR];
     const METHOD_NAME = Acquirers::VIABILL;
 }

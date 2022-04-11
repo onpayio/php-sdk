@@ -8,7 +8,7 @@ use OnPay\API\Util\PaymentMethods\Enums\Methods;
 /**
  * @internal Internal use only
  */
-final class Mobilepay_checkout extends PaymentMethodAbstract {
+final class MobilePayCheckout extends PaymentMethodAbstract {
     const CURRENCIES = [
         CurrencyCodes::DKK,
         CurrencyCodes::NOK,

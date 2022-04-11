@@ -8,7 +8,7 @@ use OnPay\API\Util\PaymentMethods\Enums\CurrencyCodes;
 /**
  * @internal Internal use only
  */
-final class Paypal extends PaymentMethodAbstract {
+final class PayPal extends PaymentMethodAbstract {
     const CURRENCIES = [CurrencyCodes::ALL_CURRENCY_CODES];
     const METHOD_NAME = Acquirers::PAYPAL;
 }
