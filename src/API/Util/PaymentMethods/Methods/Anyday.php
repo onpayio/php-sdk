@@ -2,13 +2,13 @@
 
 namespace OnPay\API\Util\PaymentMethods\Methods;
 
-use OnPay\API\Util\PaymentMethods\Enums\Acquirers;
 use OnPay\API\Util\PaymentMethods\Enums\CurrencyCodes;
+use OnPay\API\Util\PaymentMethods\Enums\Methods;
 
 /**
  * @internal Internal use only
  */
-final class AnyDay extends PaymentMethodAbstract {
+final class Anyday extends PaymentMethodAbstract {
     const CURRENCIES = [CurrencyCodes::DKK];
-    const METHOD_NAME = Acquirers::ANYDAY;
+    const METHOD_NAME = Methods::ANYDAY;
 }

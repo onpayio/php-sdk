@@ -3,12 +3,12 @@
 namespace OnPay\API\Util\PaymentMethods\Methods;
 
 use OnPay\API\Util\PaymentMethods\Enums\CurrencyCodes;
-use OnPay\API\Util\PaymentMethods\Enums\Wallets;
+use OnPay\API\Util\PaymentMethods\Enums\Methods;
 
 /**
  * @internal Internal use only
  */
-final class Applepay extends PaymentMethodAbstract {
+final class ApplePay extends PaymentMethodAbstract {
     const CURRENCIES = [CurrencyCodes::ALL_CURRENCY_CODES];
-    const METHOD_NAME = Wallets::APPLE_PAY;
+    const METHOD_NAME = Methods::APPLE_PAY;
 }

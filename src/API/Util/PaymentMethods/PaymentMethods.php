@@ -4,7 +4,7 @@ namespace OnPay\API\Util\PaymentMethods;
 
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Util\Currency;
-use OnPay\API\Util\PaymentMethods\Methods\AnyDay;
+use OnPay\API\Util\PaymentMethods\Methods\Anyday;
 use OnPay\API\Util\PaymentMethods\Methods\Applepay;
 use OnPay\API\Util\PaymentMethods\Methods\Card;
 use OnPay\API\Util\PaymentMethods\Methods\GooglePay;
@@ -35,8 +35,8 @@ class PaymentMethods {
      * @throws ApiException
      */
     private function populatePaymentMethods() {
-        $this->paymentMethods[] = new AnyDay();
-        $this->paymentMethods[] = new Applepay();
+        $this->paymentMethods[] = new Anyday();
+        $this->paymentMethods[] = new ApplePay();
         $this->paymentMethods[] = new Card();
         $this->paymentMethods[] = new GooglePay();
         $this->paymentMethods[] = new MobilePay();

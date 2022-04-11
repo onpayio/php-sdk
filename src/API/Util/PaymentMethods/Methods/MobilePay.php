@@ -3,7 +3,7 @@
 namespace OnPay\API\Util\PaymentMethods\Methods;
 
 use OnPay\API\Util\PaymentMethods\Enums\CurrencyCodes;
-use OnPay\API\Util\PaymentMethods\Enums\Wallets;
+use OnPay\API\Util\PaymentMethods\Enums\Methods;
 
 /**
  * @internal Internal use only
@@ -17,5 +17,5 @@ final class MobilePay extends PaymentMethodAbstract {
         CurrencyCodes::USD,
         CurrencyCodes::EUR,
     ];
-    const METHOD_NAME = Wallets::MOBILEPAY;
+    const METHOD_NAME = Methods::MOBILEPAY;
 }
