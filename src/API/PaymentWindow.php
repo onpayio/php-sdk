@@ -493,6 +493,10 @@ class PaymentWindow
             }
         }
 
+        if (!isset($validFields['onpay_hmac_sha1'])) {
+            return false;
+        }
+
         $verify = $validFields['onpay_hmac_sha1'];
 
         unset($validFields['onpay_hmac_sha1']);
