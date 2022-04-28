@@ -314,6 +314,9 @@ class OnPayAPI {
         if (403 === $response->getStatusCode()) {
             throw new TokenException($message, $response->getStatusCode());
         }
+        if (404 === $response->getStatusCode()) {
+            $message = 'Not found';
+        }
         throw new ApiException($message, $response->getStatusCode());
     }
 
