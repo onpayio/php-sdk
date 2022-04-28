@@ -302,7 +302,7 @@ class OnPayAPI {
         }
 
         $message = '';
-        if ('' !== $response->getBody() && null !== $response->getBody()) {
+        if ('' !== $response->getBody() && null !== $response->getBody() && $response->getHeader('content-type') === 'application/json') {
             $body = json_decode($response->getBody(), true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 throw new ApiException('Failed to decode JSON body-response: ' . json_last_error_msg(), $response->getStatusCode());   
