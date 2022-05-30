@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.22] - 2022-05-30
+- Introduced payment creation (#60)
+- Fixed OAUTH2 codeverifier not being set (#65)
+- Added helper functions for currency/method validation (#64, #70)
+- Ensure HMAC value being set in payment window (#66)
+- Added better handling of unexpected API errors (#67)
+
 ## [1.0.21] - 2022-03-31
 - Introduce Currency classes (#59, #62, #63)
 - Fixed broken PHP doc (#61)
