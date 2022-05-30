@@ -5,7 +5,7 @@ namespace OnPay\API\Util\PaymentMethods;
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Util\Currency;
 use OnPay\API\Util\PaymentMethods\Methods\Anyday;
-use OnPay\API\Util\PaymentMethods\Methods\Applepay;
+use OnPay\API\Util\PaymentMethods\Methods\ApplePay;
 use OnPay\API\Util\PaymentMethods\Methods\Card;
 use OnPay\API\Util\PaymentMethods\Methods\GooglePay;
 use OnPay\API\Util\PaymentMethods\Methods\MobilePay;
