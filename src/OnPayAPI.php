@@ -248,7 +248,7 @@ class OnPayAPI {
                 'POST',
                 $this->options['base_uri'] . '/v1/' . $url,
                 ['Content-Type' => 'application/json'],
-                json_encode($postBody)
+                json_encode($postBody, JSON_UNESCAPED_SLASHES)
             );
             $response = $this->getClient()->send(
                 $this->oauth2Provider,
