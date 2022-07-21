@@ -1,6 +1,7 @@
 <?php
 namespace OnPay\API;
 
+use OnPay\API\PaymentWindow\Cart;
 use OnPay\API\PaymentWindow\PaymentInfo;
 
 class PaymentWindow
@@ -47,6 +48,10 @@ class PaymentWindow
      * @var PaymentInfo
      */
     private $info;
+    /**
+     * @var Cart|null
+     */
+    private $cart = null;
     private $availableFields;
     private $requiredFields;
     private $actionUrl = "https://onpay.io/window/v3/";
@@ -425,6 +430,9 @@ class PaymentWindow
                 $fields = array_merge($fields, $this->info->getFieldsWithoutPrefix());
             }
         }
+        if (isset($this->cart)) {
+            $fields = array_merge($fields, $this->cart->getFields());
+        }
         foreach ($this->availableFields as $field) {
             if(property_exists($this, $field) && null !== $this->{$field}) {
                 $key = '';
@@ -520,6 +528,23 @@ class PaymentWindow
      */
     public function setInfo(PaymentWindow\PaymentInfo $paymentInfo) {
         $this->info = $paymentInfo;
+    }
+
+    /**
+     * Set the Cart object
+     *
+     * @param Cart $cart
+     * @return void
+     */
+    public function setCart(PaymentWindow\Cart $cart) {
+        $this->cart = $cart;
+    }
+
+    /**
+     * @return Cart|null
+     */
+    public function getCart() {
+        return $this->cart;
     }
 
     /**
