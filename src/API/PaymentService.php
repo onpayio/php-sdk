@@ -168,6 +168,23 @@ class PaymentService {
         $paymentData['info']['phone']['work_cc'] = $this->getPaymentDataByKey('phone_work_cc');
         $paymentData['info']['phone']['work_number'] = $this->getPaymentDataByKey('phone_work_number');
 
+
+        if (null !== $this->paymentWindow->getCart()) {
+            $cart = $this->paymentWindow->getCart();
+            $paymentData['cart'] = [];
+            $paymentData['cart']['shipping'] = $cart->getShipping();
+            $paymentData['cart']['handling'] = $cart->getHandling();
+            $paymentData['cart']['discount'] = $cart->getDiscount();
+            $paymentData['cart']['items'] = [];
+            foreach ($cart->getItems() as $item) {
+                $paymentData['cart']['items'][] = $item->getFields();
+            }
+
+            $paymentData['cart']['items'] = 'ba';
+
+            $cart->getFields();
+        }
+
         return $this->cleanData($paymentData);
     }
 
