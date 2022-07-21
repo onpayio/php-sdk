@@ -168,7 +168,23 @@ class PaymentService {
         $paymentData['info']['phone']['work_cc'] = $this->getPaymentDataByKey('phone_work_cc');
         $paymentData['info']['phone']['work_number'] = $this->getPaymentDataByKey('phone_work_number');
 
-        return $paymentData;
+        return $this->cleanData($paymentData);
+    }
+
+    private function cleanData(array $data) {
+        $output = [];
+        foreach ($data as $key => $item) {
+            if (is_array($item)) {
+                $item = $this->cleanData($item);
+                if (count($item) > 0) {
+                    $output[$key] = $item;
+                }
+            } else if (!is_null($item)) {
+                $output[$key] = $item;
+            }
+        }
+
+        return $output;
     }
 
     private function getPaymentDataByKey($key) {
