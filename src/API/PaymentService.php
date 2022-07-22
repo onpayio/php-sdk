@@ -180,8 +180,6 @@ class PaymentService {
                 $paymentData['cart']['items'][] = $item->getFields();
             }
 
-            $paymentData['cart']['items'] = 'ba';
-
             $cart->getFields();
         }
 

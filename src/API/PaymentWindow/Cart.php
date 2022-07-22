@@ -2,6 +2,8 @@
 
 namespace OnPay\API\PaymentWindow;
 
+use OnPay\API\Exception\InvalidCartException;
+
 class Cart {
     /**
      * @var CartShipping|null
@@ -150,5 +152,65 @@ class Cart {
         }
 
         return $output;
+    }
+
+    /**
+     * @param int $amount
+     * @return void
+     * @throws InvalidCartException
+     * @internal
+     */
+    public function throwOnInvalid($amount) {
+        $errors = [];
+
+        $amount = intval($amount);
+
+        $itemTotal = 0;
+        $cartTotal = 0;
+
+        foreach ($this->items as $item) {
+            // Check that tax is not larger than price
+            if ($item->getTax() > $item->getPrice()) {
+                $errors[] = 'Tax value higher than price on: ' . $item->getName();
+            }
+            $itemTotal += $item->getPrice() * $item->getQuantity();
+        }
+        $cartTotal += $itemTotal;
+
+        if (null !== $this->getShipping()) {
+            if ($this->getShipping()->tax > $this->getShipping()->price) {
+                $errors[] = 'Tax on shipping higher than price';
+            }
+            if (
+                null !== $this->getShipping()->discount
+                && $this->getShipping()->discount > $this->getShipping()->price
+            ) {
+                $errors[] = 'Shipping discount higher than price';
+            }
+            $cartTotal += $this->getShipping()->price;
+            if (null !== $this->getShipping()->discount) {
+                $cartTotal = $cartTotal - $this->getShipping()->discount;
+            }
+        }
+
+        if (null !== $this->handling) {
+            if ($this->handling->tax > $this->handling->price) {
+                $errors[] = 'Tax on handling higher than price';
+            }
+            $cartTotal += $this->handling->price;
+        }
+
+        if (null !== $this->discount) {
+            $cartTotal = $cartTotal - $this->discount;
+        }
+
+        if ($amount !== $cartTotal) {
+            $errors[] = 'Cart total does not match amount for payment, cart total was calculated to: ' . $cartTotal . ', amount provided is: ' . $amount;
+        }
+
+        if (count($errors) > 0) {
+            throw new InvalidCartException($errors);
+        }
+
     }
 }

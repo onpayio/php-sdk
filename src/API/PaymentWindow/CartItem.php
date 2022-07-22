@@ -17,12 +17,12 @@ class CartItem {
     private $tax;
 
     /**
-     * @param string $name
-     * @param int $price Per item price
+     * @param string $name 1-127 bytes
+     * @param int $price Per item price including tax
      * @param int $quantity
      * @param int $tax
-     * @param string|null $description
-     * @param string|null $sku
+     * @param string|null $description 1-127 bytes
+     * @param string|null $sku 1-127 bytes
      */
     public function __construct($name, $price, $quantity, $tax, $description = null, $sku = null) {
         $this->name = $name;
@@ -72,5 +72,12 @@ class CartItem {
      */
     public function getTax() {
         return $this->tax;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName() {
+        return $this->name;
     }
 }

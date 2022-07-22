@@ -401,8 +401,9 @@ class PaymentWindow
     }
 
     /**
-     * @internal For Internal Use Only - Gets all filled fields
      * @return array
+     * @throws Exception\InvalidCartException
+     * @internal For Internal Use Only - Gets all filled fields
      */
     public function getAvailableFields() {
         return $this->buildAvailableFields(false);
@@ -411,6 +412,7 @@ class PaymentWindow
     /**
      * Gets all filled fields
      * @return array
+     * @throws Exception\InvalidCartException
      */
     private function getAvailableFieldsWithPrefix() {
         return $this->buildAvailableFields();
@@ -419,6 +421,7 @@ class PaymentWindow
     /**
      * @param bool $withPrefix
      * @return array
+     * @throws Exception\InvalidCartException
      */
     private function buildAvailableFields($withPrefix = true){
         $fields = [];
@@ -431,6 +434,7 @@ class PaymentWindow
             }
         }
         if (isset($this->cart)) {
+            $this->cart->throwOnInvalid($this->getAmount());
             $fields = array_merge($fields, $this->cart->getFields());
         }
         foreach ($this->availableFields as $field) {
@@ -455,6 +459,7 @@ class PaymentWindow
     /**
      * Get fields for form
      * @return array
+     * @throws Exception\InvalidCartException
      */
     public function getFormFields() {
 
@@ -533,10 +538,10 @@ class PaymentWindow
     /**
      * Set the Cart object
      *
-     * @param Cart $cart
+     * @param Cart|null $cart
      * @return void
      */
-    public function setCart(PaymentWindow\Cart $cart) {
+    public function setCart(PaymentWindow\Cart $cart = null) {
         $this->cart = $cart;
     }
 
