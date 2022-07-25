@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.23] - 2022-07-25
+- Added PayPal method support (#72)
+- Added sending cart data support (#72)
+
 ## [1.0.22] - 2022-05-30
 - Introduced payment creation (#60)
 - Fixed OAUTH2 codeverifier not being set (#65)
