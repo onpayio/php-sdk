@@ -168,7 +168,38 @@ class PaymentService {
         $paymentData['info']['phone']['work_cc'] = $this->getPaymentDataByKey('phone_work_cc');
         $paymentData['info']['phone']['work_number'] = $this->getPaymentDataByKey('phone_work_number');
 
-        return $paymentData;
+
+        if (null !== $this->paymentWindow->getCart()) {
+            $cart = $this->paymentWindow->getCart();
+            $paymentData['cart'] = [];
+            $paymentData['cart']['shipping'] = $cart->getShipping();
+            $paymentData['cart']['handling'] = $cart->getHandling();
+            $paymentData['cart']['discount'] = $cart->getDiscount();
+            $paymentData['cart']['items'] = [];
+            foreach ($cart->getItems() as $item) {
+                $paymentData['cart']['items'][] = $item->getFields();
+            }
+
+            $cart->getFields();
+        }
+
+        return $this->cleanData($paymentData);
+    }
+
+    private function cleanData(array $data) {
+        $output = [];
+        foreach ($data as $key => $item) {
+            if (is_array($item)) {
+                $item = $this->cleanData($item);
+                if (count($item) > 0) {
+                    $output[$key] = $item;
+                }
+            } else if (!is_null($item)) {
+                $output[$key] = $item;
+            }
+        }
+
+        return $output;
     }
 
     private function getPaymentDataByKey($key) {
