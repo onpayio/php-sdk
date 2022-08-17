@@ -14,6 +14,7 @@ use OnPay\API\Exception\ConnectionException;
 use OnPay\API\GatewayService;
 use OnPay\API\SubscriptionService;
 use OnPay\API\TransactionService;
+use OnPay\API\PaymentService;
 use OnPay\API\Http\Request as HttpRequest;
 use OnPay\API\Http\Response as HttpResponse;
 use OnPay\OAuth\Client\OAuthClient;
@@ -48,6 +49,11 @@ class OnPayAPI {
      * @var SubscriptionService
      */
     protected $subscriptionService;
+
+    /**
+     * @var PaymentService
+     */
+    protected $paymentService;
 
     /**
      * @var GatewayService
@@ -338,6 +344,16 @@ class OnPayAPI {
             $this->subscriptionService = new SubscriptionService($this);
         }
         return $this->subscriptionService;
+    }
+
+    /**
+     * @return PaymentService
+     */
+    public function payment() {
+        if (!isset($this->paymentService)) {
+            $this->paymentService = new PaymentService($this);
+        }
+        return $this->paymentService;
     }
 
     /**

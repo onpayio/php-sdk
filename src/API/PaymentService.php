@@ -107,7 +107,7 @@ class PaymentService {
         $paymentData = [];
 
         $paymentData['accepturl'] = $this->getPaymentDataByKey('accepturl');
-        $paymentData['amount'] = $this->getPaymentDataByKey('amount');
+        $paymentData['amount'] = intval($this->getPaymentDataByKey('amount')); // Amount must be int with API, but PaymentWindow historically allows strings.
         $paymentData['callbackurl'] = $this->getPaymentDataByKey('callbackurl');
         $paymentData['currency'] = $this->getPaymentDataByKey('currency');
         $paymentData['declineurl'] = $this->getPaymentDataByKey('declineurl');
@@ -117,7 +117,7 @@ class PaymentService {
         $paymentData['method'] = $this->getPaymentDataByKey('method');
         $paymentData['platform'] = $this->getPaymentDataByKey('platform');
         $paymentData['reference'] = $this->getPaymentDataByKey('reference');
-        $paymentData['testmode'] = $this->getPaymentDataByKey('testmode');
+        $paymentData['testmode'] = boolval($this->getPaymentDataByKey('testmode')); // Testmode must be boolean with API, but PaymentWindow historically allows mixed.
         $paymentData['type'] = $this->getPaymentDataByKey('type');
         $paymentData['website'] = $this->getPaymentDataByKey('website');
 
