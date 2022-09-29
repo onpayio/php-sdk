@@ -65,7 +65,7 @@ $paymentWindow->setInfo($paymentInfo);
 <form method="post" action="<?php echo $paymentWindow->getActionUrl(); ?>" accept-charset="UTF-8">
     <?php
         foreach ($paymentWindow->getFormFields() as $key => $value) { ?>
-            <input type="hidden" name="<?php echo $key;?>" value="<?php echo $value;?>">
+            <input type="hidden" name="<?php echo $key;?>" value="<?php echo htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8');?>">
     <?php } ?>
     <input type="submit" value="Make payment">
 </form>
