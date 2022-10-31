@@ -165,10 +165,24 @@ class Cart {
 
         $amount = intval($amount);
 
+        if ($amount < 0) {
+            $errors[] = 'Amount cannot be negative';
+        }
+
         $itemTotal = 0;
         $cartTotal = 0;
 
         foreach ($this->items as $item) {
+            // Check for negative values
+            if ($item->getPrice() < 0) {
+                $errors[] = 'Item price cannot be negative: ' . $item->getName();
+            }
+            if ($item->getTax() < 0) {
+                $errors[] = 'Item tax cannot be negative: ' . $item->getName();
+            }
+            if ($item->getQuantity() < 0) {
+                $errors[] = 'Item quantity cannot be negative: ' . $item->getName();
+            }
             // Check that tax is not larger than price
             if ($item->getTax() > $item->getPrice()) {
                 $errors[] = 'Tax value higher than price on: ' . $item->getName();
@@ -177,23 +191,41 @@ class Cart {
         }
         $cartTotal += $itemTotal;
 
-        if (null !== $this->getShipping()) {
-            if ($this->getShipping()->tax > $this->getShipping()->price) {
+        if (null !== $this->shipping) {
+            // Check for negative values
+            if ($this->shipping->price < 0) {
+                $errors[] = 'Shipping price cannot be negative';
+            }
+            if ($this->shipping->tax < 0) {
+                $errors[] = 'Shipping tax cannot be negative';
+            }
+            // Check values in relation to each other
+            if ($this->shipping->tax > $this->shipping->price) {
                 $errors[] = 'Tax on shipping higher than price';
             }
-            if (
-                null !== $this->getShipping()->discount
-                && $this->getShipping()->discount > $this->getShipping()->price
-            ) {
-                $errors[] = 'Shipping discount higher than price';
+            if (null !== $this->shipping->discount) {
+                if ($this->shipping->discount < 0) {
+                    $errors[] = 'Shipping discount cannot be negative';
+                }
+                if($this->shipping->discount > $this->shipping->price) {
+                    $errors[] = 'Shipping discount higher than price';
+                }
             }
-            $cartTotal += $this->getShipping()->price;
-            if (null !== $this->getShipping()->discount) {
-                $cartTotal = $cartTotal - $this->getShipping()->discount;
+            $cartTotal += $this->shipping->price;
+            if (null !== $this->shipping->discount) {
+                $cartTotal = $cartTotal - $this->shipping->discount;
             }
         }
 
         if (null !== $this->handling) {
+            // Check for negative values
+            if ($this->handling->price < 0) {
+                $errors[] = 'Handling price cannot be negative';
+            }
+            if ($this->handling->tax < 0) {
+                $errors[] = 'Handling tax cannot be negative';
+            }
+            // Check values in relation to each other
             if ($this->handling->tax > $this->handling->price) {
                 $errors[] = 'Tax on handling higher than price';
             }
@@ -201,6 +233,9 @@ class Cart {
         }
 
         if (null !== $this->discount) {
+            if ($this->discount < 0) {
+                $errors[] = 'Discount cannot be negative';
+            }
             $cartTotal = $cartTotal - $this->discount;
         }
 
@@ -211,6 +246,5 @@ class Cart {
         if (count($errors) > 0) {
             throw new InvalidCartException($errors);
         }
-
     }
 }
