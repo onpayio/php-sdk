@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.25] - 2023-02-22
+- Updated readme with info about htmlentity escaping field values.
+- Added check for negative values in paymentWindow Cart object.
+- Allow whitespace and hyphen characters in PostalCode fields in PaymentInfo object.
+
 ## [1.0.24] - 2022-08-17
 - Added payment service method to API class
 - Added typing of certain parameters that are historically less strict, when creating payments
