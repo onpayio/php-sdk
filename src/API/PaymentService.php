@@ -119,6 +119,7 @@ class PaymentService {
         $paymentData['reference'] = $this->getPaymentDataByKey('reference');
         $paymentData['testmode'] = boolval($this->getPaymentDataByKey('testmode')); // Testmode must be boolean with API, but PaymentWindow historically allows mixed.
         $paymentData['type'] = $this->getPaymentDataByKey('type');
+        $paymentData['create_transaction'] = $this->getPaymentDataByKey('subscription_with_transaction');
         $paymentData['website'] = $this->getPaymentDataByKey('website');
 
         $paymentData['info']['address_identical_shipping'] = $this->getPaymentDataByKey('address_identical_shipping');
