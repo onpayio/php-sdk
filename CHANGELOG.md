@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.26] - 2023-09-20
+Add transaction creation from subscription flag in payment creation trough API
+
 ## [1.0.25] - 2023-02-22
 - Updated readme with info about htmlentity escaping field values.
 - Added check for negative values in paymentWindow Cart object.
