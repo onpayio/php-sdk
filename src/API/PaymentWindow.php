@@ -3,10 +3,12 @@ namespace OnPay\API;
 
 use OnPay\API\PaymentWindow\Cart;
 use OnPay\API\PaymentWindow\PaymentInfo;
+use OnPay\OnPayAPI;
 
 class PaymentWindow
 {
-    const SDK_VERSION = '1.0.26';
+    const SDK_VERSION = OnPayAPI::SDK_VERSION;
+    const SDK_VERSION_STRING = 'php-sdk' . '/' . OnPayAPI::SDK_VERSION;
 
     const METHOD_CARD = 'card';
     const METHOD_MOBILEPAY = 'mobilepay';
@@ -89,7 +91,7 @@ class PaymentWindow
             "acceptUrl",
         ];
 
-        $this->platform = 'php-sdk' . '/' . self::SDK_VERSION;
+        $this->platform = self::SDK_VERSION_STRING;
     }
 
     /**
