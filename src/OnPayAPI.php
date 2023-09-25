@@ -20,6 +20,8 @@ use OnPay\API\Http\Response as HttpResponse;
 use OnPay\OAuth\Client\OAuthClient;
 
 class OnPayAPI {
+    const SDK_VERSION = '1.0.26';
+
     /**
      * @var InternalTokenStorage
      */
@@ -88,6 +90,11 @@ class OnPayAPI {
     protected $httpClient;
 
     /**
+     * @var string
+     */
+    protected $platform;
+
+    /**
      * OnPayAPI constructor.
      * @param \OnPay\TokenStorageInterface $tokenStorage
      * @param array $options
@@ -136,6 +143,12 @@ class OnPayAPI {
         );
 
         $this->httpClient = new CurlHttpClientLogger([], new ErrorLogger());
+
+        if (array_key_exists('platform', $this->options)) {
+            $this->platform = $this->options['platform'];
+        } else {
+            $this->platform = 'php-sdk' . '/' . self::SDK_VERSION;
+        }
     }
 
     /**
@@ -175,6 +188,14 @@ class OnPayAPI {
         } catch (TokenException $e) {
             return false;
         }
+    }
+
+    /**
+     * Returns the platform value set.
+     * @return string
+     */
+    public function getPlatform() {
+        return $this->platform;
     }
 
     /**
@@ -253,7 +274,10 @@ class OnPayAPI {
             $request = new Request(
                 'POST',
                 $this->options['base_uri'] . '/v1/' . $url,
-                ['Content-Type' => 'application/json'],
+                [
+                    'Content-Type' => 'application/json',
+                    'User-Agent' => $this->platform,
+                ],
                 json_encode($postBody, JSON_UNESCAPED_SLASHES)
             );
             $response = $this->getClient()->send(

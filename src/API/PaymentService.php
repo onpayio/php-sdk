@@ -49,6 +49,11 @@ class PaymentService {
      * @throws MissingDataException
      */
     public function createNewPayment($paymentWindow) {
+        // If api has a platform string, and window platform is not modified.
+        if (null !== $this->api->getPlatform() && $paymentWindow::SDK_VERSION_STRING === $paymentWindow->getPlatform()) {
+            $paymentWindow->setPlatform($this->api->getPlatform());
+        }
+
         $this->paymentWindow = $paymentWindow;
 
         //We can only proceed with this request if we have a valid PaymentWindow Object.
