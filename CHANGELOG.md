@@ -6,8 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.27] - 2023-12-20
+- Added custom user agent to header of API calls, and let window platform inherit this value if not otherwise set (#82)
+
 ## [1.0.26] - 2023-09-20
-Add transaction creation from subscription flag in payment creation trough API
+- Add transaction creation from subscription flag in payment creation trough API
 
 ## [1.0.25] - 2023-02-22
 - Updated readme with info about htmlentity escaping field values.
