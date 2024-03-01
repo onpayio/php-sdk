@@ -12,6 +12,7 @@ use OnPay\API\Util\PaymentMethods\Methods\MobilePay;
 use OnPay\API\Util\PaymentMethods\Methods\MobilePayCheckout;
 use OnPay\API\Util\PaymentMethods\Methods\PaymentMethodInterface;
 use OnPay\API\Util\PaymentMethods\Methods\PayPal;
+use OnPay\API\Util\PaymentMethods\Methods\Klarna;
 use OnPay\API\Util\PaymentMethods\Methods\Swish;
 use OnPay\API\Util\PaymentMethods\Methods\ViaBill;
 use OnPay\API\Util\PaymentMethods\Methods\Vipps;
@@ -39,6 +40,7 @@ class PaymentMethods {
         $this->paymentMethods[] = new ApplePay();
         $this->paymentMethods[] = new Card();
         $this->paymentMethods[] = new GooglePay();
+        $this->paymentMethods[] = new Klarna();
         $this->paymentMethods[] = new MobilePay();
         $this->paymentMethods[] = new MobilePayCheckout();
         $this->paymentMethods[] = new PayPal();
