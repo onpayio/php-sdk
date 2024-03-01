@@ -20,6 +20,7 @@ class PaymentWindow
     const METHOD_VIPPS = 'vipps';
     const METHOD_SWISH = 'swish';
     const METHOD_PAYPAL = 'paypal';
+    const METHOD_KLARNA = 'klarna';
 
     const DELIVERY_DISABLED_NO_REASON = 'no-reason';
     const DELIVERY_DISABLED_NOT_PHYSICAL = 'not-physical';
