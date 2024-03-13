@@ -191,7 +191,7 @@ class PaymentInfo {
 
     public function __construct() {
         $this->availableFields = [
-            'account_id' => '\w{1,64}',
+            'account_id' => '[!-~]{1,64}',
             'account_date_created' => '[0-9]{4}\-[0-9]{2}\-[0-9]{2}',
             'account_date_change' => '[0-9]{4}\-[0-9]{2}\-[0-9]{2}',
             'account_date_password_change' => '[0-9]{4}\-[0-9]{2}\-[0-9]{2}',
