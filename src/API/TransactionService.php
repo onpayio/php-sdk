@@ -43,12 +43,16 @@ class TransactionService {
      * @param null $status
      * @param null $dateAfter
      * @param null $dateBefore
+     * @param string $direction
      * @return TransactionCollection
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getTransactions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null) {
-
-        $queryString = http_build_query(['page' => $page, 'page_size' => $pageSize, 'order_by' => $orderBy, 'query' => $query, 'status' => $status, 'date_after' => $dateAfter, 'date_before' => $dateBefore]);
+    public function getTransactions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null, $direction = 'DESC') {
+        $direction = strtoupper($direction);
+        if ($direction !== 'ASC') {
+            $direction = 'DESC';
+        }
+        $queryString = http_build_query(['page' => $page, 'page_size' => $pageSize, 'order_by' => $orderBy, 'query' => $query, 'status' => $status, 'date_after' => $dateAfter, 'date_before' => $dateBefore, 'direction' => $direction]);
         $results = $this->api->get('transaction/?' . $queryString);
 
         $transactions = [];
