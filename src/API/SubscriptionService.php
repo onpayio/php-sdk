@@ -32,11 +32,15 @@ class SubscriptionService
      * @param null $status
      * @param null $dateAfter
      * @param null $dateBefore
+     * @param string $direction
      * @return SubscriptionCollection
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getSubscriptions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null)  {
-
+    public function getSubscriptions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null, $direction = 'DESC')  {
+        $direction = strtoupper($direction);
+        if ($direction !== 'ASC') {
+            $direction = 'DESC';
+        }
         $queryString = http_build_query(
             [
                 'page' => $page,
@@ -45,7 +49,8 @@ class SubscriptionService
                 'query' => $query,
                 'status' => $status,
                 'date_after' => $dateAfter,
-                'date_before' => $dateBefore
+                'date_before' => $dateBefore,
+                'direction' => $direction
             ]);
 
         $results = $this->api->get('subscription/?' . $queryString);
