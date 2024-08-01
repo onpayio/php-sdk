@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 - Allow a broader selection of characters in cartinfo account id
 - Added direction parameter to transaction and subscription lists
+- Added missing enum for Klarna
 
 ## [1.0.29] - 2024-03-04
 - Added Klarna method
