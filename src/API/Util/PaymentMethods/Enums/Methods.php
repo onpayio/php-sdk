@@ -7,6 +7,7 @@ final class Methods {
     const APPLE_PAY = 'applepay';
     const CARD = 'card';
     const GOOGLE_PAY = 'googlepay';
+    const KLARNA = 'klarna';
     const MOBILEPAY = 'mobilepay';
     const MOBILEPAY_CHECKOUT = 'mobilepay_checkout';
     const PAYPAL = 'paypal';
