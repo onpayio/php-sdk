@@ -55,6 +55,8 @@ class PaymentWindow
      * @var Cart|null
      */
     private $cart = null;
+    private $surcharge_enabled = null;
+    private $surcharge_vat_rate = null;
     private $availableFields;
     private $requiredFields;
     private $actionUrl = "https://onpay.io/window/v3/";
@@ -82,7 +84,9 @@ class PaymentWindow
             'subscription_with_transaction',
             'website',
             'platform',
-            'expiration'
+            'expiration',
+            'surcharge_enabled',
+            'surcharge_vat_rate',
         ];
 
         $this->requiredFields = [
@@ -578,5 +582,27 @@ class PaymentWindow
         } else {
             $this->subscription_with_transaction = null;
         }
+    }
+
+    public function setSurchargeEnabled(bool $surcharge_enabled) {
+        $this->surcharge_enabled = $surcharge_enabled;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSurcharge_enabled() {
+        return $this->surcharge_enabled;
+    }
+
+    public function setSurchargeVatRate(int $surcharge_vat_rate) {
+        $this->surcharge_vat_rate = $surcharge_vat_rate;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSurchargeVatRate() {
+        return $this->surcharge_vat_rate;
     }
 }
