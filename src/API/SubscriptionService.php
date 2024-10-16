@@ -102,15 +102,19 @@ class SubscriptionService
      * @param $uuid
      * @param int $amount
      * @param string $orderId
+     * @param bool $surchargeEnabled
+     * @param int $surchargeVatRate
      * @return DetailedTransaction
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function createTransactionFromSubscription($uuid, $amount, $orderId) {
+    public function createTransactionFromSubscription($uuid, $amount, $orderId, $surchargeEnabled = false, $surchargeVatRate = 0) {
 
         $json = [
             'data' => [
                 'amount' => $amount,
-                'order_id' => $orderId
+                'order_id' => $orderId,
+                'surcharge_enabled' => $surchargeEnabled,
+                'surcharge_vat_rate' => $surchargeVatRate,
             ],
         ];
 
