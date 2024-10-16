@@ -584,7 +584,10 @@ class PaymentWindow
         }
     }
 
-    public function setSurchargeEnabled(bool $surcharge_enabled) {
+    /**
+    * @param bool $surcharge_enabled
+    */
+    public function setSurchargeEnabled($surcharge_enabled) {
         $this->surcharge_enabled = $surcharge_enabled;
     }
 
@@ -595,7 +598,10 @@ class PaymentWindow
         return $this->surcharge_enabled;
     }
 
-    public function setSurchargeVatRate(int $surcharge_vat_rate) {
+    /**
+    * @param int $surcharge_vat_rate
+    */
+    public function setSurchargeVatRate($surcharge_vat_rate) {
         $this->surcharge_vat_rate = $surcharge_vat_rate;
     }
 
