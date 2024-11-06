@@ -41,6 +41,7 @@ $paymentWindow->setAmount("123400");
 $paymentWindow->setReference("UniqieReferenceId");
 $paymentWindow->setAcceptUrl("https://example.com/payment?success=1");
 $paymentWindow->setDeclineUrl("https://example.com/payment?success=0");
+$paymentWindow->setWebsite('https://example.com/');
 $paymentWindow->setType("payment");
 $paymentWindow->setDesign("DesignName");
 // Force 3D secure
