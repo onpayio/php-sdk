@@ -240,7 +240,7 @@ class OnPayAPI {
      */
     public function get($url) {
         try {
-            $request = Request::get( $this->options['base_uri'] . '/v1/' . $url, ['User-Agent' => $this->platform]);
+            $request = Request::get( $this->options['base_uri'] . '/v1/' . $url, [], ['User-Agent' => $this->platform]);
             $response = $this->getClient()->send(
                 $this->oauth2Provider,
                 $this->userId,
