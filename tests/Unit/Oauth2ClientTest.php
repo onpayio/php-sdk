@@ -2,8 +2,8 @@
 
 namespace Tests\Unit;
 
-use fkooman\OAuth\Client\Http\Request;
-use fkooman\OAuth\Client\Http\Response;
+use OnPay\OAuth\Client\Http\Request;
+use OnPay\OAuth\Client\Http\Response;
 use OnPay\API\Exception\TokenException;
 use OnPay\CurlHttpClientLogger;
 use OnPay\OnPayAPI;
