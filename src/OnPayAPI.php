@@ -2,12 +2,11 @@
 
 namespace OnPay;
 
-use fkooman\OAuth\Client\ErrorLogger;
-use fkooman\OAuth\Client\Http\CurlHttpClient;
-use fkooman\OAuth\Client\Http\Exception\CurlException;
-use fkooman\OAuth\Client\Http\Request;
-use fkooman\OAuth\Client\Http\Response;
-use fkooman\OAuth\Client\Provider;
+use OnPay\OAuth\Client\Http\CurlHttpClient;
+use OnPay\OAuth\Client\Http\Exception\CurlException;
+use OnPay\OAuth\Client\Http\Response;
+use OnPay\OAuth\Client\Provider;
+use OnPay\OAuth\Client\Http\Request;
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Exception\TokenException;
 use OnPay\API\Exception\ConnectionException;
@@ -63,7 +62,7 @@ class OnPayAPI {
     protected $gatewayService;
 
     /**
-     * Not really used in the context of this implementation of fkooman/oauth2-client, however we set it as the same value for consistency.
+     * Not really used in the context of this implementation of OnPay/oauth2-client, however we set it as the same value for consistency.
      *
      * @var string
      */
@@ -142,7 +141,7 @@ class OnPayAPI {
             $this->options['base_uri'] . '/oauth2/access_token'
         );
 
-        $this->httpClient = new CurlHttpClientLogger([], new ErrorLogger());
+        $this->httpClient = new CurlHttpClientLogger([]);
 
         if (array_key_exists('platform', $this->options)) {
             $this->platform = $this->options['platform'];
@@ -254,9 +253,9 @@ class OnPayAPI {
             return $this->handleResponse($response);
         } catch (CurlException $e) {
             throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
-        } catch (\fkooman\OAuth\Client\Exception\TokenException $e) {
+        } catch (\OnPay\OAuth\Client\Exception\TokenException $e) {
             throw new TokenException($e->getMessage(), $e->getCode(), $e);
-        } catch (\fkooman\OAUth\Client\Exception\AccessTokenException $e) {
+        } catch (\OnPay\OAUth\Client\Exception\AccessTokenException $e) {
             throw new TokenException($e->getMessage(), $e->getCode(), $e);
         }
     }
@@ -293,7 +292,7 @@ class OnPayAPI {
             return $this->handleResponse($response);
         } catch (CurlException $e) {
             throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
-        } catch (\fkooman\OAuth\Client\Exception\TokenException $e) {
+        } catch (\OnPay\OAuth\Client\Exception\TokenException $e) {
             throw new TokenException($e->getMessage(), $e->getCode(), $e);
         }
     }
