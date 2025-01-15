@@ -2,9 +2,8 @@
 
 namespace OnPay;
 
-
-use fkooman\OAuth\Client\AccessToken;
-use fkooman\OAuth\Client\TokenStorageInterface as oauthTokenStorageInterface;
+use OnPay\OAuth\Client\AccessToken;
+use OnPay\OAuth\Client\TokenStorageInterface as oauthTokenStorageInterface;
 use OnPay\TokenStorageInterface as onpayTokenStorageInterface;
 
 class InternalTokenStorage implements oauthTokenStorageInterface {
@@ -45,7 +44,7 @@ class InternalTokenStorage implements oauthTokenStorageInterface {
     /**
      * @param string $userId
      * @return array
-     * @throws \fkooman\OAuth\Client\Exception\AccessTokenException
+     * @throws \OnPay\OAuth\Client\Exception\AccessTokenException
      */
     public function getAccessTokenList($userId) {
         $accessToken = $this->getToken();
@@ -73,7 +72,7 @@ class InternalTokenStorage implements oauthTokenStorageInterface {
 
     /**
      * @return AccessToken|null
-     * @throws \fkooman\OAuth\Client\Exception\AccessTokenException
+     * @throws \OnPay\OAuth\Client\Exception\AccessTokenException
      */
     private function getToken() {
         if ($this->onpayTokenInterface instanceof StaticToken) {
@@ -84,7 +83,7 @@ class InternalTokenStorage implements oauthTokenStorageInterface {
         }
         if(null !== $json && '' !== $json) {
             if (strpos($json, 'provider_id') !== false) {
-                // Json is of fkooman/oauth2-client format
+                // Json is of OnPay/oauth2-client format
                 $accessToken = AccessToken::fromJson($json);
             } else {
                 // Json is of league/oauth2-client format
@@ -97,7 +96,7 @@ class InternalTokenStorage implements oauthTokenStorageInterface {
     }
 
     /**
-     * Convert the token from the old league/oauth2-client format to fkooman/oauth2-client format
+     * Convert the token from the old league/oauth2-client format to OnPay/oauth2-client format
      */
     private function convertToken() {
         $json = $this->onpayTokenInterface->getToken();

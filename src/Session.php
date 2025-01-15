@@ -3,7 +3,7 @@
 namespace OnPay;
 
 
-use fkooman\OAuth\Client\SessionInterface;
+use OnPay\OAuth\Client\SessionInterface;
 
 class Session implements SessionInterface {
     protected $values;
