@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.32] - 2025-01-15
+- Integrated Oauth2 client fully into SDK
+
 ## [1.0.31] - 2025-01-14
 - Added full test of Oauth2 in API client
 - Fix user agent being set incorrectly in get requests
