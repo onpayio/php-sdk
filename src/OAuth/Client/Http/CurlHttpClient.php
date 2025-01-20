@@ -89,7 +89,7 @@ class CurlHttpClient implements HttpClientInterface
         $defaultCurlOptions = [
             CURLOPT_HEADER => false,
             CURLOPT_CONNECTTIMEOUT => 5,
-            CURLOPT_TIMEOUT => 10,
+            CURLOPT_TIMEOUT => 30,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => false,
             CURLOPT_PROTOCOLS => $this->allowHttp ? CURLPROTO_HTTPS | CURLPROTO_HTTP : CURLPROTO_HTTPS,
