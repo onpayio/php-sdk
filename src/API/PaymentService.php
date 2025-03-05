@@ -126,6 +126,8 @@ class PaymentService {
         $paymentData['type'] = $this->getPaymentDataByKey('type');
         $paymentData['create_transaction'] = $this->getPaymentDataByKey('subscription_with_transaction');
         $paymentData['website'] = $this->getPaymentDataByKey('website');
+        $paymentData['surcharge_enabled'] = $this->getPaymentDataByKey('surcharge_enabled');
+        $paymentData['surcharge_vat_rate'] = $this->getPaymentDataByKey('surcharge_vat_rate');
 
         $paymentData['info']['address_identical_shipping'] = $this->getPaymentDataByKey('address_identical_shipping');
         $paymentData['info']['delivery_email'] = $this->getPaymentDataByKey('delivery_email');
