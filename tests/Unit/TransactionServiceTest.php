@@ -4,43 +4,40 @@ use OnPay\API\TransactionService;
 use OnPay\API\Exception\ApiException;
 use PHPUnit\Framework\TestCase;
 
-class TransactionServiceTest extends TestCase
-{
+class TransactionServiceTest extends TestCase {
     private $apiMock;
     private $service;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         $this->apiMock = $this->createMock(\OnPay\OnPayAPI::class);
         $this->service = new TransactionService($this->apiMock);
     }
 
-    public function testGetTransactionThrowsOnEmptyIdentifier()
-    {
+    public function testGetTransactionThrowsOnEmptyIdentifier() {
         $this->expectException(ApiException::class);
+        $this->expectExceptionMessage('Transaction number must be provided');
         $this->service->getTransaction('');
     }
 
-    public function testCaptureTransactionThrowsOnEmptyTransactionNumber()
-    {
+    public function testCaptureTransactionThrowsOnEmptyTransactionNumber() {
         $this->expectException(ApiException::class);
+        $this->expectExceptionMessage('Transaction number must be provided');
         $this->service->captureTransaction('');
     }
 
-    public function testCancelTransactionThrowsOnEmptyTransactionNumber()
-    {
+    public function testCancelTransactionThrowsOnEmptyTransactionNumber() {
         $this->expectException(ApiException::class);
+        $this->expectExceptionMessage('Transaction number must be provided');
         $this->service->cancelTransaction('');
     }
 
-    public function testRefundTransactionThrowsOnEmptyTransactionNumber()
-    {
+    public function testRefundTransactionThrowsOnEmptyTransactionNumber() {
         $this->expectException(ApiException::class);
+        $this->expectExceptionMessage('Transaction number must be provided');
         $this->service->refundTransaction('');
     }
 
-    public function testGetTransactionReturnsDetailedTransactionOnValidIdentifier()
-    {
+    public function testGetTransactionReturnsDetailedTransactionOnValidIdentifier() {
         $uuid = '123e4567-e89b-12d3-a456-426614174000';
         $mockResult = [
             'data' => ['uuid' => $uuid],
@@ -58,8 +55,7 @@ class TransactionServiceTest extends TestCase
         $this->assertEquals($uuid, $result->uuid);
     }
 
-    public function testCaptureTransactionReturnsDetailedTransactionOnValidNumber()
-    {
+    public function testCaptureTransactionReturnsDetailedTransactionOnValidNumber() {
         $uuid = '123e4567-e89b-12d3-a456-426614174000';
         $mockResult = [
             'data' => ['uuid' => $uuid],
