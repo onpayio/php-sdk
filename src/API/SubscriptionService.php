@@ -6,6 +6,7 @@ use OnPay\API\Subscription\DetailedSubscription;
 use OnPay\API\Subscription\SimpleSubscription;
 use OnPay\API\Subscription\SubscriptionCollection;
 use OnPay\API\Transaction\DetailedTransaction;
+use OnPay\API\Exception\ApiException;
 use OnPay\API\Util\Pagination;
 use OnPay\OnPayAPI;
 
@@ -76,6 +77,9 @@ class SubscriptionService
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getSubscription($subscriptionId) {
+        if (empty($subscriptionId)) {
+            throw new ApiException('Subscription ID must be provided');
+        }
 
         $result = $this->api->get('subscription/' . $subscriptionId);
         $subscription = new DetailedSubscription($result['data']);
@@ -91,6 +95,10 @@ class SubscriptionService
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function cancelSubscription($subscriptionId) {
+        if (empty($subscriptionId)) {
+            throw new ApiException('Subscription ID must be provided');
+        }
+
         $result = $this->api->post('subscription/' . $subscriptionId . '/cancel');
         $subscription = new DetailedSubscription($result['data']);
         $subscription->setLinks($result['links']);
@@ -108,6 +116,9 @@ class SubscriptionService
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function createTransactionFromSubscription($uuid, $amount, $orderId, $surchargeEnabled = false, $surchargeVatRate = 0) {
+        if (empty($uuid)) {
+            throw new ApiException('Subscription UUID must be provided');
+        }
 
         $json = [
             'data' => [
