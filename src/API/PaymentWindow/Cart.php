@@ -28,14 +28,18 @@ class Cart {
      * @param int $price Amount in minor units, including tax and discount
      * @param int $tax Amount in minor monetary units
      * @param int|null $discount Amount in minor monetary units
+     * @param int|null $name Name that applies to the shipping
      * @return void
      */
-    public function setShipping($price, $tax, $discount = null) {
+    public function setShipping($price, $tax, $discount = null, $name = null) {
         $this->shipping = new CartShipping();
         $this->shipping->price = intval($price);
         $this->shipping->tax = intval($tax);
         if (null !== $discount) {
             $this->shipping->discount = intval($discount);
+        }
+        if (null !== $name) {
+            $this->shipping->name = $name;
         }
     }
 
@@ -44,12 +48,16 @@ class Cart {
      *
      * @param int $price Amount in minor units, including tax
      * @param int $tax Amount in minor monetary units
+     * @param int $name Name that applies to the handling
      * @return void
      */
-    public function setHandling($price, $tax) {
+    public function setHandling($price, $tax, $name = null) {
         $this->handling = new CartHandling();
         $this->handling->price = intval($price);
         $this->handling->tax = intval($tax);
+        if (null !== $name) {
+            $this->handling->name = $name;
+        }
     }
 
     /**
@@ -133,10 +141,16 @@ class Cart {
             if (null !== $this->shipping->discount) {
                 $output['onpay_cart_shipping_discount'] = $this->shipping->discount;
             }
+            if (null !== $this->shipping->name) {
+                $output['onpay_cart_shipping_name'] = $this->shipping->name;
+            }
         }
         if (null !== $this->handling) {
             $output['onpay_cart_handling_price'] = $this->handling->price;
             $output['onpay_cart_handling_tax'] = $this->handling->tax;
+            if (null !== $this->handling->name) {
+                $output['onpay_cart_handling_name'] = $this->handling->name;
+            }
         }
         if (null !== $this->discount) {
             $output['onpay_cart_discount'] = $this->discount;

@@ -12,4 +12,6 @@ class CartShipping {
     public $discount = null;
     /** @var int */
     public $tax;
+    /** @var string|null */
+    public $name = null;
 }
