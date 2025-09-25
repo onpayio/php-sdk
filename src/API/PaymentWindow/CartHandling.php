@@ -10,4 +10,6 @@ class CartHandling {
     public $price;
     /** @var int */
     public $tax;
+    /** @var string|null */
+    public $name = null;
 }
