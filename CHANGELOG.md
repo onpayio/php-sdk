@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.35] - 2025-10-01
+- Add input validation for transaction identifiers to prevent invalid API calls
+- Add input validation and unit tests for SubscriptionService methods
+- Added new cart parameters to payment creation objects
+
 ## [1.0.34] - 2025-03-07
 - Add surcharge fields to payment create API calls
 
