@@ -19,7 +19,7 @@ use OnPay\API\Http\Response as HttpResponse;
 use OnPay\OAuth\Client\OAuthClient;
 
 class OnPayAPI {
-    const SDK_VERSION = '1.0.34';
+    const SDK_VERSION = '1.0.35';
 
     /**
      * @var InternalTokenStorage
