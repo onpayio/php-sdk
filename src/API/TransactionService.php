@@ -6,6 +6,8 @@ use OnPay\API\Exception\ApiException;
 use OnPay\API\Transaction\DetailedTransaction;
 use OnPay\API\Transaction\SimpleTransaction;
 use OnPay\API\Transaction\TransactionCollection;
+use OnPay\API\Transaction\TransactionEvent;
+use OnPay\API\Transaction\TransactionEventCollection;
 use OnPay\API\Util\Pagination;
 use OnPay\OnPayAPI;
 
@@ -183,5 +185,32 @@ class TransactionService {
         $transaction->setLinks($result['links']);
 
         return $transaction;
+    }
+
+    /**
+     * @param null|string $cursor
+     * @return TransactionEventCollection
+     * @throws Exception\ApiException
+     * @throws Exception\ConnectionException
+     * @throws Exception\TokenException
+     */
+    public function getEvents($cursor = null) {
+        $query = '';
+        if (null !== $cursor) {
+            $query = '?cursor=' . $cursor;
+        }
+
+        $result = $this->api->get('transaction/events/' . $query);
+
+        $events = [];
+        foreach ($result['data'] as $item) {
+            $events[] = new TransactionEvent($item);
+        }
+
+        $collection = new TransactionEventCollection();
+        $collection->nextCursor = $result['meta']['next_cursor'];
+        $collection->events = $events;
+
+        return $collection;
     }
 }
