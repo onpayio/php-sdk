@@ -548,7 +548,7 @@ class PaymentWindow
      * @param Cart|null $cart
      * @return void
      */
-    public function setCart(PaymentWindow\Cart $cart = null) {
+    public function setCart(?PaymentWindow\Cart $cart = null) {
         $this->cart = $cart;
     }
 
