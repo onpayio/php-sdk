@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.38] - 2026-04-29
+- Fixed broken 1.0.37 release
+
 ## [1.0.37] - 2026-04-29
 - Added SECURITY.md
 - Add cardMask property to DetailedTransaction
