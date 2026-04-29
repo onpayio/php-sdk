@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - Added SECURITY.md
+- Add cardMask property to DetailedTransaction
 
 ## [1.0.36] - 2025-10-29
 - Bumped minimum version of PHP supported, to 7.4
