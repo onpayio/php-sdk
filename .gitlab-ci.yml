@@ -1,15 +1,5 @@
-image: harbor1.zitcom.dk/onpay/php82:latest
-
-stages:
-  - test
-
-before_script:
-  - COMPOSER_MEMORY_LIMIT=-1 composer install --no-interaction --no-progress
-
-phpunit:
-  stage: test
-  artifacts:
-    reports:
-      junit: phpunit-report.xml
-  script:
-    - php ./vendor/phpunit/phpunit/phpunit --log-junit phpunit-report.xml --testsuite All
+# CI job definitions live in the sibling ci-tooling project.
+include:
+  - project: '$CI_PROJECT_NAMESPACE/ci-tooling'
+    ref: main
+    file: '$CI_PROJECT_NAME.gitlab-ci.yml'
