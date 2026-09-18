@@ -9,7 +9,7 @@ API documentation at: https://manage.onpay.io/docs/api_v1.html
 
 ## Requirements
 
-PHP 7.4 and later.
+PHP 8.2 and later.
 
 ## Composer
 
