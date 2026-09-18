@@ -1,0 +1,45 @@
+{
+    "data": {
+        "uuid": "123e4567-e89b-12d3-a456-426614174000",
+        "transaction_number": "1001",
+        "status": "active",
+        "order_id": "order-4242",
+        "amount": 12500,
+        "charged": 0,
+        "refunded": 0,
+        "currency_code": "208",
+        "card_type": "Visa",
+        "acquirer": "clearhaus",
+        "wallet": null,
+        "3dsecure": true,
+        "testmode": false,
+        "created": "2026-09-18 10:00:00",
+        "has_cardholder_data": true,
+        "fee": 195,
+        "expiry_month": 12,
+        "expiry_year": 2030,
+        "card_country": 208,
+        "card_bin": "457173",
+        "card_mask": "457173******0000",
+        "ip": "203.0.113.10",
+        "ip_country": 208,
+        "subscription_number": null,
+        "subscription_uuid": null,
+        "cardholder_data": null,
+        "history": [
+            {
+                "action": "created",
+                "amount": 12500,
+                "author": "system",
+                "ip": "203.0.113.10",
+                "result_code": 0,
+                "result_text": "Approved",
+                "successful": true,
+                "date_time": "2026-09-18 10:00:00"
+            }
+        ]
+    },
+    "links": {
+        "self": "/transaction/123e4567-e89b-12d3-a456-426614174000"
+    }
+}

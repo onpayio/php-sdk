@@ -1,0 +1,8 @@
+{
+    "data": {
+        "secret": "test_hmac_secret"
+    },
+    "links": {
+        "self": "/gateway/window/v3/integration"
+    }
+}

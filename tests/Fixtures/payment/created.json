@@ -1,0 +1,13 @@
+{
+    "data": {
+        "payment_uuid": "9c8b7a65-4321-4dcb-a987-0e02b2c3d479",
+        "amount": 12500,
+        "currency_code": "DKK",
+        "expiration": 1789999999,
+        "language": "en",
+        "method": "card"
+    },
+    "links": {
+        "payment_window": "https://onpay.io/window/v3/9c8b7a65-4321-4dcb-a987-0e02b2c3d479"
+    }
+}

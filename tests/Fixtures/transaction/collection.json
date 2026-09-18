@@ -1,0 +1,52 @@
+{
+    "data": [
+        {
+            "uuid": "123e4567-e89b-12d3-a456-426614174000",
+            "transaction_number": "1001",
+            "status": "active",
+            "order_id": "order-4242",
+            "amount": 12500,
+            "charged": 0,
+            "refunded": 0,
+            "currency_code": "208",
+            "card_type": "Visa",
+            "acquirer": "clearhaus",
+            "3dsecure": true,
+            "testmode": false,
+            "created": "2026-09-18 10:00:00",
+            "has_cardholder_data": true,
+            "links": {
+                "self": "/transaction/123e4567-e89b-12d3-a456-426614174000"
+            }
+        },
+        {
+            "uuid": "223e4567-e89b-12d3-a456-426614174001",
+            "transaction_number": "1002",
+            "status": "finished",
+            "order_id": "order-4243",
+            "amount": 5000,
+            "charged": 5000,
+            "refunded": 0,
+            "currency_code": "208",
+            "card_type": "Mastercard",
+            "acquirer": "clearhaus",
+            "3dsecure": true,
+            "testmode": false,
+            "created": "2026-09-18 11:00:00",
+            "has_cardholder_data": false,
+            "links": {
+                "self": "/transaction/223e4567-e89b-12d3-a456-426614174001"
+            }
+        }
+    ],
+    "meta": {
+        "pagination": {
+            "total": 2,
+            "total_pages": 1,
+            "links": {
+                "next": null,
+                "previous": null
+            }
+        }
+    }
+}
