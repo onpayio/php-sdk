@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - BREAKING: Dropped support for PHP < 8.2; the SDK now requires PHP 8.2 or later. See UPGRADE.md.
+- Security: the default cURL client no longer `error_log()`s the full request/response on non-2xx replies (which leaked bearer tokens and request bodies); the Authorization header is now fully redacted in request string output.
 
 ## [1.0.39] - 2026-09-01
 - Accept alphanumeric gateway_id in OnPayAPI constructor

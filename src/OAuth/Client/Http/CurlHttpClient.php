@@ -42,12 +42,11 @@ class CurlHttpClient implements HttpClientInterface
             $curlOptions[CURLOPT_POSTFIELDS] = $request->getBody();
         }
 
-        $response = $this->exec($curlOptions, $request->getHeaders());
-        if (!$response->isOkay()) {
-            \error_log(\sprintf('REQUEST=%s, RESPONSE=%s', (string) $request, (string) $response));
-        }
-
-        return $response;
+        // NOTE: previously this error_log()'d the full request+response on any
+        // non-2xx, leaking bearer tokens and cardholder data into the webserver
+        // error log. Removed for 2.0. Opt-in PSR-3 logging with
+        // redaction is reintroduced later.
+        return $this->exec($curlOptions, $request->getHeaders());
     }
 
     /**

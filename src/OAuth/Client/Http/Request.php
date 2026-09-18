@@ -35,11 +35,9 @@ class Request {
     {
         $requestHeaders = [];
         foreach ($this->requestHeaders as $k => $v) {
-            // we do NOT want to log HTTP Basic credentials
+            // we do NOT want to log credentials of any scheme (Basic, Bearer, ...)
             if ('Authorization' === $k) {
-                if (0 === \strpos($v, 'Basic ')) {
-                    $v = 'XXX-REPLACED-FOR-LOG-XXX';
-                }
+                $v = 'XXX-REPLACED-FOR-LOG-XXX';
             }
             $requestHeaders[] = \sprintf('%s: %s', $k, $v);
         }
