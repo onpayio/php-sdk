@@ -37,7 +37,33 @@ composer require onpayio/php-sdk:^2.0
 > Changes are appended to this section as they are made during the `2.0` cycle.
 > Each entry states what changed, why, and what you need to do to migrate.
 
-_No changes recorded yet._
+### An installed PSR-18 HTTP client is now used by default
+
+**What changed:** `OnPayAPI` no longer always uses its own bundled cURL client.
+When no client is passed to the constructor, the SDK auto-discovers an installed
+PSR-18 client (via `php-http/discovery`) and uses it for all API and OAuth
+traffic, only falling back to the bundled cURL client when none is installed. So
+if your project already has a PSR-18 client available (e.g. Guzzle), OnPay traffic
+will now run through it after upgrading, without any code change on your part.
+
+**Why:** it makes the HTTP boundary pluggable and testable, and lets you control
+transport (timeouts, proxies, TLS, middleware) instead of being locked to the
+vendored cURL client.
+
+**Impact:** the requests are unchanged, but they run over the discovered client's
+transport — its timeouts, proxies, retries, TLS settings and middleware apply to
+OnPay traffic and may behave differently from the SDK's cURL defaults.
+
+**How to migrate:** to keep control over which client is used, pass one explicitly
+(with PSR-17 factories) rather than relying on discovery:
+
+```php
+$factory = new \GuzzleHttp\Psr7\HttpFactory(); // implements both PSR-17 factories
+$api = new OnPay\OnPayAPI($tokenStorage, $options, new \GuzzleHttp\Client(), $factory, $factory);
+```
+
+The existing two-argument constructor still works; `getLastHttpRequest()` /
+`getLastHttpResponse()` keep working on every path.
 
 <!--
 Template for a new entry:

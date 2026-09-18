@@ -17,6 +17,14 @@ use OnPay\API\PaymentService;
 use OnPay\API\Http\Request as HttpRequest;
 use OnPay\API\Http\Response as HttpResponse;
 use OnPay\OAuth\Client\OAuthClient;
+use OnPay\Http\Psr18HttpClient;
+use OnPay\Http\RecordingHttpClientInterface;
+use Http\Discovery\Psr17FactoryDiscovery;
+use Http\Discovery\Psr18ClientDiscovery;
+use Http\Discovery\Exception\NotFoundException;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 
 class OnPayAPI {
     const SDK_VERSION = '1.0.39';
@@ -84,7 +92,7 @@ class OnPayAPI {
     protected $response;
 
     /**
-     * @var CurlHttpClientLogger
+     * @var RecordingHttpClientInterface
      */
     protected $httpClient;
 
@@ -95,10 +103,26 @@ class OnPayAPI {
 
     /**
      * OnPayAPI constructor.
+     *
+     * The HTTP client is optional. When a PSR-18 client is supplied it is used
+     * for all API and OAuth traffic (PSR-17 factories are required to build the
+     * requests; any that are omitted are auto-discovered). When no client is
+     * supplied, a PSR-18 client + factories are auto-discovered from the
+     * environment, falling back to the bundled cURL client if none are installed.
+     *
      * @param \OnPay\TokenStorageInterface $tokenStorage
      * @param array $options
+     * @param ClientInterface|null $httpClient
+     * @param RequestFactoryInterface|null $requestFactory
+     * @param StreamFactoryInterface|null $streamFactory
      */
-    public function __construct(TokenStorageInterface $tokenStorage, array $options) {
+    public function __construct(
+        TokenStorageInterface $tokenStorage,
+        array $options,
+        ?ClientInterface $httpClient = null,
+        ?RequestFactoryInterface $requestFactory = null,
+        ?StreamFactoryInterface $streamFactory = null
+    ) {
         $this->tokenStorage = $tokenStorage;
 
         $defaultOptions = [
@@ -141,12 +165,57 @@ class OnPayAPI {
             $this->options['base_uri'] . '/oauth2/access_token'
         );
 
-        $this->httpClient = new CurlHttpClientLogger([]);
+        $this->httpClient = $this->resolveHttpClient($httpClient, $requestFactory, $streamFactory);
 
         if (array_key_exists('platform', $this->options)) {
             $this->platform = $this->options['platform'];
         } else {
             $this->platform = 'php-sdk' . '/' . self::SDK_VERSION;
+        }
+    }
+
+    /**
+     * Resolves the HTTP client used for all API and OAuth traffic.
+     *
+     * Order: (1) an explicitly injected PSR-18 client (discovering any missing
+     * PSR-17 factory); (2) a PSR-18 client + factories discovered from the
+     * environment; (3) the bundled cURL client as a last-resort default.
+     *
+     * @param ClientInterface|null $httpClient
+     * @param RequestFactoryInterface|null $requestFactory
+     * @param StreamFactoryInterface|null $streamFactory
+     * @return RecordingHttpClientInterface
+     */
+    private function resolveHttpClient(
+        ?ClientInterface $httpClient,
+        ?RequestFactoryInterface $requestFactory,
+        ?StreamFactoryInterface $streamFactory
+    ) {
+        if (null !== $httpClient) {
+            try {
+                $requestFactory = $requestFactory ?? Psr17FactoryDiscovery::findRequestFactory();
+                $streamFactory = $streamFactory ?? Psr17FactoryDiscovery::findStreamFactory();
+            } catch (NotFoundException $e) {
+                throw new \InvalidArgumentException(
+                    'A PSR-18 HTTP client was provided but no PSR-17 request/stream factory could be found. ' .
+                    'Provide a RequestFactoryInterface and StreamFactoryInterface, or install a PSR-17 implementation.',
+                    0,
+                    $e
+                );
+            }
+
+            return new Psr18HttpClient($httpClient, $requestFactory, $streamFactory);
+        }
+
+        try {
+            $discoveredClient = Psr18ClientDiscovery::find();
+            $requestFactory = $requestFactory ?? Psr17FactoryDiscovery::findRequestFactory();
+            $streamFactory = $streamFactory ?? Psr17FactoryDiscovery::findStreamFactory();
+
+            return new Psr18HttpClient($discoveredClient, $requestFactory, $streamFactory);
+        } catch (NotFoundException $e) {
+            // No PSR-18/17 stack available — fall back to the bundled cURL client.
+            return new CurlHttpClientLogger([]);
         }
     }
 

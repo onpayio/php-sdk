@@ -2,11 +2,12 @@
 
 namespace OnPay;
 
+use OnPay\Http\RecordingHttpClientInterface;
 use OnPay\OAuth\Client\Http\CurlHttpClient;
 use OnPay\OAuth\Client\Http\Request;
 use OnPay\OAuth\Client\Http\Response;
 
-class CurlHttpClientLogger extends CurlHttpClient {
+class CurlHttpClientLogger extends CurlHttpClient implements RecordingHttpClientInterface {
     /**
      * @var Request
      */

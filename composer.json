@@ -11,9 +11,23 @@
     },
     "require": {
         "php": ">=8.2",
-        "ext-json": "*"
+        "ext-json": "*",
+        "psr/http-client": "^1.0",
+        "psr/http-factory": "^1.0",
+        "psr/http-message": "^1.1 || ^2.0",
+        "php-http/discovery": "^1.19"
     },
     "require-dev": {
-        "phpunit/phpunit": "^11.4"
+        "phpunit/phpunit": "^11.4",
+        "guzzlehttp/guzzle": "^7.0"
+    },
+    "suggest": {
+        "guzzlehttp/guzzle": "A PSR-18 HTTP client with PSR-17 factories; auto-discovered if installed, or inject it explicitly.",
+        "nyholm/psr7": "A lightweight PSR-7/PSR-17 implementation to pair with a PSR-18 client."
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
     }
 }
