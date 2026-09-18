@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Unit;
+
 use OnPay\API\TransactionService;
 use OnPay\API\Exception\ApiException;
 use PHPUnit\Framework\TestCase;
@@ -40,7 +42,7 @@ class TransactionServiceTest extends TestCase {
     public function testGetTransactionReturnsDetailedTransactionOnValidIdentifier() {
         $uuid = '123e4567-e89b-12d3-a456-426614174000';
         $mockResult = [
-            'data' => ['uuid' => $uuid],
+            'data' => ['uuid' => $uuid, 'history' => []],
             'links' => ['self' => '/transaction/' . $uuid]
         ];
 
@@ -58,7 +60,7 @@ class TransactionServiceTest extends TestCase {
     public function testCaptureTransactionReturnsDetailedTransactionOnValidNumber() {
         $uuid = '123e4567-e89b-12d3-a456-426614174000';
         $mockResult = [
-            'data' => ['uuid' => $uuid],
+            'data' => ['uuid' => $uuid, 'history' => []],
             'links' => ['self' => '/transaction/' . $uuid]
         ];
 

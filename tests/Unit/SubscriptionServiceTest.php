@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Unit;
+
 use OnPay\API\SubscriptionService;
 use OnPay\API\Exception\ApiException;
 use PHPUnit\Framework\TestCase;
@@ -34,7 +36,7 @@ class SubscriptionServiceTest extends TestCase {
     public function testGetSubscriptionReturnsDetailedSubscriptionOnValidId() {
         $uuid = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
         $mockResult = [
-            'data' => ['uuid' => $uuid],
+            'data' => ['uuid' => $uuid, 'history' => [], 'transactions' => []],
             'links' => ['self' => "/subscription/$uuid"]
         ];
 
@@ -51,7 +53,7 @@ class SubscriptionServiceTest extends TestCase {
     public function testCancelSubscriptionReturnsDetailedSubscriptionOnValidId() {
         $uuid = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
         $mockResult = [
-            'data' => ['uuid' => $uuid],
+            'data' => ['uuid' => $uuid, 'history' => [], 'transactions' => []],
             'links' => ['self' => "/subscription/$uuid"]
         ];
 
@@ -68,7 +70,7 @@ class SubscriptionServiceTest extends TestCase {
     public function testCreateTransactionFromSubscriptionReturnsDetailedTransactionOnValidUuid() {
         $uuid = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
         $mockResult = [
-            'data' => ['uuid' => $uuid],
+            'data' => ['uuid' => $uuid, 'history' => [], 'transactions' => []],
             'links' => ['self' => "/transaction/$uuid"]
         ];
 
