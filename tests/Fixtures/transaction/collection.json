@@ -2,13 +2,13 @@
     "data": [
         {
             "uuid": "123e4567-e89b-12d3-a456-426614174000",
-            "transaction_number": "1001",
+            "transaction_number": 1001,
             "status": "active",
             "order_id": "order-4242",
             "amount": 12500,
             "charged": 0,
             "refunded": 0,
-            "currency_code": "208",
+            "currency_code": 208,
             "card_type": "Visa",
             "acquirer": "clearhaus",
             "3dsecure": true,
@@ -21,13 +21,13 @@
         },
         {
             "uuid": "223e4567-e89b-12d3-a456-426614174001",
-            "transaction_number": "1002",
+            "transaction_number": 1002,
             "status": "finished",
             "order_id": "order-4243",
             "amount": 5000,
             "charged": 5000,
             "refunded": 0,
-            "currency_code": "208",
+            "currency_code": 208,
             "card_type": "Mastercard",
             "acquirer": "clearhaus",
             "3dsecure": true,
@@ -42,11 +42,11 @@
     "meta": {
         "pagination": {
             "total": 2,
+            "count": 2,
+            "per_page": 25,
+            "current_page": 1,
             "total_pages": 1,
-            "links": {
-                "next": null,
-                "previous": null
-            }
+            "links": {}
         }
     }
 }

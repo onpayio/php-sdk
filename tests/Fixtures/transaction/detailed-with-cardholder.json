@@ -1,0 +1,80 @@
+{
+    "data": {
+        "uuid": "323e4567-e89b-12d3-a456-426614174002",
+        "transaction_number": 1003,
+        "status": "active",
+        "order_id": "order-4244",
+        "amount": 9900,
+        "charged": 0,
+        "refunded": 0,
+        "currency_code": 208,
+        "card_type": "Visa",
+        "acquirer": "clearhaus",
+        "wallet": null,
+        "3dsecure": true,
+        "testmode": false,
+        "created": "2026-09-18 12:00:00",
+        "has_cardholder_data": true,
+        "fee": 0,
+        "expiry_month": 12,
+        "expiry_year": 2030,
+        "card_country": "208",
+        "card_bin": "457173",
+        "card_mask": "457173******0000",
+        "ip": "203.0.113.12",
+        "ip_country": "208",
+        "subscription_number": null,
+        "subscription_uuid": null,
+        "cardholder_data": {
+            "first_name": "Jens",
+            "last_name": "Hansen",
+            "attention": "Att: Jens",
+            "company": "Acme ApS",
+            "address1": "Hovedgaden 1",
+            "address2": "2. sal",
+            "street": "Hovedgaden",
+            "number": "1",
+            "floor": "2",
+            "door": "th",
+            "postal_code": "1000",
+            "city": "Koebenhavn",
+            "country": "208",
+            "email": "jens@example.test",
+            "phone": "+4512345678",
+            "delivery_address": {
+                "first_name": "Mette",
+                "last_name": "Nielsen",
+                "attention": "Att: Mette",
+                "company": "Beta ApS",
+                "address1": "Nyvej 2",
+                "address2": "3. sal",
+                "street": "Nyvej",
+                "number": "2",
+                "floor": "3",
+                "door": "tv",
+                "postal_code": "2000",
+                "city": "Frederiksberg",
+                "country": "208"
+            },
+            "extra": {
+                "custom_reference": "ref-123",
+                "loyalty_tier": "gold"
+            }
+        },
+        "history": [
+            {
+                "action": "created",
+                "amount": 9900,
+                "author": "system",
+                "ip": "203.0.113.12",
+                "result_code": "0",
+                "result_text": "Approved",
+                "successful": true,
+                "date_time": "2026-09-18 12:00:00"
+            }
+        ]
+    },
+    "links": {
+        "self": "/transaction/323e4567-e89b-12d3-a456-426614174002"
+    }
+}

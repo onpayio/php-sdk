@@ -2,10 +2,10 @@
     "data": [
         {
             "uuid": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-            "subscription_number": "5001",
+            "subscription_number": 5001,
             "status": "active",
             "order_id": "order-9001",
-            "currency_code": "208",
+            "currency_code": 208,
             "card_type": "Visa",
             "acquirer": "clearhaus",
             "3dsecure": true,
@@ -19,11 +19,11 @@
     "meta": {
         "pagination": {
             "total": 1,
+            "count": 1,
+            "per_page": 25,
+            "current_page": 1,
             "total_pages": 1,
-            "links": {
-                "next": null,
-                "previous": null
-            }
+            "links": {}
         }
     }
 }

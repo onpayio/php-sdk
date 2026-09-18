@@ -6,8 +6,5 @@
         {
             "name": "checkout-dark"
         }
-    ],
-    "links": {
-        "self": "/gateway/window/v3/design/"
-    }
+    ]
 }
