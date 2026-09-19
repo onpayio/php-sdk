@@ -2,6 +2,7 @@
 
 namespace OnPay\API\Gateway;
 
+use OnPay\API\Util\DataReader;
 
 class Information
 {
@@ -12,11 +13,8 @@ class Information
      */
     public function __construct(array $data)
     {
-        $this->gatewayId = (isset($data['gateway_id'])) ? $data['gateway_id'] : null;
+        $this->gatewayId = DataReader::stringOrNull($data, 'gateway_id');
     }
 
-    /**
-     * @var string|null
-     */
-    public $gatewayId;
+    public ?string $gatewayId = null;
 }
