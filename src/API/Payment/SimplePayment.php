@@ -6,31 +6,33 @@ use OnPay\API\Util\DataReader;
 
 class SimplePayment {
 
-    private ?string $uuid;
+    private string $uuid;
     private ?int $amount;
-    private ?string $currency;
+    private string $currency;
     private ?string $expiration;
     private ?string $language;
     private ?string $method;
-    private ?string $paymentLink;
+    private string $paymentLink;
 
     /**
      * @param array $response
+     *
+     * @throws \OnPay\API\Exception\ApiException
      */
     public function __construct(array $response) {
         $data = DataReader::arrayOr($response, 'data');
         $links = DataReader::arrayOr($response, 'links');
 
-        $this->uuid = DataReader::stringOrNull($data, 'payment_uuid');
+        $this->uuid = DataReader::requireString($data, 'payment_uuid');
         $this->amount = DataReader::intOrNull($data, 'amount');
-        $this->currency = DataReader::stringOrNull($data, 'currency_code');
+        $this->currency = DataReader::requireString($data, 'currency_code');
         $this->expiration = DataReader::stringOrNull($data, 'expiration');
         $this->language = DataReader::stringOrNull($data, 'language');
         $this->method = DataReader::stringOrNull($data, 'method');
-        $this->paymentLink = DataReader::stringOrNull($links, 'payment_window');
+        $this->paymentLink = DataReader::requireString($links, 'payment_window');
     }
 
-    public function getUuid(): ?string {
+    public function getUuid(): string {
         return $this->uuid;
     }
 
@@ -38,7 +40,7 @@ class SimplePayment {
         return $this->amount;
     }
 
-    public function getCurrency(): ?string {
+    public function getCurrency(): string {
         return $this->currency;
     }
 
@@ -54,7 +56,7 @@ class SimplePayment {
         return $this->method;
     }
 
-    public function getPaymentWindowLink(): ?string {
+    public function getPaymentWindowLink(): string {
         return $this->paymentLink;
     }
 

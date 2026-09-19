@@ -34,49 +34,28 @@ class DetailedSubscription extends SimpleSubscription
             $this->transactions[] = new SimpleTransaction(DataReader::arrayOr($transactions, (string) $key));
         }
     }
-    /**
-     * @var ?string
-     */
-    public $cardBin;
+    public ?string $cardBin = null;
 
-    /**
-     * @var ?string
-     */
-    public $cardCountry;
+    public ?string $cardCountry = null;
 
-    /**
-     * @var ?int
-     */
-    public $expiryMonth;
+    public ?int $expiryMonth = null;
 
-    /**
-     * @var ?int
-     */
-    public $expiryYear;
+    public ?int $expiryYear = null;
 
-    /**
-     * @var ?string
-     */
-    public $ip;
+    public ?string $ip = null;
 
-    /**
-     * @var ?string
-     */
-    public $ipCountry;
+    public ?string $ipCountry = null;
 
     /**
      * @var SubscriptionHistory[]
      */
-    public $history = [];
+    public array $history = [];
 
     /**
      * @var SimpleTransaction[]
      */
-    public $transactions = [];
+    public array $transactions = [];
 
-    /**
-     * @var ?int
-     */
-    public $fee = null;
+    public ?int $fee = null;
 
 }

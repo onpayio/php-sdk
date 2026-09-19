@@ -2,17 +2,17 @@
 
 namespace Tests\Unit\Transaction;
 
+use OnPay\API\Exception\ApiException;
 use OnPay\API\Transaction\TransactionHistory;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Direct coverage for {@see TransactionHistory}.
  *
- * All history fixtures carry "successful": true, and the constructor's default when the
- * key is absent is ALSO false — so present-false and absent are indistinguishable. Both
- * sides are pinned here with distinct values so the read is proven either way. The
- * fixtures likewise always carry every other field, so the absent side of each read is
- * pinned by the empty-payload case.
+ * The API guarantees action, amount, author, ip and date_time on every history element,
+ * so they are non-nullable and the constructor throws {@see ApiException} when one is
+ * absent. result_code / result_text are optional; `successful` defaults to false when
+ * absent, so both sides are pinned here with distinct values.
  */
 class TransactionHistoryTest extends TestCase
 {
@@ -40,47 +40,53 @@ class TransactionHistoryTest extends TestCase
         $this->assertSame('2026-09-18 10:00:00', $history->dateTime->format('Y-m-d H:i:s'));
     }
 
-    public function testEmptyPayloadLeavesEveryFieldAtItsDefault(): void
+    public function testOptionalFieldsAreNullWhenAbsent(): void
     {
-        $history = new TransactionHistory([]);
+        $history = new TransactionHistory($this->requiredPayload());
 
-        $this->assertNull($history->action);
-        $this->assertNull($history->amount);
-        $this->assertNull($history->author);
-        $this->assertNull($history->ip);
         $this->assertNull($history->resultCode);
         $this->assertNull($history->resultText);
         $this->assertFalse($history->successful);
-        $this->assertNull($history->dateTime);
+    }
+
+    public function testThrowsWhenRequiredFieldMissing(): void
+    {
+        $this->expectException(ApiException::class);
+        new TransactionHistory([]);
     }
 
     public function testSuccessfulTrueIsRead(): void
     {
-        $history = new TransactionHistory([
-            'action' => 'capture',
-            'successful' => true,
-        ]);
+        $history = new TransactionHistory(['successful' => true] + $this->requiredPayload());
 
-        $this->assertSame('capture', $history->action);
         $this->assertTrue($history->successful);
     }
 
     public function testSuccessfulFalseIsRead(): void
     {
-        $history = new TransactionHistory([
-            'action' => 'capture',
-            'successful' => false,
-        ]);
+        $history = new TransactionHistory(['successful' => false] + $this->requiredPayload());
 
         $this->assertFalse($history->successful);
     }
 
     public function testSuccessfulDefaultsToFalseWhenAbsent(): void
     {
-        $history = new TransactionHistory([
-            'action' => 'capture',
-        ]);
+        $history = new TransactionHistory($this->requiredPayload());
 
         $this->assertFalse($history->successful);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function requiredPayload(): array
+    {
+        return [
+            'action' => 'capture',
+            'amount' => 12500,
+            'author' => 'system',
+            'ip' => '203.0.113.10',
+            'date_time' => '2026-09-18 10:00:00',
+        ];
     }
 }

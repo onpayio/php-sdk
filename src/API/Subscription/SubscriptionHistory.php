@@ -2,7 +2,6 @@
 
 namespace OnPay\API\Subscription;
 
-use OnPay\API\Util\Converter;
 use OnPay\API\Util\DataReader;
 
 class SubscriptionHistory
@@ -14,56 +13,29 @@ class SubscriptionHistory
      */
     public function __construct(array $data)
     {
-        $this->action = DataReader::stringOrNull($data, 'action');
-        $this->author = DataReader::stringOrNull($data, 'author');
-        $this->ip = DataReader::stringOrNull($data, 'ip');
+        $this->action = DataReader::requireString($data, 'action');
+        $this->author = DataReader::requireString($data, 'author');
+        $this->ip = DataReader::requireString($data, 'ip');
         $this->resultText = DataReader::stringOrNull($data, 'result_text');
         $this->resultCode = DataReader::stringOrNull($data, 'result_code');
         $this->successful = DataReader::boolOr($data, 'successful', false);
 
-        $dateTime = DataReader::stringOrNull($data, 'date_time');
-        if ($dateTime !== null) {
-            $dateValue = Converter::toDateTimeFromString($dateTime);
-            if ($dateValue !== false) {
-                $this->date = $dateValue;
-            }
-        }
+        $this->date = DataReader::requireDateTime($data, 'date_time');
     }
 
 
-    /**
-     * @var ?string
-     */
-    public $action;
+    public string $action;
 
-    /**
-     * @var ?string
-     */
-    public $author;
+    public string $author;
 
-    /**
-     * @var ?\DateTime
-     */
-    public $date = null;
+    public \DateTime $date;
 
-    /**
-     * @var ?string
-     */
-    public $ip;
+    public string $ip;
 
-    /**
-     * @var ?string
-     */
-    public $resultCode;
+    public ?string $resultCode = null;
 
-    /**
-     * @var ?string
-     */
-    public $resultText;
+    public ?string $resultText = null;
 
-    /**
-     * @var bool
-     */
-    public $successful;
+    public bool $successful = false;
 
 }

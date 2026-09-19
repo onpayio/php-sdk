@@ -3,7 +3,6 @@
 namespace OnPay\API\Transaction;
 
 
-use OnPay\API\Util\Converter;
 use OnPay\API\Util\DataReader;
 use OnPay\API\Util\Link;
 
@@ -16,24 +15,18 @@ class SimpleTransaction {
      */
     public function __construct(array $data)
     {
-        $this->uuid = DataReader::stringOrNull($data, 'uuid');
-        $this->threeDs = DataReader::boolOrNull($data, '3dsecure');
+        $this->uuid = DataReader::requireString($data, 'uuid');
+        $this->threeDs = DataReader::requireBool($data, '3dsecure');
         $this->acquirer = DataReader::stringOrNull($data, 'acquirer');
-        $this->amount = DataReader::intOrNull($data, 'amount');
+        $this->amount = DataReader::requireInt($data, 'amount');
         $this->cardType = DataReader::stringOrNull($data, 'card_type');
-        $this->charged = DataReader::intOrNull($data, 'charged');
-        $created = DataReader::stringOrNull($data, 'created');
-        if (null !== $created) {
-            $createdDateTime = Converter::toDateTimeFromString($created);
-            if (false !== $createdDateTime) {
-                $this->created = $createdDateTime;
-            }
-        }
-        $this->currencyCode = DataReader::intOrNull($data, 'currency_code');
+        $this->charged = DataReader::requireInt($data, 'charged');
+        $this->created = DataReader::requireDateTime($data, 'created');
+        $this->currencyCode = DataReader::requireInt($data, 'currency_code');
         $this->orderId = DataReader::stringOrNull($data, 'order_id');
-        $this->refunded = DataReader::intOrNull($data, 'refunded');
-        $this->status = DataReader::stringOrNull($data, 'status');
-        $this->transactionNumber = DataReader::intOrNull($data, 'transaction_number');
+        $this->refunded = DataReader::requireInt($data, 'refunded');
+        $this->status = DataReader::requireString($data, 'status');
+        $this->transactionNumber = DataReader::requireInt($data, 'transaction_number');
         $this->wallet = DataReader::stringOrNull($data, 'wallet');
         $this->hasCardholderData = DataReader::boolOr($data, 'has_cardholder_data', false);
         $this->testMode = DataReader::boolOr($data, 'testmode', false);
@@ -51,29 +44,29 @@ class SimpleTransaction {
         $this->links = $result;
     }
 
-    public ?int $amount = null;
+    public int $amount;
 
     public ?string $acquirer = null;
 
     public ?string $cardType = null;
 
-    public ?int $charged = null;
+    public int $charged;
 
-    public ?\DateTime $created = null;
+    public \DateTime $created;
 
-    public ?int $currencyCode = null;
+    public int $currencyCode;
 
     public ?string $orderId = null;
 
-    public ?int $refunded = null;
+    public int $refunded;
 
-    public ?string $status = null;
+    public string $status;
 
-    public ?bool $threeDs = null;
+    public bool $threeDs;
 
-    public ?int $transactionNumber = null;
+    public int $transactionNumber;
 
-    public ?string $uuid = null;
+    public string $uuid;
 
     public ?string $wallet = null;
 

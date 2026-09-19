@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Transaction;
 
+use OnPay\API\Exception\ApiException;
 use OnPay\API\Transaction\CardholderData;
 use OnPay\API\Transaction\DetailedTransaction;
 use OnPay\API\Transaction\TransactionHistory;
@@ -11,16 +12,15 @@ use PHPUnit\Framework\TestCase;
  * Direct value-object coverage for {@see DetailedTransaction}, pinning both sides of every
  * optional-field read the constructor adds on top of {@see \OnPay\API\Transaction\SimpleTransaction}.
  *
- * The detailed fixtures always carry the card/ip detail fields (fee, expiry, card_*, ip*),
- * so their absent side is never taken there. A minimal payload (only the mandatory
- * `history` list) proves the null defaults; a fully populated payload proves the reads.
+ * The detail-only fields (fee, expiry, card_*, ip*, subscription_*) are genuinely optional
+ * (and `fee` is absent unless surcharge is enabled), so a payload carrying only the parent's
+ * required core fields proves their null defaults; a fully populated payload proves the reads.
  */
 class DetailedTransactionTest extends TestCase
 {
     public function testAllDetailFieldsAreReadWhenPresent(): void
     {
         $transaction = new DetailedTransaction([
-            'uuid' => '123e4567-e89b-12d3-a456-426614174000',
             'fee' => 195,
             'expiry_year' => 2030,
             'expiry_month' => 12,
@@ -32,12 +32,12 @@ class DetailedTransactionTest extends TestCase
             'has_cardholder_data' => true,
             'cardholder_data' => ['first_name' => 'Jens'],
             'history' => [
-                ['action' => 'created', 'successful' => true],
-                ['action' => 'capture', 'successful' => true],
+                $this->historyElement('created'),
+                $this->historyElement('capture'),
             ],
             'subscription_number' => 5001,
             'subscription_uuid' => 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
-        ]);
+        ] + $this->requiredCorePayload());
 
         // Parent constructor still runs first.
         $this->assertSame('123e4567-e89b-12d3-a456-426614174000', $transaction->uuid);
@@ -64,9 +64,9 @@ class DetailedTransactionTest extends TestCase
         $this->assertSame('f47ac10b-58cc-4372-a567-0e02b2c3d479', $transaction->subscriptionUuid);
     }
 
-    public function testMinimalPayloadLeavesEveryDetailFieldAtItsDefault(): void
+    public function testDetailOptionalFieldsAreNullWhenAbsent(): void
     {
-        $transaction = new DetailedTransaction(['history' => []]);
+        $transaction = new DetailedTransaction(['history' => []] + $this->requiredCorePayload());
 
         $this->assertNull($transaction->fee);
         $this->assertNull($transaction->expiryYear);
@@ -91,19 +91,58 @@ class DetailedTransactionTest extends TestCase
             'has_cardholder_data' => false,
             'cardholder_data' => null,
             'history' => [],
-        ]);
+        ] + $this->requiredCorePayload());
 
         $this->assertFalse($transaction->hasCardholderData);
         $this->assertNull($transaction->cardholderData);
     }
 
-    public function testNonArrayHistoryEntryYieldsEmptyHistoryItem(): void
+    public function testThrowsWhenRequiredCoreFieldMissing(): void
     {
-        $transaction = new DetailedTransaction(['history' => ['not-an-array']]);
+        $this->expectException(ApiException::class);
+        new DetailedTransaction(['history' => []]);
+    }
 
-        $this->assertCount(1, $transaction->history);
-        $this->assertInstanceOf(TransactionHistory::class, $transaction->history[0]);
-        $this->assertNull($transaction->history[0]->action);
-        $this->assertFalse($transaction->history[0]->successful);
+    public function testNonArrayHistoryEntryThrows(): void
+    {
+        // A non-array history entry collapses to [] (the ternary's false side), and a
+        // history element with no required fields throws when built.
+        $this->expectException(ApiException::class);
+        new DetailedTransaction(['history' => ['not-an-array']] + $this->requiredCorePayload());
+    }
+
+    /**
+     * The parent {@see \OnPay\API\Transaction\SimpleTransaction} required core fields.
+     *
+     * @return array<string, mixed>
+     */
+    private function requiredCorePayload(): array
+    {
+        return [
+            'uuid' => '123e4567-e89b-12d3-a456-426614174000',
+            '3dsecure' => true,
+            'amount' => 12500,
+            'charged' => 0,
+            'created' => '2026-09-18 10:00:00',
+            'currency_code' => 208,
+            'refunded' => 0,
+            'status' => 'active',
+            'transaction_number' => 1001,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function historyElement(string $action): array
+    {
+        return [
+            'action' => $action,
+            'amount' => 12500,
+            'author' => 'system',
+            'ip' => '203.0.113.10',
+            'date_time' => '2026-09-18 10:00:00',
+            'successful' => true,
+        ];
     }
 }

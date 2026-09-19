@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Util;
 
+use OnPay\API\Exception\ApiException;
 use OnPay\API\Util\DataReader;
 use PHPUnit\Framework\TestCase;
 
@@ -141,6 +142,91 @@ class DataReaderTest extends TestCase
     public function testArrayOrReturnsEmptyArrayWhenValueWrongType(): void
     {
         $this->assertSame([], DataReader::arrayOr(['k' => 'not-an-array'], 'k'));
+    }
+
+    // --- requireString -------------------------------------------------------
+
+    public function testRequireStringReturnsValueWhenStringPresent(): void
+    {
+        $this->assertSame('hello', DataReader::requireString(['k' => 'hello'], 'k'));
+    }
+
+    public function testRequireStringThrowsWhenKeyMissing(): void
+    {
+        $this->expectException(ApiException::class);
+        $this->expectExceptionMessage('Expected a string value for key "k" in the API response');
+        DataReader::requireString([], 'k');
+    }
+
+    public function testRequireStringThrowsWhenValueWrongType(): void
+    {
+        $this->expectException(ApiException::class);
+        DataReader::requireString(['k' => 123], 'k');
+    }
+
+    // --- requireInt ----------------------------------------------------------
+
+    public function testRequireIntReturnsValueWhenIntPresent(): void
+    {
+        $this->assertSame(0, DataReader::requireInt(['k' => 0], 'k'));
+    }
+
+    public function testRequireIntThrowsWhenKeyMissing(): void
+    {
+        $this->expectException(ApiException::class);
+        $this->expectExceptionMessage('Expected an int value for key "k" in the API response');
+        DataReader::requireInt([], 'k');
+    }
+
+    public function testRequireIntThrowsWhenValueWrongType(): void
+    {
+        $this->expectException(ApiException::class);
+        DataReader::requireInt(['k' => '42'], 'k');
+    }
+
+    // --- requireBool ---------------------------------------------------------
+
+    public function testRequireBoolReturnsValueWhenBoolPresent(): void
+    {
+        $this->assertFalse(DataReader::requireBool(['k' => false], 'k'));
+        $this->assertTrue(DataReader::requireBool(['k' => true], 'k'));
+    }
+
+    public function testRequireBoolThrowsWhenKeyMissing(): void
+    {
+        $this->expectException(ApiException::class);
+        $this->expectExceptionMessage('Expected a bool value for key "k" in the API response');
+        DataReader::requireBool([], 'k');
+    }
+
+    public function testRequireBoolThrowsWhenValueWrongType(): void
+    {
+        $this->expectException(ApiException::class);
+        DataReader::requireBool(['k' => 1], 'k');
+    }
+
+    // --- requireDateTime -----------------------------------------------------
+
+    public function testRequireDateTimeReturnsDateTimeWhenValid(): void
+    {
+        $dateTime = DataReader::requireDateTime(['k' => '2026-09-18 10:00:00'], 'k');
+
+        $this->assertSame('2026-09-18 10:00:00', $dateTime->format('Y-m-d H:i:s'));
+    }
+
+    public function testRequireDateTimeThrowsWhenKeyMissing(): void
+    {
+        // Propagates requireString's failure for the absent underlying string.
+        $this->expectException(ApiException::class);
+        $this->expectExceptionMessage('Expected a string value for key "k" in the API response');
+        DataReader::requireDateTime([], 'k');
+    }
+
+    public function testRequireDateTimeThrowsWhenValueUnparseable(): void
+    {
+        $this->expectException(ApiException::class);
+        $this->expectExceptionMessage('Expected a valid date-time for key "k" in the API response, got "not-a-date"');
+        DataReader::requireDateTime(['k' => 'not-a-date'], 'k');
     }
 
     public function testConstructorIsPrivate(): void
