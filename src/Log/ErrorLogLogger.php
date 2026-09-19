@@ -14,6 +14,8 @@ use Psr\Log\LogLevel;
  * failures keep surfacing in the web server / PHP error log as they did in 1.x.
  * Records below the minimum level (warning by default) are discarded, which
  * keeps routine debug traffic out of the error log.
+ *
+ * @internal Shall not be used outside the library.
  */
 class ErrorLogLogger implements LoggerInterface {
     use LoggerTrait;
