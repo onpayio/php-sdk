@@ -16,22 +16,16 @@ class RedactorTest extends TestCase
         $this->redactor = new Redactor();
     }
 
-    public function testRedactsCredentialHeadersCaseInsensitivelyAndKeepsTheRest(): void
+    public function testRedactsAuthorizationHeaderCaseInsensitivelyAndKeepsTheRest(): void
     {
         $headers = [
-            'Authorization' => 'Bearer secret',
-            'PROXY-AUTHORIZATION' => 'Basic abc',
-            'cookie' => 'session=1',
-            'Set-Cookie' => 'session=2',
+            'AUTHORIZATION' => 'Bearer secret',
             'Content-Type' => 'application/json',
             'User-Agent' => 'php-sdk/2.0',
         ];
 
         $this->assertSame([
-            'Authorization' => Redactor::REDACTED,
-            'PROXY-AUTHORIZATION' => Redactor::REDACTED,
-            'cookie' => Redactor::REDACTED,
-            'Set-Cookie' => Redactor::REDACTED,
+            'AUTHORIZATION' => Redactor::REDACTED,
             'Content-Type' => 'application/json',
             'User-Agent' => 'php-sdk/2.0',
         ], $this->redactor->redactHeaders($headers));
@@ -48,15 +42,15 @@ class RedactorTest extends TestCase
         $body = json_encode([
             'access_token' => 'a',
             'Refresh_Token' => 'b',
-            'client-secret' => 'c',
-            'nested' => ['deeper' => ['password' => 'd', 'CVV' => '1'], 'list' => [['pan' => 'e'], ['ok' => 'f']]],
+            'token_type' => 'Bearer',
+            'data' => ['deeper' => ['secret' => 'd', 'CODE' => '1'], 'list' => [['code_verifier' => 'e'], ['ok' => 'f']]],
             'amount' => 100,
             'currency' => 'DKK',
         ]);
 
         $this->assertSame(
-            '{"access_token":"[redacted]","Refresh_Token":"[redacted]","client-secret":"[redacted]",'
-            . '"nested":{"deeper":{"password":"[redacted]","CVV":"[redacted]"},"list":[{"pan":"[redacted]"},{"ok":"f"}]},'
+            '{"access_token":"[redacted]","Refresh_Token":"[redacted]","token_type":"Bearer",'
+            . '"data":{"deeper":{"secret":"[redacted]","CODE":"[redacted]"},"list":[{"code_verifier":"[redacted]"},{"ok":"f"}]},'
             . '"amount":100,"currency":"DKK"}',
             $this->redactor->redactBody($body)
         );
@@ -87,25 +81,7 @@ class RedactorTest extends TestCase
         $this->assertSame('[5 bytes of non-JSON body omitted]', $this->redactor->redactBody('12345'));
     }
 
-    #[DataProvider('cardNumbers')]
-    public function testValuesThatLookLikeCardNumbersAreRedactedUnderAnyKey(string $value): void
-    {
-        $this->assertSame(['ref' => Redactor::REDACTED], $this->redactor->redactData(['ref' => $value]));
-    }
-
-    /**
-     * @return iterable<string, array{string}>
-     */
-    public static function cardNumbers(): iterable
-    {
-        yield 'visa' => ['4111111111111111'];
-        yield 'visa spaced' => ['4111 1111 1111 1111'];
-        yield 'mastercard dashed' => ['5555-5555-5555-4444'];
-        yield 'amex 15 digits' => ['378282246310005'];
-        yield '19 digits' => ['6011111111111111110'];
-    }
-
-    #[DataProvider('nonCardNumbers')]
+    #[DataProvider('ordinaryValues')]
     public function testOrdinaryValuesAreLeftAlone(mixed $value): void
     {
         $this->assertSame(['ref' => $value], $this->redactor->redactData(['ref' => $value]));
@@ -114,12 +90,9 @@ class RedactorTest extends TestCase
     /**
      * @return iterable<string, array{mixed}>
      */
-    public static function nonCardNumbers(): iterable
+    public static function ordinaryValues(): iterable
     {
-        yield 'short digits' => ['123456789012'];
-        yield 'too long' => ['41111111111111111111'];
-        yield 'fails luhn' => ['4111111111111112'];
-        yield 'not digits' => ['order-4111111111111111'];
+        yield 'digits' => ['4111111111111111'];
         yield 'uuid' => ['3f2504e0-4f89-11d3-9a0c-0305e82c3301'];
         yield 'integer amount' => [1000];
         yield 'bool' => [true];

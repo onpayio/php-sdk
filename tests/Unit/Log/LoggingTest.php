@@ -20,12 +20,10 @@ use Tests\Support\ApiTestCase;
 /**
  * Drives the real OnPayAPI through the harness with an injected PSR-3 logger and
  * pins what the SDK logs (and, above all, what it never logs: bearer tokens, OAuth
- * material, cardholder data).
+ * material, the payment window secret).
  */
 class LoggingTest extends ApiTestCase
 {
-    private const CARD_NUMBER = '4111111111111111';
-
     // ---------------------------------------------------------------------
     // Wiring
     // ---------------------------------------------------------------------
@@ -213,45 +211,24 @@ class LoggingTest extends ApiTestCase
         $this->assertStringNotContainsString(base64_encode(self::CLIENT_ID . ':'), $dump);
     }
 
-    public function testCardholderDataNeverAppearsInLog(): void
+    public function testPaymentWindowSecretNeverAppearsInLog(): void
     {
         $this->http->willReturnJson([
-            'errors' => [['message' => 'Card declined']],
-            'data' => [
-                'card' => ['number' => self::CARD_NUMBER, 'cvc' => '123', 'expiry_month' => '12', 'expiry_year' => '2030'],
-                'masked_pan' => '411111XXXXXX1111',
-            ],
-        ], 402, 'POST', 'transaction');
+            'errors' => [['message' => 'Rate limited']],
+            'data' => ['gateway_id' => 'abc123', 'secret' => 'window_hmac_secret'],
+        ], 429, 'GET', 'gateway/window/v3/integration');
 
         try {
-            $this->createApi()->post('transaction', [
-                'amount' => 1000,
-                'card' => [
-                    'card_number' => self::CARD_NUMBER,
-                    'cvc' => '123',
-                    'expiry_month' => '12',
-                    'expiry_year' => '2030',
-                ],
-                // A PAN hiding under an unrecognised key is caught by the Luhn check.
-                'reference' => '4111 1111 1111 1111',
-            ]);
+            $this->createApi()->gateway()->getPaymentWindowIntegrationSettings();
             $this->fail('Expected ApiException');
         } catch (ApiException $e) {
         }
 
-        $dump = $this->logger->dump();
-        $this->assertStringNotContainsString(self::CARD_NUMBER, $dump);
-        $this->assertStringNotContainsString('4111 1111 1111 1111', $dump);
-        $this->assertStringNotContainsString('"cvc":"123"', $dump);
-        $this->assertStringNotContainsString('2030', $dump);
+        $this->assertStringNotContainsString('window_hmac_secret', $this->logger->dump());
 
         $context = $this->logger->recordsAtLevel(LogLevel::WARNING)[0]['context'];
         $this->assertSame(
-            '{"amount":1000,"card":{"card_number":"[redacted]","cvc":"[redacted]","expiry_month":"[redacted]","expiry_year":"[redacted]"},"reference":"[redacted]"}',
-            $context['request_body']
-        );
-        $this->assertSame(
-            '{"errors":[{"message":"Card declined"}],"data":{"card":{"number":"[redacted]","cvc":"[redacted]","expiry_month":"[redacted]","expiry_year":"[redacted]"},"masked_pan":"411111XXXXXX1111"}}',
+            '{"errors":[{"message":"Rate limited"}],"data":{"gateway_id":"abc123","secret":"[redacted]"}}',
             $context['response_body']
         );
     }

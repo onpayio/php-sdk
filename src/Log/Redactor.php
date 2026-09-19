@@ -5,10 +5,9 @@ namespace OnPay\Log;
 /**
  * Strips secrets from HTTP messages before they reach a log.
  *
- * Credentials carried in headers (Authorization, cookies), OAuth material and
- * cardholder data carried in JSON or form-encoded bodies are replaced with a
- * placeholder. Bodies that cannot be parsed are dropped entirely rather than
- * logged verbatim, so an unrecognised payload can never leak.
+ * The Authorization header and the OAuth material and secrets the API is known
+ * to carry in JSON or form-encoded bodies are replaced with a placeholder. Bodies
+ * that cannot be parsed are dropped entirely rather than logged verbatim.
  *
  * @internal Shall not be used outside the library.
  */
@@ -17,39 +16,16 @@ class Redactor {
 
     private const SENSITIVE_HEADERS = [
         'authorization',
-        'proxy-authorization',
-        'cookie',
-        'set-cookie',
     ];
 
     private const SENSITIVE_KEYS = [
-        // OAuth / credentials
+        // OAuth token endpoint (request and response)
         'access_token',
         'refresh_token',
-        'token',
-        'id_token',
         'code',
         'code_verifier',
-        'client_secret',
+        // Payment window integration settings
         'secret',
-        'password',
-        'authorization',
-        // Cardholder data
-        'card_number',
-        'cardnumber',
-        'card_no',
-        'pan',
-        'cvc',
-        'cvv',
-        'cvd',
-        'csc',
-        'security_code',
-        'expiry_month',
-        'expiry_year',
-        'exp_month',
-        'exp_year',
-        'track_data',
-        'pin',
     ];
 
     /**
@@ -93,8 +69,7 @@ class Redactor {
     }
 
     /**
-     * Recursively redacts values stored under sensitive keys, and masks any string
-     * value that looks like a card number (13-19 digits passing the Luhn check).
+     * Recursively redacts values stored under sensitive keys.
      *
      * @param array<array-key, mixed> $data
      *
@@ -107,8 +82,6 @@ class Redactor {
                 $data[$key] = self::REDACTED;
             } elseif (\is_array($value)) {
                 $data[$key] = $this->redactData($value);
-            } elseif (\is_string($value) && $this->looksLikeCardNumber($value)) {
-                $data[$key] = self::REDACTED;
             }
         }
 
@@ -131,30 +104,7 @@ class Redactor {
     }
 
     private function isSensitiveKey(string $key): bool {
-        return \in_array(\str_replace('-', '_', \strtolower($key)), self::SENSITIVE_KEYS, true);
-    }
-
-    private function looksLikeCardNumber(string $value): bool {
-        $digits = \preg_replace('/[\s-]/', '', $value);
-        if (null === $digits || 1 !== \preg_match('/^\d{13,19}$/', $digits)) {
-            return false;
-        }
-
-        $sum = 0;
-        $double = false;
-        for ($i = \strlen($digits) - 1; $i >= 0; --$i) {
-            $digit = (int) $digits[$i];
-            if ($double) {
-                $digit *= 2;
-                if ($digit > 9) {
-                    $digit -= 9;
-                }
-            }
-            $sum += $digit;
-            $double = !$double;
-        }
-
-        return 0 === $sum % 10;
+        return \in_array(\strtolower($key), self::SENSITIVE_KEYS, true);
     }
 
     /**
