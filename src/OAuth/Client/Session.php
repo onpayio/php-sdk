@@ -15,6 +15,7 @@ class Session implements SessionInterface
     public function set($key, $value)
     {
         self::requireSession();
+        /** @psalm-suppress MixedAssignment $value is mixed by the SessionInterface contract */
         $_SESSION[$key] = $value;
     }
 
