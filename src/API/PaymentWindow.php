@@ -28,67 +28,43 @@ class PaymentWindow
     const DELIVERY_DISABLED_PARCEL_SHOP_SELECTED = 'parcel-shop-selected';
     const DELIVERY_DISABLED_PARCEL_SHOP_AUTO = 'parcel-shop-auto';
 
-    private $gatewayId;
-    private $currency;
-    private $amount;
-    private $reference;
-    private $acceptUrl;
-    private $type;
-    private $method;
-    private $_3dsecure;
-    private $language;
-    private $declineUrl;
-    private $callbackUrl;
-    private $design;
-    private $testMode;
-    private $secret;
-    private $delivery_disabled;
-    private $subscription_with_transaction;
-    private $website;
-    private $platform;
-    private $expiration;
+    private ?string $gatewayId = null;
+    private ?string $currency = null;
+    private ?string $amount = null;
+    private ?string $reference = null;
+    private ?string $acceptUrl = null;
+    private ?string $type = null;
+    private ?string $method = null;
+    private ?string $_3dsecure = null;
+    private ?string $language = null;
+    private ?string $declineUrl = null;
+    private ?string $callbackUrl = null;
+    private ?string $design = null;
     /**
-     * @var PaymentInfo
+     * @var int|bool|string|null
      */
-    private $info;
+    private $testMode = null;
+    private ?string $secret = null;
+    private ?string $delivery_disabled = null;
+    private ?string $subscription_with_transaction = null;
+    private ?string $website = null;
+    private ?string $platform = null;
+    private ?int $expiration = null;
+    private ?PaymentInfo $info = null;
+    private ?Cart $cart = null;
+    private ?bool $surcharge_enabled = null;
+    private ?int $surcharge_vat_rate = null;
     /**
-     * @var Cart|null
+     * @var list<string>
      */
-    private $cart = null;
-    private $surcharge_enabled = null;
-    private $surcharge_vat_rate = null;
-    private $availableFields;
     private $requiredFields;
-    private $actionUrl = "https://onpay.io/window/v3/";
+    private string $actionUrl = "https://onpay.io/window/v3/";
 
     /**
      * PaymentWindow constructor.
      */
     public function __construct()
     {
-        $this->availableFields = [
-            "gatewayId",
-            "currency",
-            "amount",
-            "reference",
-            "acceptUrl",
-            "type",
-            "_3dsecure",
-            "language",
-            "declineUrl",
-            "callbackUrl",
-            "design",
-            "testMode",
-            "method",
-            'delivery_disabled',
-            'subscription_with_transaction',
-            'website',
-            'platform',
-            'expiration',
-            'surcharge_enabled',
-            'surcharge_vat_rate',
-        ];
-
         $this->requiredFields = [
             "gatewayId",
             "currency",
@@ -102,13 +78,13 @@ class PaymentWindow
     /**
      * @param string $gatewayId
      */
-    public function setGatewayId($gatewayId)
+    public function setGatewayId($gatewayId): void
     {
         $this->gatewayId = $gatewayId;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getGatewayId() {
         return $this->gatewayId;
@@ -117,13 +93,13 @@ class PaymentWindow
     /**
      * @param string $currency
      */
-    public function setCurrency($currency)
+    public function setCurrency($currency): void
     {
         $this->currency = $currency;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getCurrency() {
         return $this->currency;
@@ -132,13 +108,13 @@ class PaymentWindow
     /**
      * @param string $amount
      */
-    public function setAmount($amount)
+    public function setAmount($amount): void
     {
         $this->amount = $amount;
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
     public function getAmount() {
         return $this->amount;
@@ -147,13 +123,13 @@ class PaymentWindow
     /**
      * @param string $reference
      */
-    public function setReference($reference)
+    public function setReference($reference): void
     {
         $this->reference = $reference;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getReference() {
         return $this->reference;
@@ -162,13 +138,13 @@ class PaymentWindow
     /**
      * @param string $acceptUrl
      */
-    public function setAcceptUrl($acceptUrl)
+    public function setAcceptUrl($acceptUrl): void
     {
         $this->acceptUrl = $acceptUrl;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getAcceptUrl() {
         return $this->acceptUrl;
@@ -177,13 +153,13 @@ class PaymentWindow
     /**
      * @param string $type
      */
-    public function setType($type)
+    public function setType($type): void
     {
         $this->type = $type;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getType() {
         return $this->type;
@@ -192,13 +168,13 @@ class PaymentWindow
     /**
      * @param string $method
      */
-    public function setMethod($method)
+    public function setMethod($method): void
     {
         $this->method = $method;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getMethod() {
         return $this->method;
@@ -208,7 +184,7 @@ class PaymentWindow
      * @param bool $secureEnabled
      * @deprecated
      */
-    public function setSecureEnabled($secureEnabled)
+    public function setSecureEnabled($secureEnabled): void
     {
         $this->set3DSecure($secureEnabled);
     }
@@ -224,7 +200,7 @@ class PaymentWindow
     /**
      * @param bool $threeDs
      */
-    public function set3DSecure($threeDs) {
+    public function set3DSecure($threeDs): void {
         if ($threeDs) {
             $this->_3dsecure = 'forced';
         } else {
@@ -240,57 +216,60 @@ class PaymentWindow
     }
 
     /**
-     * @param mixed $language
+     * @param string $language
      */
-    public function setLanguage($language)
+    public function setLanguage($language): void
     {
         $this->language = $language;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getLanguage() {
         return $this->language;
     }
 
     /**
-     * @param mixed $declineUrl
+     * @param string $declineUrl
      */
-    public function setDeclineUrl($declineUrl)
+    public function setDeclineUrl($declineUrl): void
     {
         $this->declineUrl = $declineUrl;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getDeclineUrl() {
         return $this->declineUrl;
     }
 
     /**
-     * @param mixed $callbackUrl
+     * @param string $callbackUrl
      */
-    public function setCallbackUrl($callbackUrl)
+    public function setCallbackUrl($callbackUrl): void
     {
         $this->callbackUrl = $callbackUrl;
     }
 
+    /**
+     * @return string|null
+     */
     public function getCallbackUrl() {
         return $this->callbackUrl;
     }
 
     /**
-     * @param mixed $design
+     * @param string $design
      */
-    public function setDesign($design)
+    public function setDesign($design): void
     {
         $this->design = $design;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getDesign() {
         return $this->design;
@@ -306,14 +285,14 @@ class PaymentWindow
     /**
      * @param string|null $deliveryDisabled
      */
-    public function setDeliveryDisabled($deliveryDisabled) {
+    public function setDeliveryDisabled($deliveryDisabled): void {
         $this->delivery_disabled = $deliveryDisabled;
     }
 
     /**
      * @param string|null $website
      */
-    public function setWebsite($website) {
+    public function setWebsite($website): void {
         $this->website = $website;
     }
 
@@ -325,7 +304,7 @@ class PaymentWindow
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getPlatform() {
         return $this->platform;
@@ -336,11 +315,11 @@ class PaymentWindow
      * Concats platform parameters to a / delimited string
      * Examples: 'php-sdk/1/1', 'php-sdk/1', 'php-sdk//1'
      *
-     * @param $platform
-     * @param null $version
-     * @param null $systemVersion
+     * @param string $platform
+     * @param string|null $version
+     * @param string|null $systemVersion
      */
-    public function setPlatform($platform, $version = null, $systemVersion = null) {
+    public function setPlatform($platform, $version = null, $systemVersion = null): void {
         $string = $platform;
         if (null !== $version) {
             $string .= '/' . $version;
@@ -364,33 +343,36 @@ class PaymentWindow
     /**
      * @param int|null $expiration
      */
-    public function setExpiration($expiration) {
+    public function setExpiration($expiration): void {
         $this->expiration = $expiration;
     }
 
     /**
-     * @param mixed $testMode
+     * @param int|bool|string|null $testMode
      */
-    public function setTestMode($testMode)
+    public function setTestMode($testMode): void
     {
         $this->testMode = $testMode;
     }
 
     /**
-     * @return mixed
+     * @return int|bool|string|null
      */
     public function getTestMode() {
         return $this->testMode;
     }
 
     /**
-     * @param mixed $secret
+     * @param string $secret
      */
-    public function setSecret($secret)
+    public function setSecret($secret): void
     {
         $this->secret = $secret;
     }
 
+    /**
+     * @return string|null
+     */
     public function getSecret() {
         return $this->secret;
     }
@@ -403,7 +385,7 @@ class PaymentWindow
 
         $fields = $this->getAvailableFieldsWithPrefix();
         $queryString = strtolower(http_build_query($fields));
-        $hmac = hash_hmac('sha1', $queryString, $this->secret);
+        $hmac = hash_hmac('sha1', $queryString, (string) $this->secret);
         return $hmac;
     }
 
@@ -444,8 +426,30 @@ class PaymentWindow
             $this->cart->throwOnInvalid($this->getAmount());
             $fields = array_merge($fields, $this->cart->getFields());
         }
-        foreach ($this->availableFields as $field) {
-            if(property_exists($this, $field) && null !== $this->{$field}) {
+        $values = [
+            'gatewayId' => $this->gatewayId,
+            'currency' => $this->currency,
+            'amount' => $this->amount,
+            'reference' => $this->reference,
+            'acceptUrl' => $this->acceptUrl,
+            'type' => $this->type,
+            '_3dsecure' => $this->_3dsecure,
+            'language' => $this->language,
+            'declineUrl' => $this->declineUrl,
+            'callbackUrl' => $this->callbackUrl,
+            'design' => $this->design,
+            'testMode' => $this->testMode,
+            'method' => $this->method,
+            'delivery_disabled' => $this->delivery_disabled,
+            'subscription_with_transaction' => $this->subscription_with_transaction,
+            'website' => $this->website,
+            'platform' => $this->platform,
+            'expiration' => $this->expiration,
+            'surcharge_enabled' => $this->surcharge_enabled,
+            'surcharge_vat_rate' => $this->surcharge_vat_rate,
+        ];
+        foreach ($values as $field => $value) {
+            if (null !== $value) {
                 $key = '';
                 if($withPrefix){
                     $key = 'onpay_';
@@ -455,7 +459,7 @@ class PaymentWindow
                 } else {
                     $key .= strtolower($field);
                 }
-                $fields[$key] = $this->{$field};
+                $fields[$key] = $value;
             }
         }
 
@@ -478,7 +482,7 @@ class PaymentWindow
     /**
      * Checks if the PaymentWindow has the required fields to do a payment
      */
-    public function isValid() {
+    public function isValid(): bool {
         if ('subscription' !== $this->type && null === $this->amount) {
             return false;
         }
@@ -501,7 +505,7 @@ class PaymentWindow
 
     /**
      * Validate payment
-     * @param array $fields
+     * @param array<string, string> $fields
      * @return bool
      */
     public function validatePayment(array $fields) {
@@ -525,7 +529,7 @@ class PaymentWindow
         ksort($validFields);
 
         $queryString = strtolower(http_build_query($validFields));
-        $hmac = hash_hmac('sha1', $queryString, $this->secret);
+        $hmac = hash_hmac('sha1', $queryString, (string) $this->secret);
 
         if($verify === $hmac) {
             return true;
@@ -538,7 +542,7 @@ class PaymentWindow
      * Set the PaymentInfo object
      * @param PaymentWindow\PaymentInfo $paymentInfo
      */
-    public function setInfo(PaymentWindow\PaymentInfo $paymentInfo) {
+    public function setInfo(PaymentWindow\PaymentInfo $paymentInfo): void {
         $this->info = $paymentInfo;
     }
 
@@ -548,7 +552,7 @@ class PaymentWindow
      * @param Cart|null $cart
      * @return void
      */
-    public function setCart(?PaymentWindow\Cart $cart = null) {
+    public function setCart(?PaymentWindow\Cart $cart = null): void {
         $this->cart = $cart;
     }
 
@@ -576,7 +580,7 @@ class PaymentWindow
     /**
      * @param bool $subscription_with_transaction
      */
-    public function setSubscriptionWithTransaction($subscription_with_transaction) {
+    public function setSubscriptionWithTransaction($subscription_with_transaction): void {
         if (true === $subscription_with_transaction) {
             $this->subscription_with_transaction = '1';
         } else {
@@ -587,12 +591,12 @@ class PaymentWindow
     /**
     * @param bool $surcharge_enabled
     */
-    public function setSurchargeEnabled($surcharge_enabled) {
+    public function setSurchargeEnabled($surcharge_enabled): void {
         $this->surcharge_enabled = $surcharge_enabled;
     }
 
     /**
-     * @return bool
+     * @return bool|null
      */
     public function isSurcharge_enabled() {
         return $this->surcharge_enabled;
@@ -601,12 +605,12 @@ class PaymentWindow
     /**
     * @param int $surcharge_vat_rate
     */
-    public function setSurchargeVatRate($surcharge_vat_rate) {
+    public function setSurchargeVatRate($surcharge_vat_rate): void {
         $this->surcharge_vat_rate = $surcharge_vat_rate;
     }
 
     /**
-     * @return int
+     * @return int|null
      */
     public function getSurchargeVatRate() {
         return $this->surcharge_vat_rate;
