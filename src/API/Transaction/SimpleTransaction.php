@@ -46,7 +46,7 @@ class SimpleTransaction {
     public function setLinks(array $links): void {
         $result = [];
         foreach (array_keys($links) as $rel) {
-            $result[] = new Link($rel, $links[$rel]);
+            $result[] = new Link((string) $rel, DataReader::stringOrNull($links, (string) $rel));
         }
         $this->links = $result;
     }
