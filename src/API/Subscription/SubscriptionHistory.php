@@ -3,56 +3,61 @@
 namespace OnPay\API\Subscription;
 
 use OnPay\API\Util\Converter;
+use OnPay\API\Util\DataReader;
 
 class SubscriptionHistory
 {
     /**
      * @internal Shall not be used outside the library
      * SubscriptionHistory constructor.
-     * @param array $data
+     * @param array<array-key, mixed> $data
      */
     public function __construct(array $data)
     {
-        $this->action = isset($data['action']) ? $data['action'] : null;
-        $this->author = isset($data['author']) ? $data['author'] : null;
-        $this->ip = isset($data['ip']) ? $data['ip'] : null;
-        $this->resultText = isset($data['result_text']) ? $data['result_text'] : null;
-        $this->resultCode = isset($data['result_code']) ? $data['result_code'] : null;
-        $this->successful = isset($data['successful']) ? $data['successful'] : false;
+        $this->action = DataReader::stringOrNull($data, 'action');
+        $this->author = DataReader::stringOrNull($data, 'author');
+        $this->ip = DataReader::stringOrNull($data, 'ip');
+        $this->resultText = DataReader::stringOrNull($data, 'result_text');
+        $this->resultCode = DataReader::stringOrNull($data, 'result_code');
+        $this->successful = DataReader::boolOr($data, 'successful', false);
 
-        if(isset($data['date_time'])) {
-            $this->date = Converter::toDateTimeFromString($data['date_time']);
+        $dateTime = DataReader::stringOrNull($data, 'date_time');
+        if ($dateTime !== null) {
+            $dateValue = Converter::toDateTimeFromString($dateTime);
+            if ($dateValue !== false) {
+                $this->date = $dateValue;
+            }
         }
     }
 
 
     /**
-     * @var string
+     * @var ?string
      */
     public $action;
 
     /**
-     * @var string
+     * @var ?string
      */
     public $author;
 
     /**
-     * @var \DateTime
+     * @var ?\DateTime
      */
-    public $date;
+    public $date = null;
 
     /**
-     * @var string
+     * @var ?string
      */
     public $ip;
 
     /**
-     * @var string
+     * @var ?string
      */
     public $resultCode;
 
     /**
-     * @var string
+     * @var ?string
      */
     public $resultText;
 
