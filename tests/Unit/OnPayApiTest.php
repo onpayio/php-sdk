@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use OnPay\OAuth\Client\Provider;
+use OnPay\OAuth\OnPayProvider;
 use OnPay\OnPayAPI;
 use OnPay\TokenStorageInterface;
 use PHPUnit\Framework\MockObject\Exception;
@@ -123,8 +123,8 @@ class OnPayApiTest extends TestCase {
 
     private function getAuthorizationEndpoint(OnPayAPI $api): string {
         // Private members are reflection-accessible without setAccessible() on PHP 8.1+.
-        /** @var Provider $provider */
+        /** @var OnPayProvider $provider */
         $provider = (new \ReflectionProperty(OnPayAPI::class, 'oauth2Provider'))->getValue($api);
-        return $provider->getAuthorizationEndpoint();
+        return $provider->getBaseAuthorizationUrl();
     }
 }

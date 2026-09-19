@@ -4,6 +4,7 @@ namespace Tests\Unit\Core;
 
 use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\Psr7\Response;
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Exception\ConnectionException;
 use OnPay\API\Exception\TokenException;
@@ -25,10 +26,8 @@ use Tests\Support\ApiTestCase;
  * harness with inline-arranged responses (no fixtures, no network) to exercise the
  * request-construction, handleResponse and OAuth-wiring branches of OnPayAPI directly.
  *
- * The HTTP-client *resolution* tiers (discovery / cURL fallback / injected-factory
- * discovery) are covered by {@see \Tests\Unit\PluggableHttpClientTest}; the one genuine
- * gap there (a provided client with no discoverable PSR-17 factory) lives in
- * {@see HttpClientResolutionTest}.
+ * The HTTP-client *resolution* tiers (discovery / discovery failure / injected-factory
+ * discovery) are covered by {@see \Tests\Unit\PluggableHttpClientTest}.
  */
 class OnPayApiCoreTest extends ApiTestCase
 {
@@ -246,8 +245,8 @@ class OnPayApiCoreTest extends ApiTestCase
 
     public function testGetMapsOAuthTokenExceptionToApiTokenException(): void
     {
-        // Expired token + a failed (non invalid_grant) refresh => the OAuth client throws
-        // its own TokenException, which get() re-wraps as API TokenException.
+        // Expired token + a failed refresh => league throws IdentityProviderException,
+        // which get() re-wraps as API TokenException.
         $this->http->willReturnJson(['error' => 'server_error'], 500, 'POST', 'oauth2/access_token');
 
         $api = $this->createApi([], $this->expiredTokenStorage());
@@ -256,9 +255,8 @@ class OnPayApiCoreTest extends ApiTestCase
             $api->get('ping');
             $this->fail('Expected TokenException');
         } catch (TokenException $e) {
-            $this->assertSame('unable to refresh access_token', $e->getMessage());
-            // Pins the re-wrap: the API TokenException wraps the OAuth-layer TokenException.
-            $this->assertInstanceOf(\OnPay\OAuth\Client\Exception\TokenException::class, $e->getPrevious());
+            $this->assertSame('unable to refresh access_token: server_error', $e->getMessage());
+            $this->assertInstanceOf(IdentityProviderException::class, $e->getPrevious());
         }
     }
 
@@ -272,18 +270,15 @@ class OnPayApiCoreTest extends ApiTestCase
             $api->post('subscription', ['a' => 'b']);
             $this->fail('Expected TokenException');
         } catch (TokenException $e) {
-            $this->assertSame('unable to refresh access_token', $e->getMessage());
-            // Pins the re-wrap: the API TokenException wraps the OAuth-layer TokenException.
-            $this->assertInstanceOf(\OnPay\OAuth\Client\Exception\TokenException::class, $e->getPrevious());
+            $this->assertSame('unable to refresh access_token: server_error', $e->getMessage());
+            $this->assertInstanceOf(IdentityProviderException::class, $e->getPrevious());
         }
     }
 
     public function testGetMapsAccessTokenExceptionToApiTokenException(): void
     {
-        // A stored token that parses (has 'provider_id') but is missing a required key
-        // makes AccessToken construction throw AccessTokenException. get() catches the
-        // (typo-cased) \OnPay\OAUth\...\AccessTokenException and re-wraps as API TokenException.
-        // Current-behaviour note: this proves that catch is NOT dead code.
+        // A stored token that parses but is missing a required key makes league's
+        // AccessToken construction throw; InternalTokenStorage re-wraps as API TokenException.
         $badToken = json_encode([
             'provider_id' => self::BASE_AUTHORIZE_URI . '/oauth2/authorize|' . self::CLIENT_ID,
             'issued_at' => date('Y-m-d H:i:s'),
@@ -301,15 +296,14 @@ class OnPayApiCoreTest extends ApiTestCase
             $api->get('ping');
             $this->fail('Expected TokenException');
         } catch (TokenException $e) {
-            $this->assertStringContainsString('missing key "access_token"', $e->getMessage());
+            $this->assertStringContainsString('stored token is invalid: Required option not passed: "access_token"', $e->getMessage());
         }
     }
 
     public function testPostMapsAccessTokenExceptionToApiTokenException(): void
     {
-        // Symmetric with get(): post() now also catches the OAuth AccessTokenException
-        // (raised while constructing the AccessToken from a token missing a required key)
-        // and re-wraps it as the API TokenException (get()/post() symmetry).
+        // Symmetric with get(): a stored token missing a required key surfaces as the
+        // API TokenException from post() as well.
         $badToken = json_encode([
             'provider_id' => self::BASE_AUTHORIZE_URI . '/oauth2/authorize|' . self::CLIENT_ID,
             'issued_at' => date('Y-m-d H:i:s'),
@@ -327,7 +321,7 @@ class OnPayApiCoreTest extends ApiTestCase
             $api->post('subscription', ['amount' => 100]);
             $this->fail('Expected TokenException');
         } catch (TokenException $e) {
-            $this->assertStringContainsString('missing key "access_token"', $e->getMessage());
+            $this->assertStringContainsString('stored token is invalid: Required option not passed: "access_token"', $e->getMessage());
         }
     }
 
@@ -375,8 +369,6 @@ class OnPayApiCoreTest extends ApiTestCase
 
     public function testFinishAuthorizeExchangesCodeButDoesNotCaptureLastRequest(): void
     {
-        // The state OnPayAPI sends is crypt(providerId, 'state'), matching what the
-        // sessionless OnPay\Session stores, so the callback proceeds to the token POST.
         $this->http->willReturnJson([
             'access_token' => 'freshly_issued_token',
             'token_type' => 'Bearer',
@@ -389,9 +381,7 @@ class OnPayApiCoreTest extends ApiTestCase
 
         $api->finishAuthorize('the-auth-code');
 
-        // Current-behaviour finding: finishAuthorize() never calls
-        // setLastHttpRequest/Response, so the debug DTOs stay unset even though a
-        // token-exchange request was made.
+        // The debug DTOs only track API calls, not the token exchange.
         $this->assertNull($api->getLastHttpRequest());
         $this->assertNull($api->getLastHttpResponse());
     }

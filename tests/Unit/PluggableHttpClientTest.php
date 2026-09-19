@@ -7,11 +7,8 @@ use GuzzleHttp\Psr7\Response as GuzzleResponse;
 use Http\Discovery\ClassDiscovery;
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Exception\ConnectionException;
-use OnPay\CurlHttpClientLogger;
 use OnPay\Http\LoggingHttpClient;
 use OnPay\Http\Psr18HttpClient;
-use OnPay\OAuth\Client\Http\Request as OAuthRequest;
-use OnPay\OAuth\Client\Http\Response as OAuthResponse;
 use OnPay\OnPayAPI;
 use OnPay\TokenStorageInterface;
 use PHPUnit\Framework\TestCase;
@@ -92,8 +89,7 @@ class PluggableHttpClientTest extends TestCase {
 
         $api->ping();
 
-        // Guards the instanceof-converter trap: the debug API must be populated
-        // even when a PSR-18 client (not the cURL logger) is used.
+        // The debug API must be populated from the recorded PSR-7 messages.
         $lastRequest = $api->getLastHttpRequest();
         $this->assertSame('GET', $lastRequest->getMethod());
         $this->assertSame($this->baseUri . '/v1/ping', $lastRequest->getUri());
@@ -102,41 +98,6 @@ class PluggableHttpClientTest extends TestCase {
         $lastResponse = $api->getLastHttpResponse();
         $this->assertSame(200, $lastResponse->getStatusCode());
         $this->assertSame(json_encode(['data' => []]), $lastResponse->getBody());
-    }
-
-    public function testDebugApiIsPopulatedOnBundledCurlPath(): void {
-        // The bundled cURL logger path: OnPayAPI must convert the recorder's OAuth
-        // DTOs into the public API\Http DTOs. Real network I/O through the cURL client
-        // is exercised by the 6320 test harness, not here — this covers the
-        // OnPayAPI-side capture/conversion using the CurlHttpClientLogger type.
-        // Run the real constructor (curlInit) so the mock's __destruct (curl_close)
-        // is safe; we override send()/getLast* so no network I/O happens.
-        $httpClient = $this->getMockBuilder(CurlHttpClientLogger::class)
-            ->setConstructorArgs([[]])
-            ->getMock();
-        $httpClient->method('send')->willReturn(
-            new OAuthResponse(200, json_encode(['data' => []]), ['Content-Type' => 'application/json'])
-        );
-        $httpClient->method('getLastRequest')->willReturn(
-            new OAuthRequest('GET', $this->baseUri . '/v1/ping', ['User-Agent' => 'sdk-test'])
-        );
-        $httpClient->method('getLastResponse')->willReturn(
-            new OAuthResponse(200, 'recorded-body', ['Content-Type' => 'application/json'])
-        );
-
-        $api = new OnPayAPI($this->validTokenStorage(), $this->options());
-        (new \ReflectionProperty(OnPayAPI::class, 'httpClient'))->setValue($api, $httpClient);
-
-        $api->ping();
-
-        $lastRequest = $api->getLastHttpRequest();
-        $this->assertSame('GET', $lastRequest->getMethod());
-        $this->assertSame($this->baseUri . '/v1/ping', $lastRequest->getUri());
-        $this->assertSame(['User-Agent' => 'sdk-test'], $lastRequest->getHeaders());
-
-        $lastResponse = $api->getLastHttpResponse();
-        $this->assertSame(200, $lastResponse->getStatusCode());
-        $this->assertSame('recorded-body', $lastResponse->getBody());
     }
 
     public function testTransportFailureIsMappedToConnectionException(): void {
@@ -153,8 +114,8 @@ class PluggableHttpClientTest extends TestCase {
     }
 
     public function testErrorResponseHeadersAreFlattenedForErrorParsing(): void {
-        // A non-2xx JSON response must drive the same error-body parsing branch as
-        // the cURL path, which requires PSR-7 headers to be flattened correctly.
+        // A non-2xx JSON response must drive the error-body parsing branch, which
+        // requires the PSR-7 Content-Type header to be read correctly.
         $psrClient = $this->createMock(ClientInterface::class);
         $psrClient->method('sendRequest')->willReturn(
             new GuzzleResponse(400, ['Content-Type' => 'application/json'], json_encode([
@@ -175,8 +136,8 @@ class PluggableHttpClientTest extends TestCase {
     }
 
     public function testDiscoveryTierResolvesInstalledPsrStack(): void {
-        // With guzzlehttp/guzzle installed (require-dev), the no-config constructor
-        // must discover and use the PSR-18 stack, not the cURL default.
+        // With a PSR-18 client (Guzzle, via require-dev / league) installed, the
+        // no-config constructor must discover and use it.
         $api = new OnPayAPI($this->validTokenStorage(), $this->options());
 
         $this->assertInstanceOf(Psr18HttpClient::class, $this->getHttpClient($api));
@@ -195,17 +156,57 @@ class PluggableHttpClientTest extends TestCase {
         $this->assertSame(['data' => ['pong' => 'ok']], $api->ping());
     }
 
-    public function testFallsBackToBundledCurlClientWhenNoPsrStackAvailable(): void {
-        // Force discovery to find nothing, then confirm the cURL client is used.
+    public function testThrowsWhenNoPsrStackAvailable(): void {
+        // The SDK ships no HTTP client: when discovery finds nothing and nothing is
+        // injected, construction must fail loudly instead of silently picking a transport.
+        $this->withoutDiscovery(function (): void {
+            try {
+                new OnPayAPI($this->validTokenStorage(), $this->options());
+                $this->fail('Expected InvalidArgumentException was not thrown');
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringContainsString('No PSR-18 HTTP client', $e->getMessage());
+                $this->assertInstanceOf(\Http\Discovery\Exception\NotFoundException::class, $e->getPrevious());
+            }
+        });
+    }
+
+    public function testThrowsWhenClientInjectedButNoFactoriesAvailable(): void {
+        $psrClient = $this->createMock(ClientInterface::class);
+
+        $this->withoutDiscovery(function () use ($psrClient): void {
+            $this->expectException(\InvalidArgumentException::class);
+            $this->expectExceptionMessage('PSR-17 request/stream factory');
+
+            new OnPayAPI($this->validTokenStorage(), $this->options(), $psrClient);
+        });
+    }
+
+    public function testInjectedStackNeedsNoDiscovery(): void {
+        $factory = new HttpFactory();
+        $psrClient = $this->createMock(ClientInterface::class);
+        $psrClient->method('sendRequest')->willReturn(
+            new GuzzleResponse(200, ['Content-Type' => 'application/json'], json_encode(['data' => ['pong' => 'ok']]))
+        );
+
+        $this->withoutDiscovery(function () use ($psrClient, $factory): void {
+            $api = new OnPayAPI($this->validTokenStorage(), $this->options(), $psrClient, $factory, $factory);
+
+            $this->assertSame(['data' => ['pong' => 'ok']], $api->ping());
+            $this->assertStringStartsWith($this->baseAuthUri . '/oauth2/authorize?', $api->authorize());
+        });
+    }
+
+    /**
+     * Runs $test with php-http/discovery configured to find nothing.
+     */
+    private function withoutDiscovery(callable $test): void {
         $originalStrategies = (new \ReflectionProperty(ClassDiscovery::class, 'strategies'))->getValue();
 
         try {
             ClassDiscovery::setStrategies([]);
             ClassDiscovery::clearCache();
 
-            $api = new OnPayAPI($this->validTokenStorage(), $this->options());
-
-            $this->assertInstanceOf(CurlHttpClientLogger::class, $this->getHttpClient($api));
+            $test();
         } finally {
             ClassDiscovery::setStrategies($originalStrategies);
             ClassDiscovery::clearCache();
