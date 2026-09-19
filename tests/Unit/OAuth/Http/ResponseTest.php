@@ -44,6 +44,29 @@ class ResponseTest extends TestCase
         $response->getHeader('X-Missing');
     }
 
+    public function testGetHeaderSkipsNonMatchingHeadersBeforeTheMatch(): void
+    {
+        // The match is not the first header, so the loop has to pass over a
+        // non-matching key and continue.
+        $response = new Response(200, '', [
+            'X-Other' => 'nope',
+            'Content-Type' => 'application/json',
+        ]);
+
+        $this->assertSame('application/json', $response->getHeader('content-type'));
+    }
+
+    public function testGetHeaderThrowsAfterExhaustingNonMatchingHeaders(): void
+    {
+        // Headers are present but none match: the loop runs to completion and
+        // then throws.
+        $response = new Response(200, '', ['X-Other' => 'nope']);
+
+        $this->expectException(ResponseException::class);
+        $this->expectExceptionMessage('header "X-Missing" not set');
+        $response->getHeader('X-Missing');
+    }
+
     public function testJsonDecodesBodyWhenContentTypeIsJson(): void
     {
         $response = new Response(200, '{"a":1}', ['Content-Type' => 'application/json; charset=utf-8']);

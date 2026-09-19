@@ -55,9 +55,11 @@ class CurlHttpClient implements HttpClientInterface
     private function curlInit()
     {
         $curlChannel = \curl_init();
+        // @codeCoverageIgnoreStart
         if (false === $curlChannel) {
             throw new CurlException('unable to create cURL channel');
         }
+        // @codeCoverageIgnoreEnd
         $this->curlChannel = $curlChannel;
     }
 
@@ -66,12 +68,7 @@ class CurlHttpClient implements HttpClientInterface
      */
     private function curlReset()
     {
-        if (\function_exists('curl_reset')) {
-            \curl_reset($this->curlChannel);
-        } else {
-            \curl_close($this->curlChannel);
-            $this->curlInit();
-        }
+        \curl_reset($this->curlChannel);
         $this->responseHeaderList = [];
     }
 
@@ -105,9 +102,11 @@ class CurlHttpClient implements HttpClientInterface
             $defaultCurlOptions[CURLOPT_HTTPHEADER] = $curlRequestHeaders;
         }
 
+        // @codeCoverageIgnoreStart
         if (false === \curl_setopt_array($this->curlChannel, $curlOptions + $defaultCurlOptions)) {
             throw new CurlException('unable to set cURL options');
         }
+        // @codeCoverageIgnoreEnd
 
         $responseData = \curl_exec($this->curlChannel);
         if (false === \is_string($responseData)) {
@@ -118,11 +117,13 @@ class CurlHttpClient implements HttpClientInterface
             throw new CurlException(\sprintf('[%d] %s', \curl_errno($this->curlChannel), \curl_error($this->curlChannel)));
         }
 
+        // @codeCoverageIgnoreStart
         return new Response(
             \curl_getinfo($this->curlChannel, CURLINFO_HTTP_CODE),
             $responseData,
             $this->responseHeaderList
         );
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -150,7 +151,9 @@ class CurlHttpClient implements HttpClientInterface
             /** @psalm-suppress RedundantCast */
             return (int) \mb_strlen($str, '8bit');
         } else {
+            // @codeCoverageIgnoreStart
             return \strlen($str);
+            // @codeCoverageIgnoreEnd
         }
     }
 }

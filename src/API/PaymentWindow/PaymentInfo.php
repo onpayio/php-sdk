@@ -275,11 +275,7 @@ class PaymentInfo {
                 if($withPrefix) {
                     $key = 'onpay_info_';
                 }
-                if (0 === strpos($field, '_')) {
-                    $key .= strtolower(substr($field, 1));
-                } else {
-                    $key .= strtolower($field);
-                }
+                $key .= strtolower($field);
                 $fields[$key] = $this->{$field};
             }
         }
