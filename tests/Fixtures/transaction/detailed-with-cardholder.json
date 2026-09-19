@@ -64,6 +64,7 @@
         "history": [
             {
                 "action": "created",
+                "uuid": "a1b2c3d4-0003-4000-8000-000000000003",
                 "amount": 9900,
                 "author": "system",
                 "ip": "203.0.113.12",

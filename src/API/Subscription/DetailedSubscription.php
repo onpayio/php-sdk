@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace OnPay\API\Subscription;
 
 
@@ -20,6 +23,7 @@ class DetailedSubscription extends SimpleSubscription
         $this->expiryYear = DataReader::intOrNull($data, 'expiry_year');
         $this->cardCountry = DataReader::stringOrNull($data, 'card_country');
         $this->cardBin = DataReader::stringOrNull($data, 'card_bin');
+        $this->cardMask = DataReader::stringOrNull($data, 'card_mask');
         $this->ip = DataReader::stringOrNull($data, 'ip');
         $this->ipCountry = DataReader::stringOrNull($data, 'ip_country');
         $this->fee = DataReader::intOrNull($data, 'fee');
@@ -34,9 +38,12 @@ class DetailedSubscription extends SimpleSubscription
             $this->transactions[] = new SimpleTransaction(DataReader::arrayOr($transactions, (string) $key));
         }
     }
+
     public ?string $cardBin = null;
 
     public ?string $cardCountry = null;
+
+    public ?string $cardMask = null;
 
     public ?int $expiryMonth = null;
 

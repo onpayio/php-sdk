@@ -9,9 +9,9 @@ use PHPUnit\Framework\TestCase;
 /**
  * Direct coverage for {@see TransactionHistory}.
  *
- * The API guarantees action, amount, author, ip and date_time on every history element,
- * so they are non-nullable and the constructor throws {@see ApiException} when one is
- * absent. result_code / result_text are optional; `successful` defaults to false when
+ * The API guarantees action, amount, author, uuid, ip and date_time on every history
+ * element, so they are non-nullable and the constructor throws {@see ApiException} when one
+ * is absent. result_code / result_text are optional; `successful` defaults to false when
  * absent, so both sides are pinned here with distinct values.
  */
 class TransactionHistoryTest extends TestCase
@@ -22,6 +22,7 @@ class TransactionHistoryTest extends TestCase
             'action' => 'capture',
             'amount' => 12500,
             'author' => 'system',
+            'uuid' => 'a1b2c3d4-0000-4000-8000-000000000000',
             'ip' => '203.0.113.10',
             'result_code' => '0',
             'result_text' => 'Approved',
@@ -32,6 +33,7 @@ class TransactionHistoryTest extends TestCase
         $this->assertSame('capture', $history->action);
         $this->assertSame(12500, $history->amount);
         $this->assertSame('system', $history->author);
+        $this->assertSame('a1b2c3d4-0000-4000-8000-000000000000', $history->uuid);
         $this->assertSame('203.0.113.10', $history->ip);
         $this->assertSame('0', $history->resultCode);
         $this->assertSame('Approved', $history->resultText);
@@ -85,6 +87,7 @@ class TransactionHistoryTest extends TestCase
             'action' => 'capture',
             'amount' => 12500,
             'author' => 'system',
+            'uuid' => 'a1b2c3d4-0000-4000-8000-000000000000',
             'ip' => '203.0.113.10',
             'date_time' => '2026-09-18 10:00:00',
         ];

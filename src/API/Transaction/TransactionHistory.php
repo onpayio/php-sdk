@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types=1);
 
 namespace OnPay\API\Transaction;
 
@@ -18,6 +19,7 @@ class TransactionHistory {
         $this->action = DataReader::requireString($data, 'action');
         $this->amount = DataReader::requireInt($data, 'amount');
         $this->author = DataReader::requireString($data, 'author');
+        $this->uuid = DataReader::requireString($data, 'uuid');
         $this->ip = DataReader::requireString($data, 'ip');
         $this->resultCode = DataReader::stringOrNull($data, 'result_code');
         $this->resultText = DataReader::stringOrNull($data, 'result_text');
@@ -35,6 +37,8 @@ class TransactionHistory {
     public \DateTime $dateTime;
 
     public string $ip;
+
+    public string $uuid;
 
     public ?string $resultCode = null;
 

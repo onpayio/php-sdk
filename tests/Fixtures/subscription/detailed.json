@@ -20,6 +20,7 @@
         "history": [
             {
                 "action": "created",
+                "uuid": "a1b2c3d4-0004-4000-8000-000000000004",
                 "author": "system",
                 "ip": "203.0.113.11",
                 "result_code": "0",

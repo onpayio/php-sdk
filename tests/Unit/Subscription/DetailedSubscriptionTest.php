@@ -54,6 +54,7 @@ class DetailedSubscriptionTest extends TestCase
         $this->assertContainsOnlyInstancesOf(SubscriptionHistory::class, $subscription->history);
         $this->assertSame('created', $subscription->history[0]->action);
         $this->assertSame('authorize', $subscription->history[1]->action);
+        $this->assertSame('a1b2c3d4-created-4000-8000-000000000000', $subscription->history[0]->uuid);
 
         $this->assertCount(2, $subscription->transactions);
         $this->assertContainsOnlyInstancesOf(SimpleTransaction::class, $subscription->transactions);
@@ -110,6 +111,7 @@ class DetailedSubscriptionTest extends TestCase
     {
         return [
             'action' => $action,
+            'uuid' => 'a1b2c3d4-' . $action . '-4000-8000-000000000000',
             'author' => 'system',
             'ip' => '203.0.113.11',
             'date_time' => '2026-09-18 09:00:00',
