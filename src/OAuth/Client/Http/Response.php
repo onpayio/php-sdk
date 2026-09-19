@@ -63,6 +63,14 @@ class Response
     }
 
     /**
+     * @return array<string,string>
+     */
+    public function getHeaders()
+    {
+        return $this->responseHeaders;
+    }
+
+    /**
      * @param string $key
      *
      * @return bool

@@ -25,10 +25,13 @@ abstract class ApiTestCase extends TestCase
 
     protected FakeHttpClient $http;
 
+    protected RecordingLogger $logger;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->http = new FakeHttpClient();
+        $this->logger = new RecordingLogger();
     }
 
     protected function tearDown(): void
@@ -39,7 +42,8 @@ abstract class ApiTestCase extends TestCase
     }
 
     /**
-     * Build a real OnPayAPI wired to the fake HTTP client and explicit PSR-17 factories.
+     * Build a real OnPayAPI wired to the fake HTTP client, explicit PSR-17 factories and
+     * the in-memory {@see RecordingLogger} (so nothing reaches error_log() during tests).
      *
      * @param array<string,mixed> $options extra/overriding OnPayAPI options
      */
@@ -61,7 +65,8 @@ abstract class ApiTestCase extends TestCase
             $options,
             $this->http,
             $factory,
-            $factory
+            $factory,
+            $this->logger
         );
     }
 

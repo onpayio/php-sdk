@@ -8,6 +8,7 @@ use Http\Discovery\ClassDiscovery;
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Exception\ConnectionException;
 use OnPay\CurlHttpClientLogger;
+use OnPay\Http\LoggingHttpClient;
 use OnPay\Http\Psr18HttpClient;
 use OnPay\OAuth\Client\Http\Request as OAuthRequest;
 use OnPay\OAuth\Client\Http\Response as OAuthResponse;
@@ -44,7 +45,11 @@ class PluggableHttpClientTest extends TestCase {
 
     private function getHttpClient(OnPayAPI $api): object {
         // Private members are reflection-accessible without setAccessible() on PHP 8.1+.
-        return (new \ReflectionProperty(OnPayAPI::class, 'httpClient'))->getValue($api);
+        $httpClient = (new \ReflectionProperty(OnPayAPI::class, 'httpClient'))->getValue($api);
+        $this->assertInstanceOf(LoggingHttpClient::class, $httpClient);
+
+        // The transport is wrapped in the PSR-3 decorator; unwrap it to assert on the transport tier.
+        return $httpClient->getInnerClient();
     }
 
     public function testInjectedPsr18ClientBuildsAndSendsRequest(): void {

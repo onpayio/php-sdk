@@ -42,10 +42,6 @@ class CurlHttpClient implements HttpClientInterface
             $curlOptions[CURLOPT_POSTFIELDS] = $request->getBody();
         }
 
-        // NOTE: previously this error_log()'d the full request+response on any
-        // non-2xx, leaking bearer tokens and cardholder data into the webserver
-        // error log. Removed for 2.0. Opt-in PSR-3 logging with
-        // redaction is reintroduced later.
         return $this->exec($curlOptions, $request->getHeaders());
     }
 

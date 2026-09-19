@@ -17,8 +17,10 @@ use OnPay\API\PaymentService;
 use OnPay\API\Http\Request as HttpRequest;
 use OnPay\API\Http\Response as HttpResponse;
 use OnPay\OAuth\Client\OAuthClient;
+use OnPay\Http\LoggingHttpClient;
 use OnPay\Http\Psr18HttpClient;
 use OnPay\Http\RecordingHttpClientInterface;
+use OnPay\Log\ErrorLogLogger;
 use OnPay\API\Util\DataReader;
 use Http\Discovery\Psr17FactoryDiscovery;
 use Http\Discovery\Psr18ClientDiscovery;
@@ -26,6 +28,7 @@ use Http\Discovery\Exception\NotFoundException;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Log\LoggerInterface;
 
 class OnPayAPI {
     const SDK_VERSION = '1.0.39';
@@ -118,6 +121,11 @@ class OnPayAPI {
     protected $httpClient;
 
     /**
+     * @var LoggerInterface
+     */
+    protected $logger;
+
+    /**
      * @var string|null
      */
     protected $platform = null;
@@ -131,18 +139,26 @@ class OnPayAPI {
      * supplied, a PSR-18 client + factories are auto-discovered from the
      * environment, falling back to the bundled cURL client if none are installed.
      *
+     * The logger is optional. Failed API and OAuth round trips (non-2xx responses
+     * and transport errors) are reported to it with credentials and cardholder
+     * data redacted; successful ones at debug level. When no logger is supplied,
+     * warnings and errors are written to PHP's error_log(). Pass a
+     * {@see \Psr\Log\NullLogger} to silence the SDK entirely.
+     *
      * @param \OnPay\TokenStorageInterface $tokenStorage
      * @param array $options
      * @param ClientInterface|null $httpClient
      * @param RequestFactoryInterface|null $requestFactory
      * @param StreamFactoryInterface|null $streamFactory
+     * @param LoggerInterface|null $logger
      */
     public function __construct(
         TokenStorageInterface $tokenStorage,
         array $options,
         ?ClientInterface $httpClient = null,
         ?RequestFactoryInterface $requestFactory = null,
-        ?StreamFactoryInterface $streamFactory = null
+        ?StreamFactoryInterface $streamFactory = null,
+        ?LoggerInterface $logger = null
     ) {
         $defaultOptions = [
             'base_uri' => 'https://api.onpay.io',
@@ -189,7 +205,11 @@ class OnPayAPI {
             $this->baseUri . '/oauth2/access_token'
         );
 
-        $this->httpClient = $this->resolveHttpClient($httpClient, $requestFactory, $streamFactory);
+        $this->logger = $logger ?? new ErrorLogLogger();
+        $this->httpClient = new LoggingHttpClient(
+            $this->resolveHttpClient($httpClient, $requestFactory, $streamFactory),
+            $this->logger
+        );
 
         $platform = array_key_exists('platform', $this->options)
             ? DataReader::stringOrNull($this->options, 'platform')
