@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - BREAKING: Dropped support for PHP < 8.2; the SDK now requires PHP 8.2 or later. See UPGRADE.md.
+- Added: Psalm static analysis (errorLevel 1, `src/`) runs in CI; `src/` is now fully typed and JSON responses are narrowed through a typed reader.
+- BREAKING: most public methods gained native parameter/return types and several getters/returns became nullable to reflect the values they can return (e.g. `Http\Response::getStatusCode(): ?int`, `Http` `Request`/`Response` getters `: ?string`, `OnPayAPI::get()/post(): array`, `getPlatform(): ?string`, `Transaction`/`Subscription` `Collection::$pagination: ?Pagination`, `StaticToken::getToken(): ?string`). These are BC only for code that subclasses these (non-final) classes and overrides those methods. See UPGRADE.md.
+- Changed: stricter validation — a `200` whose body is not a JSON object now throws `ApiException` (was silently treated as empty); `AccessToken` rejects non-string required fields; OAuth callbacks with a missing/invalid `code`/`state` throw `OAuthException` up front instead of failing later as a state mismatch. See UPGRADE.md.
 - Added: OnPayAPI accepts an injectable PSR-18 HTTP client with PSR-17 factories; when none is given, a PSR client is auto-discovered (php-http/discovery), falling back to the bundled cURL client. `getLastHttpRequest()`/`getLastHttpResponse()` are preserved. See UPGRADE.md.
 - Security: the default cURL client no longer `error_log()`s the full request/response on non-2xx replies (which leaked bearer tokens and request bodies); the Authorization header is now fully redacted in request string output.
 
