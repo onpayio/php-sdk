@@ -41,7 +41,6 @@ class Oauth2ClientTest extends TestCase {
             ->getMock();
         $reflectedApi = new \ReflectionClass($this->onPayAPI);
         $client = $reflectedApi->getProperty('httpClient');
-        $client->setAccessible(true);
         $client->setValue($this->onPayAPI, $this->httpClient);
     }
 

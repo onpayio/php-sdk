@@ -31,8 +31,10 @@ class OnPayApiTest extends TestCase {
     public function testInitializeApi(): void {
         $tokenStorage = $this->createMock(TokenStorageInterface::class);
         $tokenStorage->method('getToken')->willReturn('test_token');
-        $this->expectNotToPerformAssertions();
-        new OnPayAPI($tokenStorage, ['client_id' => 'test_id', 'redirect_uri' => 'test_uri']);
+        $api = new OnPayAPI($tokenStorage, ['client_id' => 'test_id', 'redirect_uri' => 'test_uri']);
+        // A successful construct exposes the default platform and default authorize endpoint.
+        $this->assertSame('php-sdk/' . OnPayAPI::SDK_VERSION, $api->getPlatform());
+        $this->assertSame('https://manage.onpay.io/oauth2/authorize', $this->getAuthorizationEndpoint($api));
     }
 
     /** @throws Exception */
@@ -110,11 +112,9 @@ class OnPayApiTest extends TestCase {
     }
 
     private function getAuthorizationEndpoint(OnPayAPI $api): string {
-        $ref = new \ReflectionClass($api);
-        $prop = $ref->getProperty('oauth2Provider');
-        $prop->setAccessible(true);
+        // Private members are reflection-accessible without setAccessible() on PHP 8.1+.
         /** @var Provider $provider */
-        $provider = $prop->getValue($api);
+        $provider = (new \ReflectionProperty(OnPayAPI::class, 'oauth2Provider'))->getValue($api);
         return $provider->getAuthorizationEndpoint();
     }
 }
