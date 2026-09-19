@@ -13,8 +13,8 @@ class PaymentWindowIntegrationSettings
      */
     public function __construct(array $data)
     {
-        $this->secret = DataReader::stringOrNull($data, 'secret') ?? '';
+        $this->secret = DataReader::requireString($data, 'secret');
     }
 
-    public string $secret = '';
+    public string $secret;
 }

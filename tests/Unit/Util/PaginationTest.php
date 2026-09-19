@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Util;
 
+use OnPay\API\Exception\ApiException;
 use OnPay\API\Util\Pagination;
 use PHPUnit\Framework\TestCase;
 
@@ -47,13 +48,10 @@ class PaginationTest extends TestCase
         $this->assertNull($pagination->previousUrl);
     }
 
-    public function testMissingKeysYieldNullDefaults(): void
+    public function testThrowsWhenTotalKeysMissing(): void
     {
-        $pagination = new Pagination([]);
-
-        $this->assertNull($pagination->total);
-        $this->assertNull($pagination->totalPages);
-        $this->assertNull($pagination->nextUrl);
-        $this->assertNull($pagination->previousUrl);
+        // total and total_pages are always present in the pagination meta.
+        $this->expectException(ApiException::class);
+        new Pagination([]);
     }
 }

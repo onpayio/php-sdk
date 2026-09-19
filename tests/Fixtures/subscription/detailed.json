@@ -35,8 +35,19 @@
                 "status": "active",
                 "order_id": "order-9001",
                 "amount": 12500,
+                "charged": 0,
+                "refunded": 0,
                 "currency_code": 208,
-                "created": "2026-09-18 10:00:00"
+                "card_type": "Visa",
+                "acquirer": "clearhaus",
+                "wallet": null,
+                "3dsecure": true,
+                "testmode": false,
+                "created": "2026-09-18 10:00:00",
+                "has_cardholder_data": false,
+                "links": {
+                    "self": "/transaction/123e4567-e89b-12d3-a456-426614174000"
+                }
             }
         ]
     },

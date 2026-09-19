@@ -2,18 +2,18 @@
 
 namespace Tests\Unit\Subscription;
 
+use OnPay\API\Exception\ApiException;
 use OnPay\API\Subscription\SimpleSubscription;
 use OnPay\API\Util\Link;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Direct value-object coverage for {@see SimpleSubscription}, pinning both sides of every
- * optional-field read in the constructor.
+ * Direct value-object coverage for {@see SimpleSubscription}.
  *
- * The harness fixtures always carry the identity fields (uuid, subscription_number,
- * status, order_id, currency_code, ...), so their absent side is never taken there. A
- * fully populated payload and an empty payload together prove present AND absent for
- * every field, and the default for the testmode flag.
+ * The API guarantees the core fields (uuid, subscription_number, status, currency_code,
+ * 3dsecure, created) are always present, so they are non-nullable and the constructor
+ * throws {@see ApiException} when one is absent. acquirer, card_type, order_id, wallet and
+ * the testmode flag are genuinely optional; a required-only payload proves their absent side.
  */
 class SimpleSubscriptionTest extends TestCase
 {
@@ -47,27 +47,27 @@ class SimpleSubscriptionTest extends TestCase
         $this->assertSame('2026-09-18 09:00:00', $subscription->created->format('Y-m-d H:i:s'));
     }
 
-    public function testEmptyPayloadLeavesEveryFieldAtItsDefault(): void
+    public function testOptionalFieldsAreNullWhenAbsent(): void
     {
-        $subscription = new SimpleSubscription([]);
+        $subscription = new SimpleSubscription($this->requiredPayload());
 
-        $this->assertNull($subscription->threeDs);
         $this->assertNull($subscription->acquirer);
         $this->assertNull($subscription->cardType);
-        $this->assertNull($subscription->currencyCode);
         $this->assertNull($subscription->orderId);
-        $this->assertNull($subscription->subscriptionNumber);
-        $this->assertNull($subscription->status);
-        $this->assertNull($subscription->uuid);
         $this->assertNull($subscription->wallet);
         $this->assertFalse($subscription->testMode);
-        $this->assertNull($subscription->created);
         $this->assertNull($subscription->links);
+    }
+
+    public function testThrowsWhenRequiredFieldMissing(): void
+    {
+        $this->expectException(ApiException::class);
+        new SimpleSubscription([]);
     }
 
     public function testSetLinksBuildsOneLinkPerRel(): void
     {
-        $subscription = new SimpleSubscription([]);
+        $subscription = new SimpleSubscription($this->requiredPayload());
         $subscription->setLinks([
             'self' => '/subscription/abc',
             'transactions' => '/subscription/abc/transactions',
@@ -79,5 +79,20 @@ class SimpleSubscriptionTest extends TestCase
         $this->assertSame('/subscription/abc', $subscription->links[0]->uri);
         $this->assertSame('transactions', $subscription->links[1]->rel);
         $this->assertSame('/subscription/abc/transactions', $subscription->links[1]->uri);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function requiredPayload(): array
+    {
+        return [
+            '3dsecure' => true,
+            'currency_code' => 208,
+            'subscription_number' => 5001,
+            'status' => 'active',
+            'uuid' => 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+            'created' => '2026-09-18 09:00:00',
+        ];
     }
 }

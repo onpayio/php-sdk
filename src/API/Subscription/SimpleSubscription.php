@@ -2,7 +2,6 @@
 namespace OnPay\API\Subscription;
 
 
-use OnPay\API\Util\Converter;
 use OnPay\API\Util\DataReader;
 use OnPay\API\Util\Link;
 
@@ -15,24 +14,18 @@ class SimpleSubscription
      */
     public function __construct(array $data)
     {
-        $this->threeDs = DataReader::boolOrNull($data, '3dsecure');
+        $this->threeDs = DataReader::requireBool($data, '3dsecure');
         $this->acquirer = DataReader::stringOrNull($data, 'acquirer');
         $this->cardType = DataReader::stringOrNull($data, 'card_type');
-        $this->currencyCode = DataReader::intOrNull($data, 'currency_code');
+        $this->currencyCode = DataReader::requireInt($data, 'currency_code');
         $this->orderId = DataReader::stringOrNull($data, 'order_id');
-        $this->subscriptionNumber = DataReader::intOrNull($data, 'subscription_number');
-        $this->status = DataReader::stringOrNull($data, 'status');
-        $this->uuid = DataReader::stringOrNull($data, 'uuid');
+        $this->subscriptionNumber = DataReader::requireInt($data, 'subscription_number');
+        $this->status = DataReader::requireString($data, 'status');
+        $this->uuid = DataReader::requireString($data, 'uuid');
         $this->wallet = DataReader::stringOrNull($data, 'wallet');
         $this->testMode = DataReader::boolOr($data, 'testmode', false);
 
-        $created = DataReader::stringOrNull($data, 'created');
-        if ($created !== null) {
-            $createdDateTime = Converter::toDateTimeFromString($created);
-            if ($createdDateTime !== false) {
-                $this->created = $createdDateTime;
-            }
-        }
+        $this->created = DataReader::requireDateTime($data, 'created');
     }
 
     /**
@@ -48,60 +41,27 @@ class SimpleSubscription
     }
 
 
-    /**
-     * @var ?string
-     */
-    public $acquirer;
+    public ?string $acquirer = null;
 
-    /**
-     * @var ?string
-     */
-    public $cardType;
+    public ?string $cardType = null;
 
-    /**
-     * @var ?\DateTime
-     */
-    public $created = null;
+    public \DateTime $created;
 
-    /**
-     * @var ?int
-     */
-    public $currencyCode;
+    public int $currencyCode;
 
-    /**
-     * @var ?string
-     */
-    public $orderId;
+    public ?string $orderId = null;
 
-    /**
-     * @var ?string
-     */
-    public $status;
+    public string $status;
 
-    /**
-     * @var ?int
-     */
-    public $subscriptionNumber;
+    public int $subscriptionNumber;
 
-    /**
-     * @var ?bool
-     */
-    public $threeDs;
+    public bool $threeDs;
 
-    /**
-     * @var ?string
-     */
-    public $uuid;
+    public string $uuid;
 
-    /**
-     * @var ?string
-     */
-    public $wallet;
+    public ?string $wallet = null;
 
-    /**
-     * @var bool
-     */
-    public $testMode = false;
+    public bool $testMode = false;
 
     /**
      * @var Link[]|null

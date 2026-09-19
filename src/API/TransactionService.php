@@ -27,6 +27,7 @@ class TransactionService {
      * @param string $identifier
      * @return DetailedTransaction
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws ApiException when the API response omits a field the SDK requires
      */
     public function getTransaction(string $identifier): DetailedTransaction {
         if (empty($identifier)) {
@@ -50,6 +51,7 @@ class TransactionService {
      * @param string $direction
      * @return TransactionCollection
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws ApiException when the API response omits a field the SDK requires
      */
     public function getTransactions(?int $page = null, ?int $pageSize = null, ?string $orderBy = null, ?string $query = null, ?string $status = null, ?string $dateAfter = null, ?string $dateBefore = null, string $direction = 'DESC'): TransactionCollection {
         $direction = strtoupper($direction);
@@ -91,6 +93,7 @@ class TransactionService {
      * @param int|null $postActionChargeAmount
      * @return DetailedTransaction
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws ApiException when the API response omits a field the SDK requires
      */
     public function captureTransaction(string $transactionNumber, ?int $amount = null, ?int $postActionChargeAmount = null): DetailedTransaction {
         $jsonBody = null;
@@ -129,6 +132,7 @@ class TransactionService {
      * @param string $transactionNumber
      * @return DetailedTransaction
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws ApiException when the API response omits a field the SDK requires
      */
     public function cancelTransaction(string $transactionNumber): DetailedTransaction {
         if (empty($transactionNumber)) {
@@ -155,6 +159,7 @@ class TransactionService {
      * @param int|null $postActionRefundAmount
      * @return DetailedTransaction
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws ApiException when the API response omits a field the SDK requires
      */
     public function refundTransaction(string $transactionNumber, ?int $amount = null, ?int $postActionRefundAmount = null): DetailedTransaction {
         $jsonBody = null;

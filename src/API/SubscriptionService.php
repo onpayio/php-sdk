@@ -37,6 +37,7 @@ class SubscriptionService
      * @param string $direction
      * @return SubscriptionCollection
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \OnPay\API\Exception\ApiException when the API response omits a field the SDK requires
      */
     public function getSubscriptions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null, $direction = 'DESC'): SubscriptionCollection  {
         $direction = strtoupper($direction);
@@ -79,6 +80,7 @@ class SubscriptionService
      * @param string $subscriptionId
      * @return DetailedSubscription
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \OnPay\API\Exception\ApiException when the API response omits a field the SDK requires
      */
     public function getSubscription($subscriptionId): DetailedSubscription {
         if (empty($subscriptionId)) {
@@ -97,6 +99,7 @@ class SubscriptionService
      * @param string $subscriptionId
      * @return DetailedSubscription
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \OnPay\API\Exception\ApiException when the API response omits a field the SDK requires
      */
     public function cancelSubscription($subscriptionId): DetailedSubscription {
         if (empty($subscriptionId)) {
@@ -118,6 +121,7 @@ class SubscriptionService
      * @param int $surchargeVatRate
      * @return DetailedTransaction
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \OnPay\API\Exception\ApiException when the API response omits a field the SDK requires
      */
     public function createTransactionFromSubscription($uuid, $amount, $orderId, $surchargeEnabled = false, $surchargeVatRate = 0): DetailedTransaction {
         if (empty($uuid)) {

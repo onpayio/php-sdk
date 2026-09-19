@@ -4,7 +4,6 @@
 namespace OnPay\API\Transaction;
 
 
-use OnPay\API\Util\Converter;
 use OnPay\API\Util\DataReader;
 
 class TransactionHistory {
@@ -16,32 +15,26 @@ class TransactionHistory {
      */
     public function __construct(array $data)
     {
-        $this->action = DataReader::stringOrNull($data, 'action');
-        $this->amount = DataReader::intOrNull($data, 'amount');
-        $this->author = DataReader::stringOrNull($data, 'author');
-        $this->ip = DataReader::stringOrNull($data, 'ip');
+        $this->action = DataReader::requireString($data, 'action');
+        $this->amount = DataReader::requireInt($data, 'amount');
+        $this->author = DataReader::requireString($data, 'author');
+        $this->ip = DataReader::requireString($data, 'ip');
         $this->resultCode = DataReader::stringOrNull($data, 'result_code');
         $this->resultText = DataReader::stringOrNull($data, 'result_text');
         $this->successful = DataReader::boolOr($data, 'successful', false);
 
-        $dateTime = DataReader::stringOrNull($data, 'date_time');
-        if (null !== $dateTime) {
-            $dateTimeValue = Converter::toDateTimeFromString($dateTime);
-            if (false !== $dateTimeValue) {
-                $this->dateTime = $dateTimeValue;
-            }
-        }
+        $this->dateTime = DataReader::requireDateTime($data, 'date_time');
     }
 
-    public ?string $action = null;
+    public string $action;
 
-    public ?int $amount = null;
+    public int $amount;
 
-    public ?string $author = null;
+    public string $author;
 
-    public ?\DateTime $dateTime = null;
+    public \DateTime $dateTime;
 
-    public ?string $ip = null;
+    public string $ip;
 
     public ?string $resultCode = null;
 

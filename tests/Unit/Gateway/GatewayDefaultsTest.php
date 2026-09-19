@@ -2,16 +2,16 @@
 
 namespace Tests\Unit\Gateway;
 
+use OnPay\API\Exception\ApiException;
 use OnPay\API\Gateway\Information;
 use OnPay\API\Gateway\PaymentWindowIntegrationSettings;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Direct coverage for the two gateway value objects' default branches.
+ * Direct coverage for the two gateway value objects.
  *
- * The gateway harness fixtures always carry both fields, so the isset()-false side (the
- * default) is never exercised there. Each pair below pins present vs absent with distinct
- * values so both sides of the read are proven.
+ * `gateway_id` and `secret` are always present on their respective endpoints, so both are
+ * non-nullable and the constructor throws {@see ApiException} when the field is absent.
  */
 class GatewayDefaultsTest extends TestCase
 {
@@ -22,11 +22,10 @@ class GatewayDefaultsTest extends TestCase
         $this->assertSame('gw-abc-123', $information->gatewayId);
     }
 
-    public function testInformationGatewayIdDefaultsToNull(): void
+    public function testInformationThrowsWhenGatewayIdMissing(): void
     {
-        $information = new Information([]);
-
-        $this->assertNull($information->gatewayId);
+        $this->expectException(ApiException::class);
+        new Information([]);
     }
 
     public function testIntegrationSettingsReadsSecretWhenPresent(): void
@@ -36,10 +35,9 @@ class GatewayDefaultsTest extends TestCase
         $this->assertSame('s3cr3t', $settings->secret);
     }
 
-    public function testIntegrationSettingsSecretDefaultsToEmptyString(): void
+    public function testIntegrationSettingsThrowsWhenSecretMissing(): void
     {
-        $settings = new PaymentWindowIntegrationSettings([]);
-
-        $this->assertSame('', $settings->secret);
+        $this->expectException(ApiException::class);
+        new PaymentWindowIntegrationSettings([]);
     }
 }

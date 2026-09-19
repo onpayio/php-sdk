@@ -13,8 +13,8 @@ class Information
      */
     public function __construct(array $data)
     {
-        $this->gatewayId = DataReader::stringOrNull($data, 'gateway_id');
+        $this->gatewayId = DataReader::requireString($data, 'gateway_id');
     }
 
-    public ?string $gatewayId = null;
+    public string $gatewayId;
 }

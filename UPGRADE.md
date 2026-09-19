@@ -95,6 +95,10 @@ to match. If you only call the SDK, no change is needed.
 
 - A `200` response whose body is not a JSON object now throws `ApiException` (previously it
   was silently treated as an empty result).
+- A response object missing a field the API always returns — or returning it with the wrong
+  type — now throws `ApiException` when the SDK builds the value object (e.g. a transaction's
+  `uuid`/`amount`/`created`), instead of yielding an object with `null` fields. Fields the API
+  genuinely leaves out stay optional and are unaffected.
 - `OnPay\OAuth\Client\AccessToken` throws `AccessTokenException` when a required field
   (`provider_id`, `issued_at`, `access_token`, `token_type`) is present but not a string.
 - An OAuth callback with a missing or non-string `code`/`state` throws `OAuthException`

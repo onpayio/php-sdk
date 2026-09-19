@@ -2,18 +2,19 @@
 
 namespace Tests\Unit\Transaction;
 
+use OnPay\API\Exception\ApiException;
 use OnPay\API\Transaction\SimpleTransaction;
 use OnPay\API\Util\Link;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Direct value-object coverage for {@see SimpleTransaction}, pinning both sides of every
- * optional-field read in the constructor.
+ * Direct value-object coverage for {@see SimpleTransaction}.
  *
- * The harness fixtures always carry the identity fields (uuid, amount, currency_code,
- * order_id, status, transaction_number), so their absent side is never taken there. A
- * fully populated payload and an empty payload together prove present AND absent for
- * every field, and the defaults for the two bool flags.
+ * The API guarantees the core fields (uuid, 3dsecure, amount, charged, created,
+ * currency_code, refunded, status, transaction_number) are always present, so they are
+ * non-nullable and the constructor throws {@see ApiException} when one is absent. The
+ * remaining fields (acquirer, card_type, order_id, wallet, and the two bool flags) are
+ * genuinely optional; a required-only payload proves their absent side.
  */
 class SimpleTransactionTest extends TestCase
 {
@@ -55,31 +56,28 @@ class SimpleTransactionTest extends TestCase
         $this->assertTrue($transaction->testMode);
     }
 
-    public function testEmptyPayloadLeavesEveryFieldAtItsDefault(): void
+    public function testOptionalFieldsAreNullWhenAbsent(): void
     {
-        $transaction = new SimpleTransaction([]);
+        $transaction = new SimpleTransaction($this->requiredPayload());
 
-        $this->assertNull($transaction->uuid);
-        $this->assertNull($transaction->threeDs);
         $this->assertNull($transaction->acquirer);
-        $this->assertNull($transaction->amount);
         $this->assertNull($transaction->cardType);
-        $this->assertNull($transaction->charged);
-        $this->assertNull($transaction->created);
-        $this->assertNull($transaction->currencyCode);
         $this->assertNull($transaction->orderId);
-        $this->assertNull($transaction->refunded);
-        $this->assertNull($transaction->status);
-        $this->assertNull($transaction->transactionNumber);
         $this->assertNull($transaction->wallet);
         $this->assertFalse($transaction->hasCardholderData);
         $this->assertFalse($transaction->testMode);
         $this->assertNull($transaction->links);
     }
 
+    public function testThrowsWhenRequiredFieldMissing(): void
+    {
+        $this->expectException(ApiException::class);
+        new SimpleTransaction([]);
+    }
+
     public function testSetLinksBuildsOneLinkPerRel(): void
     {
-        $transaction = new SimpleTransaction([]);
+        $transaction = new SimpleTransaction($this->requiredPayload());
         $transaction->setLinks([
             'self' => '/transaction/abc',
             'subscription' => '/subscription/def',
@@ -91,5 +89,26 @@ class SimpleTransactionTest extends TestCase
         $this->assertSame('/transaction/abc', $transaction->links[0]->uri);
         $this->assertSame('subscription', $transaction->links[1]->rel);
         $this->assertSame('/subscription/def', $transaction->links[1]->uri);
+    }
+
+    /**
+     * The minimal set of always-present fields the API guarantees, so the constructor
+     * does not throw and the optional fields can be left absent.
+     *
+     * @return array<string, mixed>
+     */
+    private function requiredPayload(): array
+    {
+        return [
+            'uuid' => '123e4567-e89b-12d3-a456-426614174000',
+            '3dsecure' => true,
+            'amount' => 12500,
+            'charged' => 0,
+            'created' => '2026-09-18 10:00:00',
+            'currency_code' => 208,
+            'refunded' => 0,
+            'status' => 'active',
+            'transaction_number' => 1001,
+        ];
     }
 }
