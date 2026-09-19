@@ -4,119 +4,89 @@ declare(strict_types=1);
 
 namespace OnPay;
 
-use OnPay\OAuth\Client\AccessToken;
-use OnPay\OAuth\Client\Exception\AccessTokenException;
-use OnPay\OAuth\Client\TokenStorageInterface as oauthTokenStorageInterface;
-use OnPay\TokenStorageInterface as onpayTokenStorageInterface;
+use League\OAuth2\Client\Token\AccessToken;
+use League\OAuth2\Client\Token\AccessTokenInterface;
+use OnPay\API\Exception\TokenException;
+use OnPay\API\Util\DataReader;
 
-class InternalTokenStorage implements oauthTokenStorageInterface {
-    /**
-     * @var onpayTokenStorageInterface
-     */
-    protected onpayTokenStorageInterface $onpayTokenInterface;
+/**
+ * Bridges the consumer's TokenStorageInterface and league/oauth2-client's AccessToken.
+ *
+ * Tokens are persisted as league's JSON (`access_token`, `refresh_token`, absolute
+ * `expires` timestamp, ...). Tokens written by 1.x (`issued_at` + `expires_in`,
+ * `provider_id`) are converted on read, keeping their refresh token and their real
+ * expiry, and re-saved in the new format, so existing integrations keep working
+ * without re-authorizing.
+ *
+ * @internal Shall not be used outside the library.
+ */
+class InternalTokenStorage {
+    private TokenStorageInterface $storage;
 
-    /**
-     * @var string
-     */
-    protected string $authUrl;
-
-    /**
-     * @var string
-     */
-    protected string $clientId;
-
-    /**
-     * @var string
-     */
-    protected string $scope;
-
-    /**
-     * InternalTokenStorage constructor.
-     * @param onpayTokenStorageInterface $storageToken
-     * @param string $authUrl
-     * @param string $clientId
-     * @param string $scope
-     */
-    public function __construct(onpayTokenStorageInterface $storageToken, string $authUrl, string $clientId, string $scope) {
-        $this->onpayTokenInterface = $storageToken;
-        $this->authUrl = $authUrl;
-        $this->clientId = $clientId;
-        $this->scope = $scope;
+    public function __construct(TokenStorageInterface $storage) {
+        $this->storage = $storage;
     }
 
     /**
-     * @param string $userId
-     * @return array<AccessToken>
-     * @throws \OnPay\OAuth\Client\Exception\AccessTokenException
+     * @throws TokenException when the stored token cannot be parsed
      */
-    public function getAccessTokenList(string $userId): array {
-        $accessToken = $this->getToken();
-        if(null !== $accessToken) {
-            return [
-                $accessToken,
-            ];
+    public function getAccessToken(): ?AccessToken {
+        $json = $this->storage->getToken();
+        if (null === $json || '' === $json) {
+            return null;
         }
-        return [];
-    }
 
-    /**
-     * @param string $userId
-     * @param AccessToken $accessToken
-     */
-    public function storeAccessToken(string $userId, AccessToken $accessToken): void {
-        $this->onpayTokenInterface->saveToken($accessToken->toJson());
-    }
-
-    /**
-     * @param string $userId
-     * @param AccessToken $accessToken
-     */
-    public function deleteAccessToken(string $userId, AccessToken $accessToken): void {}
-
-    /**
-     * @return AccessToken|null
-     * @throws \OnPay\OAuth\Client\Exception\AccessTokenException
-     */
-    private function getToken(): ?AccessToken {
-        if ($this->onpayTokenInterface instanceof StaticToken) {
-            // When a static token is used, we need to supply it with the Authorize URL and Client ID.
-            $json = $this->onpayTokenInterface->getToken($this->clientId, $this->authUrl);
-        } else {
-            $json = $this->onpayTokenInterface->getToken();
+        $data = \json_decode($json, true);
+        if (!\is_array($data)) {
+            throw new TokenException('stored token is not valid JSON');
         }
-        if(null !== $json && '' !== $json) {
-            if (strpos($json, 'provider_id') !== false) {
-                // Json is of OnPay/oauth2-client format
-                $accessToken = AccessToken::fromJson($json);
-            } else {
-                // Json is of league/oauth2-client format
-                $this->convertToken();
-                $accessToken = AccessToken::fromJson((string) $this->onpayTokenInterface->getToken());
-            }
-            return $accessToken;
-        }
-        return null;
-    }
 
-    /**
-     * Convert the token from the old league/oauth2-client format to OnPay/oauth2-client format
-     */
-    private function convertToken(): void {
+        $legacy = null !== DataReader::stringOrNull($data, 'issued_at');
+        if ($legacy) {
+            $data = self::convertLegacyToken($data);
+        }
+
         try {
-            /** @var array<array-key, mixed> $decoded */
-            $decoded = (array) json_decode((string) $this->onpayTokenInterface->getToken(), true, 512, JSON_THROW_ON_ERROR);
-
-            // Populate required fields with data indicating that the access token is expired, triggering the oauth2 client to refresh it.
-            $decoded['provider_id'] = $this->authUrl . '|' . $this->clientId;
-            $decoded['issued_at'] = date('Y-m-d H:i:s', (int) strtotime('-1 month'));
-            $decoded['expires_in'] = 3600;
-            $decoded['scope'] = $this->scope;
-
-            $json = json_encode($decoded, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
-        } catch (\JsonException $e) {
-            throw new AccessTokenException('Failed to convert stored token: ' . $e->getMessage(), $e->getCode(), $e);
+            $token = new AccessToken($data);
+        } catch (\InvalidArgumentException $e) {
+            throw new TokenException('stored token is invalid: ' . $e->getMessage(), 0, $e);
         }
 
-        $this->onpayTokenInterface->saveToken($json);
+        if ($legacy) {
+            $this->storeAccessToken($token);
+        }
+
+        return $token;
+    }
+
+    public function storeAccessToken(AccessTokenInterface $token): void {
+        $this->storage->saveToken(\json_encode($token, JSON_THROW_ON_ERROR));
+    }
+
+    /**
+     * Maps the 1.x token layout (`issued_at` + relative `expires_in`) onto league's
+     * absolute `expires`, dropping the fields only the old client understood. A token
+     * without `expires_in` never expires, as in 1.x.
+     *
+     * @param array<array-key,mixed> $data
+     *
+     * @return array<array-key,mixed>
+     *
+     * @throws TokenException
+     */
+    private static function convertLegacyToken(array $data): array {
+        $issuedAt = \strtotime(DataReader::requireString($data, 'issued_at'));
+        if (false === $issuedAt) {
+            throw new TokenException('stored token has an invalid "issued_at"');
+        }
+
+        $expiresIn = DataReader::intOrNull($data, 'expires_in');
+        unset($data['provider_id'], $data['issued_at'], $data['expires_in']);
+
+        if (null !== $expiresIn) {
+            $data['expires'] = $issuedAt + $expiresIn;
+        }
+
+        return $data;
     }
 }

@@ -32,18 +32,15 @@ class StaticToken implements TokenStorageInterface {
     }
 
     /**
-     * @param string|null $client_id
-     * @param string|null $authorize_uri
+     * Static API tokens neither expire nor refresh, so no expiry is set.
+     *
      * @return string|null
      */
-    public function getToken(?string $client_id = null, ?string $authorize_uri = null): ?string {
+    public function getToken(): ?string {
         try {
             return json_encode([
-                'provider_id' => (string) $authorize_uri . '|' . (string) $client_id,
-                'issued_at' => date('Y-m-d H:i:s'),
                 'access_token' => $this->staticToken,
                 'token_type' => 'Bearer',
-                'expires_in' => 3600,
                 'scope' => 'full',
             ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
         } catch (\JsonException $e) {

@@ -2,140 +2,214 @@
 
 namespace Tests\Unit\TokenStorage;
 
+use League\OAuth2\Client\Token\AccessToken;
+use OnPay\API\Exception\TokenException;
 use OnPay\InternalTokenStorage;
-use OnPay\OAuth\Client\AccessToken;
-use OnPay\OAuth\Client\Exception\AccessTokenException;
-use OnPay\StaticToken;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Coverage for OnPay\InternalTokenStorage.
+ * InternalTokenStorage: the bridge between the consumer's TokenStorageInterface and
+ * league's AccessToken, including the transparent upgrade of tokens written by SDK 1.x.
  */
 class InternalTokenStorageTest extends TestCase
 {
-    private const AUTH_URL = 'https://auth.example';
-    private const CLIENT_ID = 'client-123';
-    private const SCOPE = 'full';
-
-    private function makeStorage($inner): InternalTokenStorage
+    public function testEmptyStorageYieldsNoToken(): void
     {
-        return new InternalTokenStorage($inner, self::AUTH_URL, self::CLIENT_ID, self::SCOPE);
+        self::assertNull((new InternalTokenStorage(new FakeTokenStorage()))->getAccessToken());
+        self::assertNull((new InternalTokenStorage(new FakeTokenStorage('')))->getAccessToken());
     }
 
-    private function onPayFormatJson(): string
+    public function testLeagueFormatIsReadBackVerbatim(): void
     {
-        return json_encode([
-            'provider_id' => self::AUTH_URL . '|' . self::CLIENT_ID,
-            'issued_at' => date('Y-m-d H:i:s'),
-            'access_token' => 'tok-onpay',
+        $json = json_encode([
+            'access_token' => 'access',
+            'refresh_token' => 'refresh',
+            'expires' => 1_900_000_000,
             'token_type' => 'Bearer',
+            'scope' => 'full',
+        ]);
+        $inner = new FakeTokenStorage($json);
+
+        $token = (new InternalTokenStorage($inner))->getAccessToken();
+
+        self::assertSame('access', $token->getToken());
+        self::assertSame('refresh', $token->getRefreshToken());
+        self::assertSame(1_900_000_000, $token->getExpires());
+        self::assertSame(['token_type' => 'Bearer', 'scope' => 'full'], $token->getValues());
+        // Nothing is re-saved when no conversion was needed.
+        self::assertSame($json, $inner->getToken());
+    }
+
+    public function testLegacyTokenIsConvertedToAbsoluteExpiryAndReSaved(): void
+    {
+        $issuedAt = time() - 600;
+        $inner = new FakeTokenStorage(self::legacyJson([
+            'issued_at' => date('Y-m-d H:i:s', $issuedAt),
             'expires_in' => 3600,
-            'refresh_token' => 'refresh-onpay',
-            'scope' => self::SCOPE,
-        ]);
-    }
+        ]));
 
-    public function testGetAccessTokenListReturnsEmptyWhenNoToken(): void
-    {
-        $storage = $this->makeStorage(new FakeTokenStorage(null));
+        $token = (new InternalTokenStorage($inner))->getAccessToken();
 
-        self::assertSame([], $storage->getAccessTokenList('user1'));
-    }
+        self::assertSame('legacy_access', $token->getToken());
+        self::assertSame('legacy_refresh', $token->getRefreshToken());
+        // issued_at + expires_in, not "now + expires_in".
+        self::assertSame($issuedAt + 3600, $token->getExpires());
+        self::assertFalse($token->hasExpired());
 
-    public function testGetAccessTokenListReturnsTokenForOnPayFormat(): void
-    {
-        $storage = $this->makeStorage(new FakeTokenStorage($this->onPayFormatJson()));
-
-        $list = $storage->getAccessTokenList('user1');
-        self::assertCount(1, $list);
-        self::assertInstanceOf(AccessToken::class, $list[0]);
-        self::assertSame('tok-onpay', $list[0]->getToken());
-        self::assertSame(self::AUTH_URL . '|' . self::CLIENT_ID, $list[0]->getProviderId());
-    }
-
-    public function testGetAccessTokenListUsesStaticTokenBranch(): void
-    {
-        // A StaticToken triggers the branch that passes clientId + authUrl into getToken().
-        $storage = $this->makeStorage(new StaticToken('my-static-token'));
-
-        $list = $storage->getAccessTokenList('user1');
-        self::assertCount(1, $list);
-        self::assertSame('my-static-token', $list[0]->getToken());
-        // StaticToken builds provider_id as "{authorize_uri}|{client_id}"
-        self::assertSame(self::AUTH_URL . '|' . self::CLIENT_ID, $list[0]->getProviderId());
-    }
-
-    public function testGetAccessTokenListConvertsLeagueFormatToken(): void
-    {
-        // League format: valid token JSON WITHOUT the "provider_id" substring, so the
-        // conversion branch runs (convertToken() then re-reads the saved token).
-        $leagueJson = json_encode([
-            'access_token' => 'tok-league',
+        $saved = json_decode($inner->getToken(), true);
+        self::assertSame([
             'token_type' => 'Bearer',
-            'refresh_token' => 'refresh-league',
-        ]);
-        $inner = new FakeTokenStorage($leagueJson);
-        $storage = $this->makeStorage($inner);
-
-        $list = $storage->getAccessTokenList('user1');
-        self::assertCount(1, $list);
-        $token = $list[0];
-        self::assertSame('tok-league', $token->getToken());
-        // conversion stamps provider_id from authUrl + clientId...
-        self::assertSame(self::AUTH_URL . '|' . self::CLIENT_ID, $token->getProviderId());
-        // ...and deliberately back-dates issued_at so the token reads as expired, forcing a refresh
-        self::assertTrue($token->isExpired(new \DateTime()));
-
-        // the conversion was persisted through saveToken(): the stored JSON now carries provider_id
-        $persisted = json_decode($inner->getToken(), true);
-        self::assertSame(self::AUTH_URL . '|' . self::CLIENT_ID, $persisted['provider_id']);
-        self::assertSame(self::SCOPE, $persisted['scope']);
+            'scope' => 'full',
+            'access_token' => 'legacy_access',
+            'refresh_token' => 'legacy_refresh',
+            'expires' => $issuedAt + 3600,
+        ], $saved);
     }
 
-    public function testConvertTokenThrowsOnMalformedStoredToken(): void
+    /**
+     * Byte-for-byte what SDK 1.x AccessToken::toJson() writes (escaped slashes,
+     * fixed key order, all seven keys always present).
+     */
+    public function testVerbatim1xTokenIsConverted(): void
     {
-        // A non-empty token without the "provider_id" substring routes to convertToken(),
-        // whose JSON_THROW_ON_ERROR decode now surfaces a typed AccessTokenException
-        // instead of silently tolerating the corrupt token as an empty array.
-        $storage = $this->makeStorage(new FakeTokenStorage('{not valid json'));
+        $inner = new FakeTokenStorage(
+            '{"provider_id":"https:\/\/manage.onpay.io\/oauth2\/authorize|client_id","issued_at":"2024-05-01 12:00:00",'
+            . '"access_token":"legacy_access","token_type":"Bearer","expires_in":3600,"refresh_token":"legacy_refresh","scope":"full"}'
+        );
 
-        $this->expectException(AccessTokenException::class);
-        $this->expectExceptionMessage('Failed to convert stored token');
-        $storage->getAccessTokenList('user1');
+        $token = (new InternalTokenStorage($inner))->getAccessToken();
+
+        self::assertSame('legacy_access', $token->getToken());
+        self::assertSame('legacy_refresh', $token->getRefreshToken());
+        self::assertSame(strtotime('2024-05-01 12:00:00') + 3600, $token->getExpires());
+        self::assertTrue($token->hasExpired());
+        self::assertSame(['token_type' => 'Bearer', 'scope' => 'full'], $token->getValues());
+
+        self::assertSame([
+            'token_type' => 'Bearer',
+            'scope' => 'full',
+            'access_token' => 'legacy_access',
+            'refresh_token' => 'legacy_refresh',
+            'expires' => strtotime('2024-05-01 12:00:00') + 3600,
+        ], json_decode($inner->getToken(), true));
     }
 
-    public function testStoreAccessTokenPersistsJson(): void
+    /**
+     * 1.x never omits keys: a token without expiry/refresh/scope is written with
+     * explicit nulls, which must read as "no expiry, no refresh token".
+     */
+    public function testVerbatim1xTokenWithNullFieldsIsConverted(): void
     {
-        $inner = new FakeTokenStorage(null);
-        $storage = $this->makeStorage($inner);
+        $inner = new FakeTokenStorage(
+            '{"provider_id":"https:\/\/manage.onpay.io\/oauth2\/authorize|client_id","issued_at":"2024-05-01 12:00:00",'
+            . '"access_token":"legacy_access","token_type":"Bearer","expires_in":null,"refresh_token":null,"scope":null}'
+        );
 
-        $accessToken = new AccessToken([
-            'provider_id' => 'onpay',
+        $token = (new InternalTokenStorage($inner))->getAccessToken();
+
+        self::assertSame('legacy_access', $token->getToken());
+        self::assertNull($token->getRefreshToken());
+        self::assertNull($token->getExpires());
+        self::assertSame(['token_type' => 'Bearer', 'scope' => null], $token->getValues());
+
+        self::assertSame(
+            ['token_type' => 'Bearer', 'scope' => null, 'access_token' => 'legacy_access'],
+            json_decode($inner->getToken(), true)
+        );
+    }
+
+    public function testLegacyTokenPastItsExpiryReadsAsExpired(): void
+    {
+        $issuedAt = time() - 7200;
+        $inner = new FakeTokenStorage(self::legacyJson([
+            'issued_at' => date('Y-m-d H:i:s', $issuedAt),
+            'expires_in' => 3600,
+        ]));
+
+        $token = (new InternalTokenStorage($inner))->getAccessToken();
+
+        self::assertSame($issuedAt + 3600, $token->getExpires());
+        self::assertTrue($token->hasExpired());
+        // The refresh token survives so the API can refresh instead of forcing re-authorization.
+        self::assertSame('legacy_refresh', $token->getRefreshToken());
+    }
+
+    public function testLegacyTokenWithoutExpiresInNeverExpires(): void
+    {
+        $inner = new FakeTokenStorage(self::legacyJson([
             'issued_at' => '2020-01-01 00:00:00',
-            'access_token' => 'tok-store',
-            'token_type' => 'Bearer',
-            'expires_in' => 3600,
-            'refresh_token' => 'refresh-store',
-            'scope' => self::SCOPE,
-        ]);
+        ]));
 
-        $storage->storeAccessToken('user1', $accessToken);
+        $token = (new InternalTokenStorage($inner))->getAccessToken();
 
-        $persisted = json_decode($inner->getToken(), true);
-        self::assertSame('tok-store', $persisted['access_token']);
-        self::assertSame('onpay', $persisted['provider_id']);
+        self::assertNull($token->getExpires());
+        self::assertArrayNotHasKey('expires', json_decode($inner->getToken(), true));
     }
 
-    public function testDeleteAccessTokenIsANoop(): void
+    public function testLegacyTokenWithInvalidIssuedAtIsRejected(): void
     {
-        $inner = new FakeTokenStorage($this->onPayFormatJson());
-        $storage = $this->makeStorage($inner);
+        $storage = new InternalTokenStorage(new FakeTokenStorage(self::legacyJson([
+            'issued_at' => 'not a date',
+            'expires_in' => 3600,
+        ])));
 
-        $accessToken = $storage->getAccessTokenList('user1')[0];
+        $this->expectException(TokenException::class);
+        $this->expectExceptionMessage('stored token has an invalid "issued_at"');
+        $storage->getAccessToken();
+    }
 
-        // deleteAccessToken is intentionally empty: it must not throw and must not change state.
-        $storage->deleteAccessToken('user1', $accessToken);
+    public function testNonJsonTokenIsRejected(): void
+    {
+        $storage = new InternalTokenStorage(new FakeTokenStorage('not json'));
 
-        self::assertCount(1, $storage->getAccessTokenList('user1'));
+        $this->expectException(TokenException::class);
+        $this->expectExceptionMessage('stored token is not valid JSON');
+        $storage->getAccessToken();
+    }
+
+    public function testTokenWithoutAccessTokenIsRejected(): void
+    {
+        $storage = new InternalTokenStorage(new FakeTokenStorage(json_encode(['refresh_token' => 'r'])));
+
+        try {
+            $storage->getAccessToken();
+            self::fail('Expected TokenException');
+        } catch (TokenException $e) {
+            self::assertSame('stored token is invalid: Required option not passed: "access_token"', $e->getMessage());
+            self::assertInstanceOf(\InvalidArgumentException::class, $e->getPrevious());
+        }
+    }
+
+    public function testStoreAccessTokenPersistsLeagueJson(): void
+    {
+        $inner = new FakeTokenStorage();
+        $token = new AccessToken([
+            'access_token' => 'a',
+            'refresh_token' => 'r',
+            'expires' => 1_900_000_000,
+            'scope' => 'full',
+        ]);
+
+        (new InternalTokenStorage($inner))->storeAccessToken($token);
+
+        self::assertSame(json_encode($token), $inner->getToken());
+        self::assertSame(
+            ['scope' => 'full', 'access_token' => 'a', 'refresh_token' => 'r', 'expires' => 1_900_000_000],
+            json_decode($inner->getToken(), true)
+        );
+    }
+
+    /**
+     * @param array<string,mixed> $overrides
+     */
+    private static function legacyJson(array $overrides): string
+    {
+        return json_encode($overrides + [
+            'provider_id' => 'https://auth.example|client',
+            'token_type' => 'Bearer',
+            'scope' => 'full',
+            'access_token' => 'legacy_access',
+            'refresh_token' => 'legacy_refresh',
+        ]);
     }
 }
