@@ -4,78 +4,78 @@ namespace OnPay\API\Http;
 
 class Request {
     /**
-     * @var string $method
+     * @var string|null $method
      */
-    protected $method;
+    protected ?string $method = null;
 
     /**
-     * @var string $uri
+     * @var string|null $uri
      */
-    protected $uri;
+    protected ?string $uri = null;
 
     /**
      * @var array $headers
      */
-    protected $headers = [];
+    protected array $headers = [];
 
     /**
-     * @var string $body
+     * @var string|null $body
      */
-    protected $body = '';
+    protected ?string $body = '';
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getMethod() {
+    public function getMethod(): ?string {
         return $this->method;
     }
 
     /**
-     * @param string $method
+     * @param string|null $method
      */
-    public function setMethod($method) {
+    public function setMethod($method): void {
         $this->method = $method;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getUri() {
+    public function getUri(): ?string {
         return $this->uri;
     }
 
     /**
-     * @param string $uri
+     * @param string|null $uri
      */
-    public function setUri($uri) {
+    public function setUri($uri): void {
         $this->uri = $uri;
     }
 
     /**
      * @return array
      */
-    public function getHeaders() {
+    public function getHeaders(): array {
         return $this->headers;
     }
 
     /**
      * @param array $headers
      */
-    public function setHeaders($headers) {
+    public function setHeaders($headers): void {
         $this->headers = $headers;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getBody() {
+    public function getBody(): ?string {
         return $this->body;
     }
 
     /**
-     * @param string $body
+     * @param string|null $body
      */
-    public function setBody($body) {
+    public function setBody($body): void {
         $this->body = $body;
     }
 }
