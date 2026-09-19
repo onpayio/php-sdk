@@ -18,8 +18,12 @@ use ReflectionProperty;
  * CURLOPT_PROTOCOLS is restricted to HTTPS -- no DNS lookup, no socket, no
  * egress. This deterministically drives the curl_exec() failure branch.
  *
+ * An allowHttp=true client widens CURLOPT_PROTOCOLS to HTTPS|HTTP only, so an
+ * ftp:// URL is rejected just as locally -- that is how the allowHttp side of
+ * the protocol option is driven without permitting egress.
+ *
  * The successful-transfer branch (Response construction) cannot be reached
- * without a real transfer and is left uncovered by design.
+ * without a real transfer and is excluded from coverage by design.
  */
 class CurlHttpClientTest extends TestCase
 {
@@ -37,8 +41,8 @@ class CurlHttpClientTest extends TestCase
     {
         // array_key_exists('allowHttp', ...) === true branch + (bool) cast on a
         // non-bool value (a plain `true` would make the cast a no-op).
-        // NOTE: never call send() on an allowHttp=true client -- CURLPROTO_HTTP
-        // would be permitted and an http:// URL would attempt real egress.
+        // NOTE: never send() an http:// URL on an allowHttp=true client --
+        // CURLPROTO_HTTP would be permitted and it would attempt real egress.
         $client = new CurlHttpClient(['allowHttp' => 1]);
         self::assertTrue($this->readAllowHttp($client));
         unset($client);
@@ -115,6 +119,24 @@ class CurlHttpClientTest extends TestCase
             ['X-Test' => 'y', 'Content-Type' => 'application/x-www-form-urlencoded'],
             $request->getHeaders()
         );
+
+        try {
+            $client->send($request);
+            self::fail('expected CurlException');
+        } catch (CurlException $e) {
+            self::assertMatchesRegularExpression('/^\[1\] .+/', $e->getMessage());
+        }
+
+        unset($client);
+    }
+
+    public function testSendWithAllowHttpStillRejectsProtocolOutsideHttpAndHttps(): void
+    {
+        // allowHttp=true => CURLOPT_PROTOCOLS is HTTPS|HTTP (the other side of the
+        // protocol ternary). ftp:// is outside that set, so libcurl still rejects
+        // the transfer locally with CURLE_UNSUPPORTED_PROTOCOL -- no egress.
+        $client = new CurlHttpClient(['allowHttp' => true]);
+        $request = new Request('GET', 'ftp://example.invalid/x');
 
         try {
             $client->send($request);

@@ -26,8 +26,10 @@ class CurlHttpClientLogger extends CurlHttpClient implements RecordingHttpClient
     public function send(Request $request) {
         $this->lastRequest = $request;
         $response = parent::send($request);
+        // @codeCoverageIgnoreStart
         $this->lastResponse = $response;
         return $response;
+        // @codeCoverageIgnoreEnd
     }
 
     /**
