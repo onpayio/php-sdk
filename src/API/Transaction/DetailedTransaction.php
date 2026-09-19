@@ -2,6 +2,8 @@
 
 namespace OnPay\API\Transaction;
 
+use OnPay\API\Util\DataReader;
+
 class DetailedTransaction extends SimpleTransaction {
 
     /**
@@ -13,94 +15,58 @@ class DetailedTransaction extends SimpleTransaction {
     {
         parent::__construct($data);
 
-        $this->fee = isset($data['fee']) ? $data['fee'] : null;
-        $this->expiryYear = isset($data['expiry_year']) ? $data['expiry_year'] :  null;
-        $this->expiryMonth = isset($data['expiry_month']) ? $data['expiry_month'] : null;
-        $this->cardCountry = isset($data['card_country']) ? $data['card_country'] : null;
-        $this->cardBin = isset($data['card_bin']) ? $data['card_bin'] : null;
-        $this->cardMask = isset($data['card_mask']) ? $data['card_mask'] : null;
-        $this->ip = isset($data['ip']) ? $data['ip'] : null;
-        $this->ipCountry = isset($data['ip_country']) ? $data['ip_country'] : null;
+        $this->fee = DataReader::intOrNull($data, 'fee');
+        $this->expiryYear = DataReader::intOrNull($data, 'expiry_year');
+        $this->expiryMonth = DataReader::intOrNull($data, 'expiry_month');
+        $this->cardCountry = DataReader::stringOrNull($data, 'card_country');
+        $this->cardBin = DataReader::stringOrNull($data, 'card_bin');
+        $this->cardMask = DataReader::stringOrNull($data, 'card_mask');
+        $this->ip = DataReader::stringOrNull($data, 'ip');
+        $this->ipCountry = DataReader::stringOrNull($data, 'ip_country');
 
-        $this->hasCardholderData = isset($data['has_cardholder_data']) ? $data['has_cardholder_data'] : false;
+        $this->hasCardholderData = DataReader::boolOr($data, 'has_cardholder_data', false);
 
-        $this->cardholderData = null;
-        if(isset($data['cardholder_data']) && null !== $data['cardholder_data']) {
-            $this->cardholderData = new CardholderData($data['cardholder_data']);
+        $cardholderData = DataReader::arrayOrNull($data, 'cardholder_data');
+        if (null !== $cardholderData) {
+            $this->cardholderData = new CardholderData($cardholderData);
         }
 
-        foreach ($data['history'] as $history) {
-            $historyItem = new TransactionHistory($history);
-            $this->history[] = $historyItem;
+        $history = DataReader::arrayOr($data, 'history');
+        foreach (array_keys($history) as $key) {
+            $this->history[] = new TransactionHistory(is_array($history[$key]) ? $history[$key] : []);
         }
 
-        $this->subscriptionNumber = isset($data['subscription_number']) ? $data['subscription_number'] :  null;
-        $this->subscriptionUuid = isset($data['subscription_uuid']) ? $data['subscription_uuid'] : null;
+        $this->subscriptionNumber = DataReader::intOrNull($data, 'subscription_number');
+        $this->subscriptionUuid = DataReader::stringOrNull($data, 'subscription_uuid');
     }
 
-    /**
-     * @var int
-     */
-    public $cardCountry;
+    public ?string $cardCountry = null;
 
-    /**
-     * @var string
-     */
-    public $cardBin;
+    public ?string $cardBin = null;
 
-    /**
-     * @var string
-     */
-    public $cardMask;
+    public ?string $cardMask = null;
 
-    /**
-     * @var int
-     */
-    public $expiryMonth;
+    public ?int $expiryMonth = null;
 
-    /**
-     * @var int
-     */
-    public $expiryYear;
+    public ?int $expiryYear = null;
 
-    /**
-     * @var string
-     */
-    public $ip;
+    public ?string $ip = null;
 
-    /**
-     * @var int
-     */
-    public $ipCountry;
+    public ?string $ipCountry = null;
 
-    /**
-     * @var bool
-     */
-    public $hasCardholderData = false;
+    public bool $hasCardholderData = false;
 
-    /**
-     * @var CardholderData|null
-     */
-    public $cardholderData = null;
+    public ?CardholderData $cardholderData = null;
 
     /**
      * @var TransactionHistory[]
      */
-    public $history = [];
+    public array $history = [];
 
-    /**
-     * @var string
-     */
-    public $subscriptionNumber;
-    
-    /**
-     * @var string
-     */
-    public $subscriptionUuid;
-    
-    /**
-     * @var int
-     */
-    public $fee = null;
+    public ?int $subscriptionNumber = null;
+
+    public ?string $subscriptionUuid = null;
+
+    public ?int $fee = null;
 
 }

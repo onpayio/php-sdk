@@ -7,12 +7,13 @@ use OnPay\API\Subscription\SimpleSubscription;
 use OnPay\API\Subscription\SubscriptionCollection;
 use OnPay\API\Transaction\DetailedTransaction;
 use OnPay\API\Exception\ApiException;
+use OnPay\API\Util\DataReader;
 use OnPay\API\Util\Pagination;
 use OnPay\OnPayAPI;
 
 class SubscriptionService
 {
-    private $api;
+    private OnPayAPI $api;
 
     /**
      * @internal Should never be called outside library
@@ -37,7 +38,7 @@ class SubscriptionService
      * @return SubscriptionCollection
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getSubscriptions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null, $direction = 'DESC')  {
+    public function getSubscriptions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null, $direction = 'DESC'): SubscriptionCollection  {
         $direction = strtoupper($direction);
         if ($direction !== 'ASC') {
             $direction = 'DESC';
@@ -54,60 +55,63 @@ class SubscriptionService
                 'direction' => $direction
             ]);
 
-        $results = $this->api->get('subscription/?' . $queryString);
+        $results = (array) $this->api->get('subscription/?' . $queryString);
         $subscriptions = [];
 
-        foreach ($results['data'] as $result) {
+        $data = DataReader::arrayOr($results, 'data');
+        foreach (array_keys($data) as $key) {
+            $result = DataReader::arrayOr($data, (string) $key);
             $subscription = new SimpleSubscription($result);
-            $subscription->setLinks($result['links']);
+            $subscription->setLinks(DataReader::arrayOr($result, 'links'));
             $subscriptions[] = $subscription;
         }
 
         $collection = new SubscriptionCollection();
         $collection->subscriptions = $subscriptions;
-        $collection->pagination = new Pagination($results['meta']['pagination']);
+        $meta = DataReader::arrayOr($results, 'meta');
+        $collection->pagination = new Pagination(DataReader::arrayOr($meta, 'pagination'));
 
         return $collection;
     }
 
     /**
      * Get specific subscription
-     * @param $subscriptionId
+     * @param string $subscriptionId
      * @return DetailedSubscription
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getSubscription($subscriptionId) {
+    public function getSubscription($subscriptionId): DetailedSubscription {
         if (empty($subscriptionId)) {
             throw new ApiException('Subscription ID must be provided');
         }
 
-        $result = $this->api->get('subscription/' . $subscriptionId);
-        $subscription = new DetailedSubscription($result['data']);
-        $subscription->setLinks($result['links']);
+        $result = (array) $this->api->get('subscription/' . $subscriptionId);
+        $subscription = new DetailedSubscription(DataReader::arrayOr($result, 'data'));
+        $subscription->setLinks(DataReader::arrayOr($result, 'links'));
 
         return $subscription;
     }
 
     /**
      * Cancel specific subscription
-     * @param $subscriptionId
+     * @param string $subscriptionId
      * @return DetailedSubscription
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function cancelSubscription($subscriptionId) {
+    public function cancelSubscription($subscriptionId): DetailedSubscription {
         if (empty($subscriptionId)) {
             throw new ApiException('Subscription ID must be provided');
         }
 
-        $result = $this->api->post('subscription/' . $subscriptionId . '/cancel');
-        $subscription = new DetailedSubscription($result['data']);
-        $subscription->setLinks($result['links']);
+        $result = (array) $this->api->post('subscription/' . $subscriptionId . '/cancel');
+        $subscription = new DetailedSubscription(DataReader::arrayOr($result, 'data'));
+        $subscription->setLinks(DataReader::arrayOr($result, 'links'));
         return $subscription;
     }
 
     /**
      * Create transaction from subscription
-     * @param $uuid
+     * @param string $uuid
      * @param int $amount
      * @param string $orderId
      * @param bool $surchargeEnabled
@@ -115,7 +119,7 @@ class SubscriptionService
      * @return DetailedTransaction
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function createTransactionFromSubscription($uuid, $amount, $orderId, $surchargeEnabled = false, $surchargeVatRate = 0) {
+    public function createTransactionFromSubscription($uuid, $amount, $orderId, $surchargeEnabled = false, $surchargeVatRate = 0): DetailedTransaction {
         if (empty($uuid)) {
             throw new ApiException('Subscription UUID must be provided');
         }
@@ -129,10 +133,10 @@ class SubscriptionService
             ],
         ];
 
-        $result = $this->api->post('subscription/' . $uuid . '/authorize', $json);
+        $result = (array) $this->api->post('subscription/' . $uuid . '/authorize', $json);
 
-        $transaction = new DetailedTransaction($result['data']);
-        $transaction->setLinks($result['links']);
+        $transaction = new DetailedTransaction(DataReader::arrayOr($result, 'data'));
+        $transaction->setLinks(DataReader::arrayOr($result, 'links'));
 
         return $transaction;
     }

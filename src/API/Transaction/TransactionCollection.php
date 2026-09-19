@@ -6,10 +6,7 @@ class TransactionCollection
     /**
      * @var SimpleTransaction[]
      */
-    public $transactions;
-    /**
-     * @var Pagination
-     */
-    public $pagination;
-}
+    public array $transactions = [];
 
+    public ?Pagination $pagination = null;
+}

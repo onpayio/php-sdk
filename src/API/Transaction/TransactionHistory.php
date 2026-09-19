@@ -5,6 +5,7 @@ namespace OnPay\API\Transaction;
 
 
 use OnPay\API\Util\Converter;
+use OnPay\API\Util\DataReader;
 
 class TransactionHistory {
 
@@ -15,57 +16,36 @@ class TransactionHistory {
      */
     public function __construct(array $data)
     {
-        $this->action = isset($data['action']) ? $data['action'] : null;
-        $this->amount = isset($data['amount']) ? $data['amount'] : null;
-        $this->author = isset($data['author']) ? $data['author'] : null;
-        $this->ip = isset($data['ip']) ? $data['ip'] :  null;
-        $this->resultCode = isset($data['result_code']) ? $data['result_code'] : null;
-        $this->resultText = isset($data['result_text']) ? $data['result_text'] : null;
-        $this->successful = isset($data['successful']) ? $data['successful'] : false;
+        $this->action = DataReader::stringOrNull($data, 'action');
+        $this->amount = DataReader::intOrNull($data, 'amount');
+        $this->author = DataReader::stringOrNull($data, 'author');
+        $this->ip = DataReader::stringOrNull($data, 'ip');
+        $this->resultCode = DataReader::stringOrNull($data, 'result_code');
+        $this->resultText = DataReader::stringOrNull($data, 'result_text');
+        $this->successful = DataReader::boolOr($data, 'successful', false);
 
-        if(isset($data['date_time'])) {
-            $this->dateTime = Converter::toDateTimeFromString($data['date_time']);
+        $dateTime = DataReader::stringOrNull($data, 'date_time');
+        if (null !== $dateTime) {
+            $dateTimeValue = Converter::toDateTimeFromString($dateTime);
+            if (false !== $dateTimeValue) {
+                $this->dateTime = $dateTimeValue;
+            }
         }
     }
 
-    /**
-     * @var string
-     */
-    public $action;
+    public ?string $action = null;
 
-    /**
-     * @var int
-     */
-    public $amount;
+    public ?int $amount = null;
 
-    /**
-     * @var string
-     */
-    public $author;
+    public ?string $author = null;
 
-    /**
-     * @var \DateTime
-     */
-    public $dateTime;
+    public ?\DateTime $dateTime = null;
 
-    /**
-     * @var string
-     */
-    public $ip;
+    public ?string $ip = null;
 
-    /**
-     * @var string
-     */
-    public $resultCode;
+    public ?string $resultCode = null;
 
-    /**
-     * @var string
-     */
-    public $resultText;
+    public ?string $resultText = null;
 
-    /**
-     * @var bool
-     */
-    public $successful;
+    public bool $successful = false;
 }
-
