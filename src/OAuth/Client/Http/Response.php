@@ -13,7 +13,7 @@ class Response
     /** @var string */
     private $responseBody;
 
-    /** @var array <string,string> */
+    /** @var array<string,string> */
     private $responseHeaders;
 
     /**

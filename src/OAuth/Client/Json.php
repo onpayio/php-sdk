@@ -29,11 +29,12 @@ class Json
      */
     public static function decode($jsonString)
     {
-        $jsonData = \json_decode($jsonString, true);
-        if (null === $jsonData && JSON_ERROR_NONE !== \json_last_error()) {
+        /** @var mixed $data */
+        $data = \json_decode($jsonString, true);
+        if (null === $data && JSON_ERROR_NONE !== \json_last_error()) {
             throw new JsonException(\sprintf('unable to decode JSON, error code "%d"', \json_last_error()));
         }
 
-        return $jsonData;
+        return $data;
     }
 }

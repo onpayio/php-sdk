@@ -28,9 +28,11 @@ class Session implements SessionInterface
     public function take($key)
     {
         self::requireSession();
-        if (false === \array_key_exists($key, $_SESSION)) {
+        if (false === isset($_SESSION[$key])) {
             throw new SessionException(\sprintf('key "%s" not found in session', $key));
         }
+
+        /** @var mixed $value */
         $value = $_SESSION[$key];
         unset($_SESSION[$key]);
 

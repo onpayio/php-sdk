@@ -58,8 +58,11 @@ class PdoTokenStorage implements TokenStorageInterface
 
         $accessTokenList = [];
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            if (false === \is_array($row)) {
+                continue;
+            }
             // convert expires_in to int if it is not NULL
-            $row['expires_in'] = null !== $row['expires_in'] ? (int) $row['expires_in'] : null;
+            $row['expires_in'] = isset($row['expires_in']) ? (int) $row['expires_in'] : null;
             $accessTokenList[] = new AccessToken($row);
         }
 

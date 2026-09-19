@@ -2,6 +2,7 @@
 
 namespace OnPay\OAuth\Client;
 
+use OnPay\API\Util\DataReader;
 use OnPay\OAuth\Client\Http\HttpClientInterface;
 use OnPay\OAuth\Client\Session;
 use OnPay\OAuth\Client\SessionInterface;
@@ -10,9 +11,9 @@ use OnPay\OAuth\Client\Exception\OAuthException;
 use OnPay\OAuth\Client\Exception\TokenException;
 use OnPay\OAuth\Client\Http\Request;
 use OnPay\InternalTokenStorage;
-use OnPay\TokenStorageInterface;
 
 class OAuthClient {
+    /** @var SessionInterface */
     protected $session;
 
     /** @var \DateTime */
@@ -44,6 +45,7 @@ class OAuthClient {
      * @param string $userId
      * @param string $requestScope
      * @param string $requestUri
+     * @param array<string,string> $requestHeaders
      *
      * @return false|Http\Response
      */
@@ -58,6 +60,8 @@ class OAuthClient {
      * @param string $userId
      * @param string $requestScope
      * @param string $requestUri
+     * @param array<string,string> $postBody
+     * @param array<string,string> $requestHeaders
      *
      * @return false|Http\Response
      */
@@ -66,6 +70,12 @@ class OAuthClient {
         return $this->send($provider, $userId, $requestScope, Request::post($requestUri, $postBody, $requestHeaders));
     }
 
+    /**
+     * @param string $userId
+     * @param string $requestScope
+     *
+     * @return false|Http\Response
+     */
     public function send(Provider $provider, $userId, $requestScope, Request $request) {
         $accessToken = $this->getAccessToken($provider, $userId, $requestScope);
         if (false === $accessToken) {
@@ -162,18 +172,24 @@ class OAuthClient {
             // remove the session
             $this->session->take('_oauth2_session');
 
-            throw new AuthorizeException($getData['error'], \array_key_exists('error_description', $getData) ? $getData['error_description'] : null);
+            $error = DataReader::stringOrNull($getData, 'error');
+            throw new AuthorizeException(
+                null === $error ? 'authorization error' : $error,
+                DataReader::stringOrNull($getData, 'error_description')
+            );
         }
 
-        if (false === \array_key_exists('code', $getData)) {
+        $code = DataReader::stringOrNull($getData, 'code');
+        if (null === $code) {
             throw new OAuthException('missing "code" query parameter from server response');
         }
 
-        if (false === \array_key_exists('state', $getData)) {
+        $state = DataReader::stringOrNull($getData, 'state');
+        if (null === $state) {
             throw new OAuthException('missing "state" query parameter from server response');
         }
 
-        $this->doHandleCallback($provider, $userId, $getData['code'], $getData['state']);
+        $this->doHandleCallback($provider, $userId, $code, $state);
     }
 
     /**
@@ -183,23 +199,26 @@ class OAuthClient {
      *
      * @return void
      */
-    private function doHandleCallback(Provider $provider, $userId, $responseCode, $responseState) {
+    private function doHandleCallback(Provider $provider, string $userId, string $responseCode, string $responseState) {
         // get and delete the OAuth session information
-        $sessionData = $this->session->take('_oauth2_session');
+        if (false === \is_array($sessionData = $this->session->take('_oauth2_session'))) {
+            throw new OAuthException('invalid session (state)');
+        }
 
-        if (false === \hash_equals($sessionData['state'], $responseState)) {
+        $sessionState = DataReader::stringOrNull($sessionData, 'state');
+        if (null === $sessionState || false === \hash_equals($sessionState, $responseState)) {
             // the OAuth state from the initial request MUST be the same as the
             // state used by the response
             throw new OAuthException('invalid session (state)');
         }
 
         // session providerId MUST match current set Provider
-        if ($sessionData['provider_id'] !== $provider->getProviderId()) {
+        if (DataReader::stringOrNull($sessionData, 'provider_id') !== $provider->getProviderId()) {
             throw new OAuthException('invalid session (provider_id)');
         }
 
         // session userId MUST match current set userId
-        if ($sessionData['user_id'] !== $userId) {
+        if (DataReader::stringOrNull($sessionData, 'user_id') !== $userId) {
             throw new OAuthException('invalid session (user_id)');
         }
 
@@ -208,8 +227,8 @@ class OAuthClient {
             'client_id' => $provider->getClientId(),
             'grant_type' => 'authorization_code',
             'code' => $responseCode,
-            'redirect_uri' => $sessionData['redirect_uri'],
-            'code_verifier' => $sessionData['code_verifier'],
+            'redirect_uri' => DataReader::stringOrNull($sessionData, 'redirect_uri'),
+            'code_verifier' => DataReader::stringOrNull($sessionData, 'code_verifier'),
         ];
 
         $response = $this->httpClient->send(
@@ -227,15 +246,19 @@ class OAuthClient {
             throw new TokenException('unable to obtain access_token', $response);
         }
 
+        if (false === \is_array($tokenData = $response->json())) {
+            throw new TokenException('unable to obtain access_token', $response);
+        }
+
         $this->tokenStorage->storeAccessToken(
             $userId,
             AccessToken::fromCodeResponse(
                 $provider,
                 $this->dateTime,
-                $response->json(),
+                $tokenData,
                 // in case server does not return a scope, we know it granted
                 // our requested scope (according to OAuth specification)
-                $sessionData['scope']
+                DataReader::stringOrNull($sessionData, 'scope')
             )
         );
     }
@@ -266,7 +289,9 @@ class OAuthClient {
         );
 
         if (false === $response->isOkay()) {
-            $responseData = $response->json();
+            if (false === \is_array($responseData = $response->json())) {
+                throw new TokenException('unable to refresh access_token', $response);
+            }
             if (\array_key_exists('error', $responseData) && 'invalid_grant' === $responseData['error']) {
                 // delete the access_token, we assume the user revoked it, that
                 // is why we get "invalid_grant"
@@ -281,10 +306,14 @@ class OAuthClient {
         // delete old AccessToken as we'll write a new one anyway...
         $this->tokenStorage->deleteAccessToken($userId, $accessToken);
 
+        if (false === \is_array($tokenData = $response->json())) {
+            throw new TokenException('unable to refresh access_token', $response);
+        }
+
         $accessToken = AccessToken::fromRefreshResponse(
             $provider,
             $this->dateTime,
-            $response->json(),
+            $tokenData,
             // provide the old AccessToken to borrow some fields if the server
             // does not provide them on "refresh"
             $accessToken
@@ -296,7 +325,10 @@ class OAuthClient {
         return $accessToken;
     }
 
-    private function getAccessToken(Provider $provider, $userId, $scope) {
+    /**
+     * @return false|AccessToken
+     */
+    private function getAccessToken(Provider $provider, string $userId, string $scope) {
         $accessTokenList = $this->tokenStorage->getAccessTokenList($userId);
         foreach ($accessTokenList as $accessToken) {
             if ($provider->getProviderId() !== $accessToken->getProviderId()) {
@@ -316,7 +348,7 @@ class OAuthClient {
      * @param string $authUser
      * @param string $authPass
      *
-     * @return array
+     * @return array<string,string>
      */
     private static function getAuthorizationHeader($authUser, $authPass) {
         return [
