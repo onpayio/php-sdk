@@ -96,4 +96,14 @@ class DetailedTransactionTest extends TestCase
         $this->assertFalse($transaction->hasCardholderData);
         $this->assertNull($transaction->cardholderData);
     }
+
+    public function testNonArrayHistoryEntryYieldsEmptyHistoryItem(): void
+    {
+        $transaction = new DetailedTransaction(['history' => ['not-an-array']]);
+
+        $this->assertCount(1, $transaction->history);
+        $this->assertInstanceOf(TransactionHistory::class, $transaction->history[0]);
+        $this->assertNull($transaction->history[0]->action);
+        $this->assertFalse($transaction->history[0]->successful);
+    }
 }

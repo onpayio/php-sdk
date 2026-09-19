@@ -69,4 +69,16 @@ class GatewayHarnessTest extends ApiTestCase
         $this->assertSame('default', $designs->paymentWindowDesigns[0]->name);
         $this->assertSame('checkout-dark', $designs->paymentWindowDesigns[1]->name);
     }
+
+    public function testGetPaymentWindowDesignsMapsNonArrayEntryToEmptyDesign(): void
+    {
+        $this->http->willReturnJson(['data' => [['name' => 'default'], 'not-an-array']], 200, 'GET');
+
+        $api = $this->createApi();
+        $designs = $api->gateway()->getPaymentWindowDesigns();
+
+        $this->assertCount(2, $designs->paymentWindowDesigns);
+        $this->assertSame('default', $designs->paymentWindowDesigns[0]->name);
+        $this->assertNull($designs->paymentWindowDesigns[1]->name);
+    }
 }

@@ -102,6 +102,19 @@ class OnPayApiCoreTest extends ApiTestCase
         $this->assertSame('{"website":"https://example.test/return"}', $lastRequest->getBody());
     }
 
+    public function testPostWithUnencodableBodySendsNoBody(): void
+    {
+        $this->http->willReturnJson(['data' => []], 200, 'POST', 'subscription');
+
+        $api = $this->createApi();
+
+        // Invalid UTF-8 makes json_encode() return false.
+        $api->post('subscription', "\xB1\x31");
+
+        $this->assertNull($api->getLastHttpRequest()->getBody());
+        $this->assertSame('', (string) $this->http->getLastRequest()->getBody());
+    }
+
     // ---------------------------------------------------------------------
     // handleResponse() error branches
     // ---------------------------------------------------------------------

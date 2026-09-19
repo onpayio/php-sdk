@@ -86,6 +86,16 @@ class TransactionServiceTest extends TestCase {
         );
     }
 
+    public function testGetTransactionsMapsNonArrayItemToEmptyTransaction() {
+        $this->apiMock->method('get')->willReturn(['data' => ['not-an-array'], 'meta' => ['pagination' => []]]);
+
+        $collection = $this->service->getTransactions();
+
+        $this->assertCount(1, $collection->transactions);
+        $this->assertNull($collection->transactions[0]->uuid);
+        $this->assertSame([], $collection->transactions[0]->links);
+    }
+
     /**
      * Drive getTransactions() through the mocked API, capturing the URL passed to get(),
      * so the direction-normalization branch can be asserted on the outgoing query.
