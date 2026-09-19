@@ -150,22 +150,22 @@ class OnPayAPI {
      *
      * @param \OnPay\TokenStorageInterface $tokenStorage
      * @param array $options
+     * @param AuthStateStorageInterface|null $authStateStorage persists the OAuth CSRF
+     *        `state` and PKCE `code_verifier` across the redirect; when omitted, state
+     *        verification and PKCE are disabled and using the OAuth flow is deprecated.
      * @param ClientInterface|null $httpClient
      * @param RequestFactoryInterface|null $requestFactory
      * @param StreamFactoryInterface|null $streamFactory
      * @param LoggerInterface|null $logger
-     * @param AuthStateStorageInterface|null $authStateStorage persists the OAuth CSRF
-     *        `state` and PKCE `code_verifier` across the redirect; when omitted, state
-     *        verification and PKCE are disabled and using the OAuth flow is deprecated.
      */
     public function __construct(
         TokenStorageInterface $tokenStorage,
         array $options,
+        ?AuthStateStorageInterface $authStateStorage = null,
         ?ClientInterface $httpClient = null,
         ?RequestFactoryInterface $requestFactory = null,
         ?StreamFactoryInterface $streamFactory = null,
-        ?LoggerInterface $logger = null,
-        ?AuthStateStorageInterface $authStateStorage = null
+        ?LoggerInterface $logger = null
     ) {
         $defaultOptions = [
             'base_uri' => 'https://api.onpay.io',

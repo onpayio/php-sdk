@@ -324,7 +324,7 @@ class Oauth2ClientTest extends ApiTestCase {
             'redirect_uri' => self::REDIRECT_URI,
             'base_uri' => self::BASE_URI,
             'base_authorize_uri' => self::BASE_AUTHORIZE_URI,
-        ], $client, $factory, $factory, $this->logger, $authState);
+        ], $authState, $client, $factory, $factory, $this->logger);
     }
 
     /**

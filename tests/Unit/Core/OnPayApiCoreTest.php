@@ -475,6 +475,7 @@ class OnPayApiCoreTest extends ApiTestCase
                 'base_uri' => self::BASE_URI,
                 'base_authorize_uri' => self::BASE_AUTHORIZE_URI,
             ],
+            null,
             $client,
             $factory,
             $factory,

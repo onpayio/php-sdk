@@ -67,11 +67,11 @@ abstract class ApiTestCase extends TestCase
         return new OnPayAPI(
             $tokenStorage ?? $this->validTokenStorage(),
             $options,
+            $authStateStorage,
             $this->http,
             $factory,
             $factory,
-            $this->logger,
-            $authStateStorage
+            $this->logger
         );
     }
 
