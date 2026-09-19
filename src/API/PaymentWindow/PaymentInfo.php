@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types=1);
 
 namespace OnPay\API\PaymentWindow;
 
@@ -22,7 +23,7 @@ class PaymentInfo {
     /**
      * @var array<string, string>
      */
-    protected $availableFields;
+    protected array $availableFields;
     protected ?string $account_id = null;
     protected ?string $account_date_created = null;
     protected ?string $account_date_change = null;
@@ -148,7 +149,7 @@ class PaymentInfo {
      * @param bool $withPrefix
      * @return array
      */
-    private function buildFieldArray($withPrefix = true): array {
+    private function buildFieldArray(bool $withPrefix = true): array {
         $prefix = $withPrefix ? 'onpay_info_' : '';
         $values = [
             'account_id' => $this->account_id,

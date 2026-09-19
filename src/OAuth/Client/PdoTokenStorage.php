@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\OAuth\Client;
 
 use PDO;
@@ -7,7 +9,7 @@ use PDO;
 class PdoTokenStorage implements TokenStorageInterface
 {
     /** @var \PDO */
-    private $db;
+    private PDO $db;
 
     public function __construct(PDO $db)
     {
@@ -22,7 +24,7 @@ class PdoTokenStorage implements TokenStorageInterface
     /**
      * @return void
      */
-    public function init()
+    public function init(): void
     {
         $this->db->query(
             'CREATE TABLE IF NOT EXISTS access_tokens (
@@ -43,7 +45,7 @@ class PdoTokenStorage implements TokenStorageInterface
      *
      * @return array<AccessToken>
      */
-    public function getAccessTokenList($userId)
+    public function getAccessTokenList(string $userId): array
     {
         $stmt = $this->db->prepare(
             'SELECT
@@ -74,7 +76,7 @@ class PdoTokenStorage implements TokenStorageInterface
      *
      * @return void
      */
-    public function storeAccessToken($userId, AccessToken $accessToken)
+    public function storeAccessToken(string $userId, AccessToken $accessToken): void
     {
         $stmt = $this->db->prepare(
             'INSERT INTO access_tokens (
@@ -102,7 +104,7 @@ class PdoTokenStorage implements TokenStorageInterface
      *
      * @return void
      */
-    public function deleteAccessToken($userId, AccessToken $accessToken)
+    public function deleteAccessToken(string $userId, AccessToken $accessToken): void
     {
         $stmt = $this->db->prepare(
             'DELETE FROM

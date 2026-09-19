@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay;
 
 use OnPay\OAuth\Client\AccessToken;
+use OnPay\OAuth\Client\Exception\AccessTokenException;
 use OnPay\OAuth\Client\TokenStorageInterface as oauthTokenStorageInterface;
 use OnPay\TokenStorageInterface as onpayTokenStorageInterface;
 
@@ -10,22 +13,22 @@ class InternalTokenStorage implements oauthTokenStorageInterface {
     /**
      * @var onpayTokenStorageInterface
      */
-    protected $onpayTokenInterface;
+    protected onpayTokenStorageInterface $onpayTokenInterface;
 
     /**
      * @var string
      */
-    protected $authUrl;
+    protected string $authUrl;
 
     /**
      * @var string
      */
-    protected $clientId;
+    protected string $clientId;
 
     /**
      * @var string
      */
-    protected $scope;
+    protected string $scope;
 
     /**
      * InternalTokenStorage constructor.
@@ -46,7 +49,7 @@ class InternalTokenStorage implements oauthTokenStorageInterface {
      * @return array<AccessToken>
      * @throws \OnPay\OAuth\Client\Exception\AccessTokenException
      */
-    public function getAccessTokenList($userId) {
+    public function getAccessTokenList(string $userId): array {
         $accessToken = $this->getToken();
         if(null !== $accessToken) {
             return [
@@ -60,7 +63,7 @@ class InternalTokenStorage implements oauthTokenStorageInterface {
      * @param string $userId
      * @param AccessToken $accessToken
      */
-    public function storeAccessToken($userId, AccessToken $accessToken) {
+    public function storeAccessToken(string $userId, AccessToken $accessToken): void {
         $this->onpayTokenInterface->saveToken($accessToken->toJson());
     }
 
@@ -68,13 +71,13 @@ class InternalTokenStorage implements oauthTokenStorageInterface {
      * @param string $userId
      * @param AccessToken $accessToken
      */
-    public function deleteAccessToken($userId, AccessToken $accessToken) {}
+    public function deleteAccessToken(string $userId, AccessToken $accessToken): void {}
 
     /**
      * @return AccessToken|null
      * @throws \OnPay\OAuth\Client\Exception\AccessTokenException
      */
-    private function getToken() {
+    private function getToken(): ?AccessToken {
         if ($this->onpayTokenInterface instanceof StaticToken) {
             // When a static token is used, we need to supply it with the Authorize URL and Client ID.
             $json = $this->onpayTokenInterface->getToken($this->clientId, $this->authUrl);
@@ -99,18 +102,21 @@ class InternalTokenStorage implements oauthTokenStorageInterface {
      * Convert the token from the old league/oauth2-client format to OnPay/oauth2-client format
      */
     private function convertToken(): void {
-        $decoded = (array) json_decode((string) $this->onpayTokenInterface->getToken(), true);
+        try {
+            /** @var array<array-key, mixed> $decoded */
+            $decoded = (array) json_decode((string) $this->onpayTokenInterface->getToken(), true, 512, JSON_THROW_ON_ERROR);
 
-        // Populate required fields with data indicating that the access token is expired, triggering the oauth2 client to refresh it.
-        $decoded['provider_id'] = $this->authUrl . '|' . $this->clientId;
-        $decoded['issued_at'] = date('Y-m-d H:i:s', (int) strtotime('-1 month'));
-        $decoded['expires_in'] = 3600;
-        $decoded['scope'] = $this->scope;
+            // Populate required fields with data indicating that the access token is expired, triggering the oauth2 client to refresh it.
+            $decoded['provider_id'] = $this->authUrl . '|' . $this->clientId;
+            $decoded['issued_at'] = date('Y-m-d H:i:s', (int) strtotime('-1 month'));
+            $decoded['expires_in'] = 3600;
+            $decoded['scope'] = $this->scope;
 
-        $json = json_encode($decoded);
-
-        if (false !== $json) {
-            $this->onpayTokenInterface->saveToken($json);
+            $json = json_encode($decoded, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+        } catch (\JsonException $e) {
+            throw new AccessTokenException('Failed to convert stored token: ' . $e->getMessage(), $e->getCode(), $e);
         }
+
+        $this->onpayTokenInterface->saveToken($json);
     }
 }

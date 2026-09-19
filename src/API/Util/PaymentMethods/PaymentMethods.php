@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Util\PaymentMethods;
 
 use OnPay\API\Exception\ApiException;
@@ -22,7 +24,7 @@ class PaymentMethods {
     /**
      * @var PaymentMethodInterface[]
      */
-    private $paymentMethods = [];
+    private array $paymentMethods = [];
 
     /**
      * @throws ApiException
@@ -35,7 +37,7 @@ class PaymentMethods {
      * @return void
      * @throws ApiException
      */
-    private function populatePaymentMethods() {
+    private function populatePaymentMethods(): void {
         $this->paymentMethods[] = new Anyday();
         $this->paymentMethods[] = new ApplePay();
         $this->paymentMethods[] = new Card();
@@ -53,7 +55,7 @@ class PaymentMethods {
      * @param string $method
      * @return Currency[]
      */
-    public function getCurrenciesByMethod($method) {
+    public function getCurrenciesByMethod(string $method): array {
         $currencies = [];
 
         foreach ($this->paymentMethods as $paymentMethod) {
@@ -69,7 +71,7 @@ class PaymentMethods {
      * @param Currency $currency
      * @return PaymentMethodInterface[]
      */
-    public function getPaymentMethodsByCurrency(Currency $currency) {
+    public function getPaymentMethodsByCurrency(Currency $currency): array {
         $availableMethods = [];
 
         foreach ($this->paymentMethods as $paymentMethod) {
@@ -83,7 +85,7 @@ class PaymentMethods {
     /**
      * @return PaymentMethodInterface[]
      */
-    public function getAllPaymentMethods() {
+    public function getAllPaymentMethods(): array {
         return $this->paymentMethods;
     }
 }

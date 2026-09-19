@@ -16,12 +16,12 @@ class FakeSession implements SessionInterface
     /** @var array<string,mixed> */
     public array $values = [];
 
-    public function set($key, $value)
+    public function set($key, $value): void
     {
         $this->values[$key] = $value;
     }
 
-    public function take($key)
+    public function take($key): mixed
     {
         $value = $this->values[$key] ?? null;
         unset($this->values[$key]);

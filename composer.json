@@ -21,7 +21,7 @@
         "psr/http-factory": "^1.0",
         "psr/http-message": "^1.1 || ^2.0",
         "php-http/discovery": "^1.19",
-        "psr/log": "^1.1 || ^2.0 || ^3.0"
+        "psr/log": "^2.0 || ^3.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^11.5",

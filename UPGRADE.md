@@ -9,6 +9,10 @@ change against the code you use.
 `2.0` requires **PHP 8.2 or later**. Support for PHP 7.4, 8.0, and 8.1 has been
 dropped.
 
+`2.0` also requires **`psr/log` `^2.0 || ^3.0`** — the SDK's default logger
+implements PSR-3's `LoggerInterface`, so `psr/log` is a hard dependency. A project
+pinning `psr/log` 1.x must upgrade it, even if it never uses the logging.
+
 ## Backwards-incompatible changes
 
 ### An installed PSR-18 HTTP client is now used by default
@@ -37,8 +41,8 @@ returns became nullable to reflect values they could always return:
   (e.g. `Cart::setShipping()`/`setHandling()` `$name` is `?string`).
 
 Runtime behaviour for correct usage is unchanged. Only code that subclasses these
-(non-`final`) classes and overrides these methods is affected: overrides must now
-use a compatible signature.
+(non-`final`) classes is affected: overridden methods and redeclared (now typed)
+properties must use a compatible signature.
 
 ### Stricter response and token validation
 
@@ -58,6 +62,28 @@ A few places that previously coerced malformed data now fail fast:
   `OAuthException` immediately, instead of surfacing later as a state mismatch.
 
 Well-formed API responses and tokens behave exactly as before.
+
+### Interfaces you implement now require native types
+
+If you implement one of the SDK's interfaces, your methods must declare matching
+native types, or the class fatals at load:
+
+- `OnPay\TokenStorageInterface` — `getToken(): ?string`
+- `OnPay\OAuth\Client\TokenStorageInterface` — `getAccessTokenList(string $userId): array`,
+  `storeAccessToken(string $userId, AccessToken $accessToken): void`,
+  `deleteAccessToken(string $userId, AccessToken $accessToken): void`
+- `OnPay\OAuth\Client\SessionInterface` — `take(string $key): mixed`, `set(string $key, mixed $value): void`
+- `OnPay\OAuth\Client\Http\HttpClientInterface` — `send(Request $request): Response`; the
+  `Response` constructor is `(int $statusCode, string $responseBody, array $headers = [])`,
+  so passing a `null` body throws.
+
+### `null` is rejected where parameters are non-nullable
+
+Public setters carry native types, so passing `null` (or a non-coercible value) to
+a non-nullable parameter throws `TypeError`. Most likely to affect you:
+
+- `PaymentWindow::setGatewayId/setCurrency/setAmount/setReference/setAcceptUrl/setType/setMethod/setLanguage/setDeclineUrl/setCallbackUrl/setDesign/setSecret/setPlatform` — pass a value, not `null`.
+- `CartItem::__construct(string $name, int $price, int $quantity, int $tax, …)` — the first four are required and non-null.
 
 <!--
 Template for a new entry:

@@ -1,19 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\OAuth\Client\Http;
 
 use OnPay\OAuth\Client\Http\Exception\CurlException;
 
 class CurlHttpClient implements HttpClientInterface
 {
-    /** @var \CurlHandle */
-    private $curlChannel;
+    private \CurlHandle $curlChannel;
 
-    /** @var bool */
-    private $allowHttp = false;
+    private bool $allowHttp = false;
 
     /** @var array<string,string> */
-    private $responseHeaderList = [];
+    private array $responseHeaderList = [];
 
     public function __construct(array $configData = [])
     {
@@ -23,15 +23,10 @@ class CurlHttpClient implements HttpClientInterface
         $this->curlInit();
     }
 
-    public function __destruct()
-    {
-        \curl_close($this->curlChannel);
-    }
-
     /**
      * @return Response
      */
-    public function send(Request $request)
+    public function send(Request $request): Response
     {
         $curlOptions = [
             CURLOPT_CUSTOMREQUEST => $request->getMethod(),
@@ -45,10 +40,7 @@ class CurlHttpClient implements HttpClientInterface
         return $this->exec($curlOptions, $request->getHeaders());
     }
 
-    /**
-     * @return void
-     */
-    private function curlInit()
+    private function curlInit(): void
     {
         $curlChannel = \curl_init();
         // @codeCoverageIgnoreStart
@@ -59,10 +51,7 @@ class CurlHttpClient implements HttpClientInterface
         $this->curlChannel = $curlChannel;
     }
 
-    /**
-     * @return void
-     */
-    private function curlReset()
+    private function curlReset(): void
     {
         \curl_reset($this->curlChannel);
         $this->responseHeaderList = [];
@@ -70,10 +59,8 @@ class CurlHttpClient implements HttpClientInterface
 
     /**
      * @param array<string,string> $requestHeaders
-     *
-     * @return Response
      */
-    private function exec(array $curlOptions, array $requestHeaders)
+    private function exec(array $curlOptions, array $requestHeaders): Response
     {
         // make sure we always start with a clean slate, we do this here
         // and not after curl_exec because when calling CurlHttpClient::exec
@@ -125,12 +112,9 @@ class CurlHttpClient implements HttpClientInterface
     }
 
     /**
-     * @param resource $curlChannel
-     * @param string   $headerData
-     *
-     * @return int
+     * @param \CurlHandle $curlChannel
      */
-    private function responseHeaderFunction($curlChannel, $headerData)
+    private function responseHeaderFunction($curlChannel, string $headerData): int
     {
         // we do NOT support multiple response headers with the same key, the
         // later one(s) will overwrite the earlier one

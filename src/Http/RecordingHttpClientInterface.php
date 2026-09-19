@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\Http;
 
 use OnPay\OAuth\Client\Http\HttpClientInterface;
@@ -18,10 +20,10 @@ interface RecordingHttpClientInterface extends HttpClientInterface {
     /**
      * @return Request|null
      */
-    public function getLastRequest();
+    public function getLastRequest(): ?Request;
 
     /**
      * @return Response|null
      */
-    public function getLastResponse();
+    public function getLastResponse(): ?Response;
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Subscription;
 
 use OnPay\API\Util\DataReader;
@@ -15,6 +17,7 @@ class SubscriptionHistory
     {
         $this->action = DataReader::requireString($data, 'action');
         $this->author = DataReader::requireString($data, 'author');
+        $this->uuid = DataReader::requireString($data, 'uuid');
         $this->ip = DataReader::requireString($data, 'ip');
         $this->resultText = DataReader::stringOrNull($data, 'result_text');
         $this->resultCode = DataReader::stringOrNull($data, 'result_code');
@@ -27,6 +30,8 @@ class SubscriptionHistory
     public string $action;
 
     public string $author;
+
+    public string $uuid;
 
     public \DateTime $date;
 

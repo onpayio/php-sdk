@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace OnPay\API;
 
 use OnPay\API\PaymentWindow\Cart;
@@ -78,7 +81,7 @@ class PaymentWindow
     /**
      * @param string $gatewayId
      */
-    public function setGatewayId($gatewayId): void
+    public function setGatewayId(string $gatewayId): void
     {
         $this->gatewayId = $gatewayId;
     }
@@ -93,7 +96,7 @@ class PaymentWindow
     /**
      * @param string $currency
      */
-    public function setCurrency($currency): void
+    public function setCurrency(string $currency): void
     {
         $this->currency = $currency;
     }
@@ -108,7 +111,7 @@ class PaymentWindow
     /**
      * @param string $amount
      */
-    public function setAmount($amount): void
+    public function setAmount(string $amount): void
     {
         $this->amount = $amount;
     }
@@ -123,7 +126,7 @@ class PaymentWindow
     /**
      * @param string $reference
      */
-    public function setReference($reference): void
+    public function setReference(string $reference): void
     {
         $this->reference = $reference;
     }
@@ -138,7 +141,7 @@ class PaymentWindow
     /**
      * @param string $acceptUrl
      */
-    public function setAcceptUrl($acceptUrl): void
+    public function setAcceptUrl(string $acceptUrl): void
     {
         $this->acceptUrl = $acceptUrl;
     }
@@ -153,7 +156,7 @@ class PaymentWindow
     /**
      * @param string $type
      */
-    public function setType($type): void
+    public function setType(string $type): void
     {
         $this->type = $type;
     }
@@ -168,7 +171,7 @@ class PaymentWindow
     /**
      * @param string $method
      */
-    public function setMethod($method): void
+    public function setMethod(string $method): void
     {
         $this->method = $method;
     }
@@ -184,7 +187,7 @@ class PaymentWindow
      * @param bool $secureEnabled
      * @deprecated
      */
-    public function setSecureEnabled($secureEnabled): void
+    public function setSecureEnabled(bool $secureEnabled): void
     {
         $this->set3DSecure($secureEnabled);
     }
@@ -200,7 +203,7 @@ class PaymentWindow
     /**
      * @param bool $threeDs
      */
-    public function set3DSecure($threeDs): void {
+    public function set3DSecure(bool $threeDs): void {
         if ($threeDs) {
             $this->_3dsecure = 'forced';
         } else {
@@ -218,7 +221,7 @@ class PaymentWindow
     /**
      * @param string $language
      */
-    public function setLanguage($language): void
+    public function setLanguage(string $language): void
     {
         $this->language = $language;
     }
@@ -233,7 +236,7 @@ class PaymentWindow
     /**
      * @param string $declineUrl
      */
-    public function setDeclineUrl($declineUrl): void
+    public function setDeclineUrl(string $declineUrl): void
     {
         $this->declineUrl = $declineUrl;
     }
@@ -248,7 +251,7 @@ class PaymentWindow
     /**
      * @param string $callbackUrl
      */
-    public function setCallbackUrl($callbackUrl): void
+    public function setCallbackUrl(string $callbackUrl): void
     {
         $this->callbackUrl = $callbackUrl;
     }
@@ -263,7 +266,7 @@ class PaymentWindow
     /**
      * @param string $design
      */
-    public function setDesign($design): void
+    public function setDesign(string $design): void
     {
         $this->design = $design;
     }
@@ -285,14 +288,14 @@ class PaymentWindow
     /**
      * @param string|null $deliveryDisabled
      */
-    public function setDeliveryDisabled($deliveryDisabled): void {
+    public function setDeliveryDisabled(?string $deliveryDisabled): void {
         $this->delivery_disabled = $deliveryDisabled;
     }
 
     /**
      * @param string|null $website
      */
-    public function setWebsite($website): void {
+    public function setWebsite(?string $website): void {
         $this->website = $website;
     }
 
@@ -319,7 +322,7 @@ class PaymentWindow
      * @param string|null $version
      * @param string|null $systemVersion
      */
-    public function setPlatform($platform, $version = null, $systemVersion = null): void {
+    public function setPlatform(string $platform, ?string $version = null, ?string $systemVersion = null): void {
         $string = $platform;
         if (null !== $version) {
             $string .= '/' . $version;
@@ -343,7 +346,7 @@ class PaymentWindow
     /**
      * @param int|null $expiration
      */
-    public function setExpiration($expiration): void {
+    public function setExpiration(?int $expiration): void {
         $this->expiration = $expiration;
     }
 
@@ -365,7 +368,7 @@ class PaymentWindow
     /**
      * @param string $secret
      */
-    public function setSecret($secret): void
+    public function setSecret(string $secret): void
     {
         $this->secret = $secret;
     }
@@ -580,7 +583,7 @@ class PaymentWindow
     /**
      * @param bool $subscription_with_transaction
      */
-    public function setSubscriptionWithTransaction($subscription_with_transaction): void {
+    public function setSubscriptionWithTransaction(bool $subscription_with_transaction): void {
         if (true === $subscription_with_transaction) {
             $this->subscription_with_transaction = '1';
         } else {
@@ -591,7 +594,7 @@ class PaymentWindow
     /**
     * @param bool $surcharge_enabled
     */
-    public function setSurchargeEnabled($surcharge_enabled): void {
+    public function setSurchargeEnabled(bool $surcharge_enabled): void {
         $this->surcharge_enabled = $surcharge_enabled;
     }
 
@@ -605,7 +608,7 @@ class PaymentWindow
     /**
     * @param int $surcharge_vat_rate
     */
-    public function setSurchargeVatRate($surcharge_vat_rate): void {
+    public function setSurchargeVatRate(int $surcharge_vat_rate): void {
         $this->surcharge_vat_rate = $surcharge_vat_rate;
     }
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\TokenStorage;
 
+use OnPay\API\Exception\TokenException;
 use OnPay\StaticToken;
 use PHPUnit\Framework\TestCase;
 
@@ -39,12 +40,15 @@ class StaticTokenTest extends TestCase
         self::assertSame('tok', $decoded['access_token']);
     }
 
-    public function testGetTokenReturnsNullWhenTokenCannotBeJsonEncoded(): void
+    public function testGetTokenThrowsWhenTokenCannotBeJsonEncoded(): void
     {
-        // Invalid UTF-8 makes json_encode() return false.
+        // Invalid UTF-8 cannot be JSON-encoded: getToken() now surfaces a typed
+        // TokenException instead of silently returning null.
         $storage = new StaticToken("\xB1\x31");
 
-        self::assertNull($storage->getToken());
+        $this->expectException(TokenException::class);
+        $this->expectExceptionMessage('Failed to encode static token');
+        $storage->getToken();
     }
 
     public function testSaveTokenIsANoop(): void

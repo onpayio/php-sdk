@@ -102,17 +102,15 @@ class OnPayApiCoreTest extends ApiTestCase
         $this->assertSame('{"website":"https://example.test/return"}', $lastRequest->getBody());
     }
 
-    public function testPostWithUnencodableBodySendsNoBody(): void
+    public function testPostWithUnencodableBodyThrowsApiException(): void
     {
-        $this->http->willReturnJson(['data' => []], 200, 'POST', 'subscription');
-
         $api = $this->createApi();
 
-        // Invalid UTF-8 makes json_encode() return false.
+        // Invalid UTF-8 cannot be JSON-encoded: instead of silently sending a
+        // null body, the request is aborted with a typed ApiException.
+        $this->expectException(ApiException::class);
+        $this->expectExceptionMessage('Failed to encode request body as JSON');
         $api->post('subscription', "\xB1\x31");
-
-        $this->assertNull($api->getLastHttpRequest()->getBody());
-        $this->assertSame('', (string) $this->http->getLastRequest()->getBody());
     }
 
     // ---------------------------------------------------------------------
@@ -301,6 +299,32 @@ class OnPayApiCoreTest extends ApiTestCase
 
         try {
             $api->get('ping');
+            $this->fail('Expected TokenException');
+        } catch (TokenException $e) {
+            $this->assertStringContainsString('missing key "access_token"', $e->getMessage());
+        }
+    }
+
+    public function testPostMapsAccessTokenExceptionToApiTokenException(): void
+    {
+        // Symmetric with get(): post() now also catches the OAuth AccessTokenException
+        // (raised while constructing the AccessToken from a token missing a required key)
+        // and re-wraps it as the API TokenException (get()/post() symmetry).
+        $badToken = json_encode([
+            'provider_id' => self::BASE_AUTHORIZE_URI . '/oauth2/authorize|' . self::CLIENT_ID,
+            'issued_at' => date('Y-m-d H:i:s'),
+            'token_type' => 'Bearer',
+            'expires_in' => 3600,
+            'scope' => 'full',
+            // no access_token
+        ]);
+        $tokenStorage = $this->createMock(TokenStorageInterface::class);
+        $tokenStorage->method('getToken')->willReturn($badToken);
+
+        $api = $this->createApi([], $tokenStorage);
+
+        try {
+            $api->post('subscription', ['amount' => 100]);
             $this->fail('Expected TokenException');
         } catch (TokenException $e) {
             $this->assertStringContainsString('missing key "access_token"', $e->getMessage());

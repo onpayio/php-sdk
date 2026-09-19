@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\OAuth\Client;
 
 interface TokenStorageInterface
@@ -9,19 +11,19 @@ interface TokenStorageInterface
      *
      * @return array<AccessToken>
      */
-    public function getAccessTokenList($userId);
+    public function getAccessTokenList(string $userId): array;
 
     /**
      * @param string $userId
      *
      * @return void
      */
-    public function storeAccessToken($userId, AccessToken $accessToken);
+    public function storeAccessToken(string $userId, AccessToken $accessToken): void;
 
     /**
      * @param string $userId
      *
      * @return void
      */
-    public function deleteAccessToken($userId, AccessToken $accessToken);
+    public function deleteAccessToken(string $userId, AccessToken $accessToken): void;
 }

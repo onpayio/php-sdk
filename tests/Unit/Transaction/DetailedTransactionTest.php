@@ -59,6 +59,7 @@ class DetailedTransactionTest extends TestCase
         $this->assertContainsOnlyInstancesOf(TransactionHistory::class, $transaction->history);
         $this->assertSame('created', $transaction->history[0]->action);
         $this->assertSame('capture', $transaction->history[1]->action);
+        $this->assertSame('a1b2c3d4-created-4000-8000-000000000000', $transaction->history[0]->uuid);
 
         $this->assertSame(5001, $transaction->subscriptionNumber);
         $this->assertSame('f47ac10b-58cc-4372-a567-0e02b2c3d479', $transaction->subscriptionUuid);
@@ -138,6 +139,7 @@ class DetailedTransactionTest extends TestCase
     {
         return [
             'action' => $action,
+            'uuid' => 'a1b2c3d4-' . $action . '-4000-8000-000000000000',
             'amount' => 12500,
             'author' => 'system',
             'ip' => '203.0.113.10',

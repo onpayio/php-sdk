@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\OAuth\Client\Http;
 
 use OnPay\OAuth\Client\Http\Exception\ResponseException;
@@ -7,31 +9,24 @@ use OnPay\OAuth\Client\Json;
 
 class Response
 {
-    /** @var int */
-    private $statusCode;
+    private int $statusCode;
 
-    /** @var string */
-    private $responseBody;
+    private string $responseBody;
 
     /** @var array<string,string> */
-    private $responseHeaders;
+    private array $responseHeaders;
 
     /**
-     * @param int                  $statusCode
-     * @param string               $responseBody
      * @param array<string,string> $responseHeaders
      */
-    public function __construct($statusCode, $responseBody, array $responseHeaders = [])
+    public function __construct(int $statusCode, string $responseBody, array $responseHeaders = [])
     {
         $this->statusCode = $statusCode;
         $this->responseBody = $responseBody;
         $this->responseHeaders = $responseHeaders;
     }
 
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         $responseHeaders = [];
         foreach ($this->responseHeaders as $k => $v) {
@@ -46,18 +41,12 @@ class Response
         );
     }
 
-    /**
-     * @return int
-     */
-    public function getStatusCode()
+    public function getStatusCode(): int
     {
         return $this->statusCode;
     }
 
-    /**
-     * @return string
-     */
-    public function getBody()
+    public function getBody(): string
     {
         return $this->responseBody;
     }
@@ -65,17 +54,12 @@ class Response
     /**
      * @return array<string,string>
      */
-    public function getHeaders()
+    public function getHeaders(): array
     {
         return $this->responseHeaders;
     }
 
-    /**
-     * @param string $key
-     *
-     * @return bool
-     */
-    public function hasHeader($key)
+    public function hasHeader(string $key): bool
     {
         foreach (\array_keys($this->responseHeaders) as $k) {
             if (\strtoupper($key) === \strtoupper($k)) {
@@ -86,12 +70,7 @@ class Response
         return false;
     }
 
-    /**
-     * @param string $key
-     *
-     * @return string
-     */
-    public function getHeader($key)
+    public function getHeader(string $key): string
     {
         foreach ($this->responseHeaders as $k => $v) {
             if (\strtoupper($key) === \strtoupper($k)) {
@@ -102,10 +81,7 @@ class Response
         throw new ResponseException(\sprintf('header "%s" not set', $key));
     }
 
-    /**
-     * @return mixed
-     */
-    public function json()
+    public function json(): mixed
     {
         if (false === \strpos($this->getHeader('Content-Type'), 'application/json')) {
             throw new ResponseException('response MUST have JSON content type');
@@ -114,10 +90,7 @@ class Response
         return Json::decode($this->responseBody);
     }
 
-    /**
-     * @return bool
-     */
-    public function isOkay()
+    public function isOkay(): bool
     {
         return 200 <= $this->statusCode && 300 > $this->statusCode;
     }

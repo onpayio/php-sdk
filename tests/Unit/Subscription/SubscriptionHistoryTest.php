@@ -10,8 +10,8 @@ use PHPUnit\Framework\TestCase;
  * Direct coverage for {@see SubscriptionHistory}.
  *
  * Mirrors {@see \Tests\Unit\Transaction\TransactionHistoryTest}, minus `amount` (subscription
- * history elements carry no amount). action, author, ip and date_time are always present and
- * non-nullable — the constructor throws {@see ApiException} when one is absent. result_code /
+ * history elements carry no amount). action, author, uuid, ip and date_time are always present
+ * and non-nullable — the constructor throws {@see ApiException} when one is absent. result_code /
  * result_text are optional; `successful` defaults to false when absent.
  */
 class SubscriptionHistoryTest extends TestCase
@@ -21,6 +21,7 @@ class SubscriptionHistoryTest extends TestCase
         $history = new SubscriptionHistory([
             'action' => 'created',
             'author' => 'system',
+            'uuid' => 'a1b2c3d4-0000-4000-8000-000000000000',
             'ip' => '203.0.113.11',
             'result_text' => 'Approved',
             'result_code' => '0',
@@ -30,6 +31,7 @@ class SubscriptionHistoryTest extends TestCase
 
         $this->assertSame('created', $history->action);
         $this->assertSame('system', $history->author);
+        $this->assertSame('a1b2c3d4-0000-4000-8000-000000000000', $history->uuid);
         $this->assertSame('203.0.113.11', $history->ip);
         $this->assertSame('Approved', $history->resultText);
         $this->assertSame('0', $history->resultCode);
@@ -82,6 +84,7 @@ class SubscriptionHistoryTest extends TestCase
         return [
             'action' => 'created',
             'author' => 'system',
+            'uuid' => 'a1b2c3d4-0000-4000-8000-000000000000',
             'ip' => '203.0.113.11',
             'date_time' => '2026-09-18 09:00:00',
         ];

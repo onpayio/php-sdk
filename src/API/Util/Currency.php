@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Util;
 
 use OnPay\API\Exception\ApiException;
@@ -14,21 +16,21 @@ class Currency {
     /**
      * @var string
      */
-    private $alpha3;
+    private string $alpha3;
     /**
      * @var int
      */
-    private $ISO4217;
+    private int $ISO4217;
     /**
      * @var int
      */
-    private $exponent;
+    private int $exponent;
 
     /**
      * @param string|int $currencyCode This can be either a valid ISO4217 value or a valid Alpha3 value.
      * @throws ApiException
      */
-    public function __construct($currencyCode) {
+    public function __construct(int|string $currencyCode) {
         $alpha3 = Currencies::isValidAlpha3($currencyCode);
         if ($alpha3 === false) {
             $alpha3 = Currencies::isValidISO4217($currencyCode);
@@ -44,28 +46,28 @@ class Currency {
     /**
      * @return int
      */
-    public function getExponent() {
+    public function getExponent(): int {
         return $this->exponent;
     }
 
     /**
      * @return string
      */
-    public function getAlpha3() {
+    public function getAlpha3(): string {
         return $this->alpha3;
     }
 
     /**
      * @return int
      */
-    public function getISO4217() {
+    public function getISO4217(): int {
         return $this->ISO4217;
     }
 
     /**
      * @return PaymentMethodInterface[]
      */
-    public function getPaymentMethods() {
+    public function getPaymentMethods(): array {
         return (new PaymentMethods())->getPaymentMethodsByCurrency($this);
     }
 
@@ -73,7 +75,7 @@ class Currency {
      * @param string $paymentMethodName
      * @return bool
      */
-    public function isPaymentMethodAvailable($paymentMethodName) {
+    public function isPaymentMethodAvailable(string $paymentMethodName): bool {
         $availablePaymentMethods = $this->getPaymentMethods();
         foreach ($availablePaymentMethods as $availablePaymentMethod) {
             if ($availablePaymentMethod->getName() === $paymentMethodName) {

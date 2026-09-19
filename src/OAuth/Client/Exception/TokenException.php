@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\OAuth\Client\Exception;
 
 use Exception;
@@ -12,23 +14,15 @@ use OnPay\OAuth\Client\Http\Response;
  */
 class TokenException extends OAuthException
 {
-    /** @var \OnPay\OAuth\Client\Http\Response */
-    private $response;
+    private Response $response;
 
-    /**
-     * @param string $message
-     * @param int    $code
-     */
-    public function __construct($message, Response $response, $code = 0, Exception $previous = null)
+    public function __construct(string $message, Response $response, int $code = 0, ?Exception $previous = null)
     {
         $this->response = $response;
         parent::__construct($message, $code, $previous);
     }
 
-    /**
-     * @return \OnPay\OAuth\Client\Http\Response
-     */
-    public function getResponse()
+    public function getResponse(): Response
     {
         return $this->response;
     }

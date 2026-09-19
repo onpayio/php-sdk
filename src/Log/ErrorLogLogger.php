@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\Log;
 
 use Psr\Log\InvalidArgumentException;
@@ -45,7 +47,7 @@ class ErrorLogLogger implements LoggerInterface {
      * @param string|\Stringable $message
      * @param array<array-key, mixed> $context
      */
-    public function log($level, $message, array $context = []): void {
+    public function log($level, string|\Stringable $message, array $context = []): void {
         if (!\is_string($level)) {
             throw new InvalidArgumentException('Log level must be a string');
         }

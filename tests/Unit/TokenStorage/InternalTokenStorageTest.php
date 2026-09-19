@@ -4,6 +4,7 @@ namespace Tests\Unit\TokenStorage;
 
 use OnPay\InternalTokenStorage;
 use OnPay\OAuth\Client\AccessToken;
+use OnPay\OAuth\Client\Exception\AccessTokenException;
 use OnPay\StaticToken;
 use PHPUnit\Framework\TestCase;
 
@@ -89,6 +90,18 @@ class InternalTokenStorageTest extends TestCase
         $persisted = json_decode($inner->getToken(), true);
         self::assertSame(self::AUTH_URL . '|' . self::CLIENT_ID, $persisted['provider_id']);
         self::assertSame(self::SCOPE, $persisted['scope']);
+    }
+
+    public function testConvertTokenThrowsOnMalformedStoredToken(): void
+    {
+        // A non-empty token without the "provider_id" substring routes to convertToken(),
+        // whose JSON_THROW_ON_ERROR decode now surfaces a typed AccessTokenException
+        // instead of silently tolerating the corrupt token as an empty array.
+        $storage = $this->makeStorage(new FakeTokenStorage('{not valid json'));
+
+        $this->expectException(AccessTokenException::class);
+        $this->expectExceptionMessage('Failed to convert stored token');
+        $storage->getAccessTokenList('user1');
     }
 
     public function testStoreAccessTokenPersistsJson(): void

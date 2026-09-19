@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Util;
 
 use OnPay\API\Util\PaymentMethods\Enums\CurrencyCodes;
@@ -44,7 +46,7 @@ final class Currencies {
      * @param int|string $alpha3
      * @return string|false
      */
-    public static function isValidAlpha3($alpha3) {
+    public static function isValidAlpha3(int|string $alpha3): string|false {
         if (is_string($alpha3) && isset(self::CURRENCIES[$alpha3])) {
             return $alpha3;
         }
@@ -55,7 +57,7 @@ final class Currencies {
      * @param int|string $ISO4217
      * @return string|false
      */
-    public static function isValidISO4217($ISO4217) {
+    public static function isValidISO4217(int|string $ISO4217): string|false {
         foreach (self::CURRENCIES as $alpha3 => $currencyData) {
             if ($currencyData['ISO4217'] === $ISO4217) {
                 return $alpha3;

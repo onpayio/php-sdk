@@ -1,8 +1,8 @@
 <?php
 
+declare(strict_types=1);
 
 namespace OnPay\API\Util;
-
 
 class Converter {
     private function __construct() {

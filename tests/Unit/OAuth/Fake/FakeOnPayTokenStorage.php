@@ -21,7 +21,7 @@ class FakeOnPayTokenStorage implements TokenStorageInterface
         $this->token = $token;
     }
 
-    public function getToken()
+    public function getToken(): ?string
     {
         return $this->token;
     }
