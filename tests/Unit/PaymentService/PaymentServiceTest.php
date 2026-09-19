@@ -9,6 +9,7 @@ use OnPay\API\PaymentWindow;
 use OnPay\API\PaymentWindow\Cart;
 use OnPay\API\PaymentWindow\CartItem;
 use OnPay\API\PaymentWindow\PaymentInfo;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\ApiTestCase;
 use Tests\Support\FixtureLoader;
 
@@ -262,6 +263,40 @@ class PaymentServiceTest extends ApiTestCase
         $this->assertArrayNotHasKey('handling', $body['cart']);
         $this->assertArrayNotHasKey('discount', $body['cart']);
         $this->assertCount(1, $body['cart']['items']);
+    }
+
+    /**
+     * setTestMode() is the one untyped PaymentWindow setter: an array is kept as payment data
+     * (and boolval()'d for the API), any other non-scalar value is treated as unset.
+     */
+    #[DataProvider('nonScalarTestModeProvider')]
+    public function testNonScalarTestModeIsKeptForArraysAndDroppedOtherwise(mixed $testMode, bool $expected): void
+    {
+        $this->http->willReturnJson(FixtureLoader::load('payment/created'), 200, 'POST');
+
+        $api = $this->createApi();
+
+        $window = new PaymentWindow();
+        $window->setCurrency('DKK');
+        $window->setAmount('1000');
+        $window->setReference('order-6001');
+        $window->setWebsite('https://shop.test');
+        $window->setAcceptUrl('https://shop.test/accept');
+        $window->setTestMode($testMode);
+
+        $api->payment()->createNewPayment($window);
+
+        $body = json_decode((string) $this->http->getLastRequest()->getBody(), true);
+
+        $this->assertSame($expected, $body['testmode']);
+    }
+
+    public static function nonScalarTestModeProvider(): array
+    {
+        return [
+            'array' => [['on'], true],
+            'object' => [new \stdClass(), false],
+        ];
     }
 
     /**

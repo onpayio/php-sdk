@@ -66,6 +66,15 @@ class SessionTokenStorageTest extends SessionTestCase
         self::assertSame([], $storage->getAccessTokenList('user1'));
     }
 
+    public function testGetAccessTokenListReturnsEmptyWhenStoredValueIsNotAnArray(): void
+    {
+        $this->startSession();
+        $_SESSION['_oauth2_token_user1'] = 'not-an-array';
+        $storage = new SessionTokenStorage();
+
+        self::assertSame([], $storage->getAccessTokenList('user1'));
+    }
+
     public function testStoreThenGetReturnsStoredTokens(): void
     {
         $this->startSession();

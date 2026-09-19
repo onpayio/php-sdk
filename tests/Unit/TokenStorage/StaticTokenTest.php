@@ -39,6 +39,14 @@ class StaticTokenTest extends TestCase
         self::assertSame('tok', $decoded['access_token']);
     }
 
+    public function testGetTokenReturnsNullWhenTokenCannotBeJsonEncoded(): void
+    {
+        // Invalid UTF-8 makes json_encode() return false.
+        $storage = new StaticToken("\xB1\x31");
+
+        self::assertNull($storage->getToken());
+    }
+
     public function testSaveTokenIsANoop(): void
     {
         $storage = new StaticToken('tok');

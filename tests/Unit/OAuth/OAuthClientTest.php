@@ -154,6 +154,19 @@ class OAuthClientTest extends TestCase
         }
     }
 
+    public function testHandleCallbackNonStringErrorFallsBackToGenericMessage(): void
+    {
+        [$client] = $this->makeClient(new FakeOnPayTokenStorage(), new FakeHttpClient());
+
+        try {
+            $client->handleCallback($this->provider(), self::USER_ID, ['error' => ['access_denied']]);
+            $this->fail('expected AuthorizeException');
+        } catch (AuthorizeException $e) {
+            $this->assertSame('authorization error', $e->getMessage());
+            $this->assertNull($e->getDescription());
+        }
+    }
+
     public function testHandleCallbackThrowsWhenCodeMissing(): void
     {
         [$client] = $this->makeClient(new FakeOnPayTokenStorage(), new FakeHttpClient());
