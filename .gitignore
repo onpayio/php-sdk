@@ -5,4 +5,4 @@ composer.lock
 # PHPUnit / CI artifacts
 .phpunit.result.cache
 phpunit-report.xml
-cobertura.xml
+cobertura-path.xml
