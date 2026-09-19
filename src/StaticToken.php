@@ -30,23 +30,26 @@ class StaticToken implements TokenStorageInterface {
     /**
      * @param string|null $client_id
      * @param string|null $authorize_uri
-     * @return false|string|null
+     * @return string|null
      */
     public function getToken(string $client_id = null, string $authorize_uri = null) {
-        return json_encode([
-            'provider_id' => $authorize_uri . '|' . $client_id,
+        $json = json_encode([
+            'provider_id' => (string) $authorize_uri . '|' . (string) $client_id,
             'issued_at' => date('Y-m-d H:i:s'),
             'access_token' => $this->staticToken,
             'token_type' => 'Bearer',
             'expires_in' => 3600,
             'scope' => 'full',
         ]);
+
+        return false === $json ? null : $json;
     }
 
     /**
      * Dummy method, we do not need to save anything in this tokenstorage
      *
-     * @param $token
+     * @param string $token
+     * @return void
      */
     public function saveToken($token) {}
 }

@@ -284,13 +284,11 @@ class PaymentServiceTest extends ApiTestCase
     }
 
     /**
-     * Passing something that is not a PaymentWindow throws InvalidFormatException. The
-     * platform option is nulled so the pre-check at the top of createNewPayment
-     * short-circuits before dereferencing the argument, letting the instanceof guard fire.
+     * The instanceof guard must run before the argument is dereferenced.
      */
     public function testNonPaymentWindowThrowsInvalidFormatException(): void
     {
-        $api = $this->createApi(['platform' => null]);
+        $api = $this->createApi();
 
         $this->expectException(InvalidFormatException::class);
         $this->expectExceptionMessage('Creating a payment request requires a valid PaymentWindow object.');

@@ -111,6 +111,16 @@ class OnPayApiTest extends TestCase {
         ]);
     }
 
+    public function testInitializeThrowsOnNonStringOption(): void {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Option "base_uri" must be a string');
+        new OnPayAPI($this->createMock(TokenStorageInterface::class), [
+            'client_id' => 'test_id',
+            'redirect_uri' => 'test_uri',
+            'base_uri' => 123,
+        ]);
+    }
+
     private function getAuthorizationEndpoint(OnPayAPI $api): string {
         // Private members are reflection-accessible without setAccessible() on PHP 8.1+.
         /** @var Provider $provider */

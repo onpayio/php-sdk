@@ -9,14 +9,14 @@ use OnPay\OAuth\Client\Http\Response;
 
 class CurlHttpClientLogger extends CurlHttpClient implements RecordingHttpClientInterface {
     /**
-     * @var Request
+     * @var Request|null
      */
-    protected $lastRequest;
+    protected $lastRequest = null;
 
     /**
-     * @var Response
+     * @var Response|null
      */
-    protected $lastResponse;
+    protected $lastResponse = null;
 
     /**
      * @param Request $request
@@ -33,14 +33,14 @@ class CurlHttpClientLogger extends CurlHttpClient implements RecordingHttpClient
     }
 
     /**
-     * @return Request
+     * @return Request|null
      */
     public function getLastRequest() {
         return $this->lastRequest;
     }
 
     /**
-     * @return Response
+     * @return Response|null
      */
     public function getLastResponse() {
         return $this->lastResponse;

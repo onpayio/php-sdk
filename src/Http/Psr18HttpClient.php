@@ -102,14 +102,14 @@ class Psr18HttpClient implements RecordingHttpClientInterface {
      * Flatten PSR-7 headers (name => list of values) into the flat name => value
      * map the SDK's Response expects, matching the shape CurlHttpClient produces.
      *
-     * @param array<string,string[]> $headers
+     * @param array<array-key, array<array-key, string>> $headers
      *
-     * @return array<string,string>
+     * @return array<string, string>
      */
     private function flattenHeaders(array $headers) {
         $flat = [];
         foreach ($headers as $name => $values) {
-            $flat[$name] = \implode(', ', $values);
+            $flat[(string) $name] = \implode(', ', $values);
         }
 
         return $flat;
