@@ -457,7 +457,8 @@ class OnPayApiCoreTest extends ApiTestCase
             ],
             $client,
             $factory,
-            $factory
+            $factory,
+            $this->logger
         );
     }
 
