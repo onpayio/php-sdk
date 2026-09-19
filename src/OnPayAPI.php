@@ -77,6 +77,11 @@ class OnPayAPI {
     protected OnPayProvider $oauth2Provider;
 
     /**
+     * @var AuthStateStorageInterface|null
+     */
+    protected ?AuthStateStorageInterface $authStateStorage;
+
+    /**
      * @var TransactionService|null
      */
     protected ?TransactionService $transactionService = null;
@@ -149,6 +154,9 @@ class OnPayAPI {
      * @param RequestFactoryInterface|null $requestFactory
      * @param StreamFactoryInterface|null $streamFactory
      * @param LoggerInterface|null $logger
+     * @param AuthStateStorageInterface|null $authStateStorage persists the OAuth CSRF
+     *        `state` and PKCE `code_verifier` across the redirect; when omitted, state
+     *        verification and PKCE are disabled and using the OAuth flow is deprecated.
      */
     public function __construct(
         TokenStorageInterface $tokenStorage,
@@ -156,7 +164,8 @@ class OnPayAPI {
         ?ClientInterface $httpClient = null,
         ?RequestFactoryInterface $requestFactory = null,
         ?StreamFactoryInterface $streamFactory = null,
-        ?LoggerInterface $logger = null
+        ?LoggerInterface $logger = null,
+        ?AuthStateStorageInterface $authStateStorage = null
     ) {
         $defaultOptions = [
             'base_uri' => 'https://api.onpay.io',
@@ -195,6 +204,7 @@ class OnPayAPI {
         $this->redirectUri = $this->requireStringOption('redirect_uri');
 
         $this->tokenStorage = new InternalTokenStorage($tokenStorage);
+        $this->authStateStorage = $authStateStorage;
 
         $this->logger = $logger ?? new ErrorLogLogger();
         try {
@@ -218,6 +228,8 @@ class OnPayAPI {
                 'redirectUri' => $this->redirectUri,
                 'urlAuthorize' => $authUrl,
                 'urlAccessToken' => $this->baseUri . '/oauth2/access_token',
+                // PKCE only works when the verifier can be persisted across the redirect.
+                'pkceEnabled' => null !== $this->authStateStorage,
             ],
             [
                 'httpClient' => new GuzzleClientAdapter($this->httpClient),
@@ -259,20 +271,81 @@ class OnPayAPI {
     /**
      * Returns a URL the user should be redirected to, for authorizing.
      *
+     * When an {@see AuthStateStorageInterface} was supplied, the generated CSRF `state`
+     * and PKCE `code_verifier` are stored so {@see finishAuthorize()} can verify the
+     * callback and complete the PKCE exchange. Without it, neither protection is active
+     * and the OAuth flow is deprecated.
+     *
      * @return string
      */
     public function authorize(): string {
-        return $this->oauth2Provider->getAuthorizationUrl(['scope' => $this->scope]);
+        $url = $this->oauth2Provider->getAuthorizationUrl(['scope' => $this->scope]);
+
+        if (null === $this->authStateStorage) {
+            @\trigger_error(
+                'Calling authorize() without an AuthStateStorageInterface is deprecated: '
+                . 'CSRF state verification and PKCE are disabled. Pass one to the OnPayAPI constructor.',
+                \E_USER_DEPRECATED
+            );
+
+            return $url;
+        }
+
+        $this->authStateStorage->saveState($this->oauth2Provider->getState());
+        $this->authStateStorage->saveCodeVerifier((string) $this->oauth2Provider->getPkceCode());
+
+        return $url;
     }
 
     /**
      * Exchanges the authorization code for an access token and stores it.
      *
+     * When an {@see AuthStateStorageInterface} was supplied, the `state` returned on the
+     * callback MUST be passed as $returnedState; it is compared (timing-safe) against the
+     * value stored by {@see authorize()} and a mismatch aborts with a {@see TokenException}
+     * before any token exchange. The stored PKCE verifier is then used to complete the
+     * exchange, and the storage is cleared afterwards. Without the storage, no state is
+     * verified and the call is deprecated.
+     *
      * @param string $code
+     * @param string|null $returnedState the `state` query parameter from the callback
+     * @throws TokenException on a state mismatch or a token endpoint failure
+     * @throws ConnectionException on a transport failure
+     */
+    public function finishAuthorize(string $code, ?string $returnedState = null): void {
+        if (null === $this->authStateStorage) {
+            @\trigger_error(
+                'Calling finishAuthorize() without an AuthStateStorageInterface is deprecated: '
+                . 'the OAuth state (CSRF) is not verified. Pass one to the OnPayAPI constructor '
+                . 'and pass the returned state as the second argument.',
+                \E_USER_DEPRECATED
+            );
+
+            $this->exchangeAuthorizationCode($code);
+
+            return;
+        }
+
+        $expectedState = (string) $this->authStateStorage->getState();
+        if ('' === $expectedState || !\hash_equals($expectedState, (string) $returnedState)) {
+            $this->authStateStorage->clear();
+            throw new TokenException('OAuth state mismatch: the authorization response could not be verified (possible CSRF)');
+        }
+
+        $this->oauth2Provider->setPkceCode((string) $this->authStateStorage->getCodeVerifier());
+
+        try {
+            $this->exchangeAuthorizationCode($code);
+        } finally {
+            $this->authStateStorage->clear();
+        }
+    }
+
+    /**
      * @throws TokenException
      * @throws ConnectionException
      */
-    public function finishAuthorize(string $code): void {
+    private function exchangeAuthorizationCode(string $code): void {
         try {
             $token = $this->requestAccessToken('authorization_code', ['code' => $code], 'unable to obtain access_token');
         } catch (ClientExceptionInterface $e) {

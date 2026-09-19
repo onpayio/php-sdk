@@ -3,6 +3,7 @@
 namespace Tests\Support;
 
 use GuzzleHttp\Psr7\HttpFactory;
+use OnPay\AuthStateStorageInterface;
 use OnPay\OnPayAPI;
 use OnPay\TokenStorageInterface;
 use PHPUnit\Framework\TestCase;
@@ -47,8 +48,11 @@ abstract class ApiTestCase extends TestCase
      *
      * @param array<string,mixed> $options extra/overriding OnPayAPI options
      */
-    protected function createApi(array $options = [], ?TokenStorageInterface $tokenStorage = null): OnPayAPI
-    {
+    protected function createApi(
+        array $options = [],
+        ?TokenStorageInterface $tokenStorage = null,
+        ?AuthStateStorageInterface $authStateStorage = null
+    ): OnPayAPI {
         // Explicit factories: never rely on Psr17FactoryDiscovery, which would make the
         // resolved stack environment-dependent.
         $factory = new HttpFactory();
@@ -66,7 +70,8 @@ abstract class ApiTestCase extends TestCase
             $this->http,
             $factory,
             $factory,
-            $this->logger
+            $this->logger,
+            $authStateStorage
         );
     }
 

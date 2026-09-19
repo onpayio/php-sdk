@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class OnPayOptionProviderTest extends TestCase
 {
-    public function testAuthorizationCodeGrantIsFormEncodedWithBasicClientIdAndEmptyVerifierFallback(): void
+    public function testAuthorizationCodeGrantIsFormEncodedWithBasicClientIdAndNoVerifierWhenNoneSupplied(): void
     {
         $options = (new OnPayOptionProvider())->getAccessTokenOptions('POST', [
             'client_id' => 'cid',
@@ -21,7 +21,8 @@ class OnPayOptionProviderTest extends TestCase
             'Accept' => 'application/json',
             'Authorization' => 'Basic ' . base64_encode('cid:'),
         ], $options['headers']);
-        self::assertSame('client_id=cid&grant_type=authorization_code&code=the-code&code_verifier=', $options['body']);
+        // Without PKCE no verifier is sent at all (the client_secret is dropped).
+        self::assertSame('client_id=cid&grant_type=authorization_code&code=the-code', $options['body']);
     }
 
     public function testAuthorizationCodeGrantKeepsAKnownVerifier(): void

@@ -12,9 +12,10 @@ use OnPay\API\Util\DataReader;
  * from a public client: form-encoded parameters without a `client_secret`, a JSON
  * Accept header and HTTP Basic credentials carrying only the client_id.
  *
- * The authorization_code grant always carries a `code_verifier`. The verifier only
- * exists in the process that built the authorize URL; when the code is exchanged in a
- * later request an empty verifier is sent, as SDK 1.x did.
+ * A `code_verifier` is only present when PKCE was used, in which case league adds the
+ * real verifier to the parameters before this runs (see
+ * {@see \OnPay\OnPayAPI::finishAuthorize()}, which feeds it back via `setPkceCode()`).
+ * Without PKCE no verifier is sent at all.
  *
  * @internal Shall not be used outside the library.
  */
@@ -31,9 +32,6 @@ class OnPayOptionProvider extends PostAuthOptionProvider {
             throw new \InvalidArgumentException('client_id is required for the OnPay token endpoint');
         }
         unset($params['client_secret']);
-        if ('authorization_code' === DataReader::stringOrNull($params, 'grant_type')) {
-            $params += ['code_verifier' => ''];
-        }
 
         $options = parent::getAccessTokenOptions($method, $params);
         $headers = DataReader::arrayOr($options, 'headers');
