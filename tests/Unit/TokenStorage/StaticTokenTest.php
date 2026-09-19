@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\TokenStorage;
 
+use League\OAuth2\Client\Token\AccessToken;
 use OnPay\API\Exception\TokenException;
 use OnPay\StaticToken;
 use PHPUnit\Framework\TestCase;
@@ -11,38 +12,29 @@ use PHPUnit\Framework\TestCase;
  */
 class StaticTokenTest extends TestCase
 {
-    public function testGetTokenBuildsJsonFromArguments(): void
+    public function testGetTokenBuildsNonExpiringLeagueToken(): void
     {
         $storage = new StaticToken('my-static-token');
 
-        $json = $storage->getToken('client-123', 'https://auth.example');
+        $json = $storage->getToken();
         $decoded = json_decode($json, true);
 
-        self::assertSame('https://auth.example|client-123', $decoded['provider_id']);
-        self::assertSame('my-static-token', $decoded['access_token']);
-        self::assertSame('Bearer', $decoded['token_type']);
-        self::assertSame(3600, $decoded['expires_in']);
-        self::assertSame('full', $decoded['scope']);
-        self::assertMatchesRegularExpression(
-            '/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/',
-            $decoded['issued_at']
-        );
-    }
+        self::assertSame([
+            'access_token' => 'my-static-token',
+            'token_type' => 'Bearer',
+            'scope' => 'full',
+        ], $decoded);
 
-    public function testGetTokenWithDefaultNullArguments(): void
-    {
-        $storage = new StaticToken('tok');
-
-        $decoded = json_decode($storage->getToken(), true);
-
-        // both client_id and authorize_uri default to null, so provider_id is just the separator
-        self::assertSame('|', $decoded['provider_id']);
-        self::assertSame('tok', $decoded['access_token']);
+        // Round-trips into league's AccessToken without an expiry or refresh token.
+        $token = new AccessToken($decoded);
+        self::assertSame('my-static-token', $token->getToken());
+        self::assertNull($token->getExpires());
+        self::assertNull($token->getRefreshToken());
     }
 
     public function testGetTokenThrowsWhenTokenCannotBeJsonEncoded(): void
     {
-        // Invalid UTF-8 cannot be JSON-encoded: getToken() now surfaces a typed
+        // Invalid UTF-8 cannot be JSON-encoded: getToken() surfaces a typed
         // TokenException instead of silently returning null.
         $storage = new StaticToken("\xB1\x31");
 

@@ -15,16 +15,27 @@ pinning `psr/log` 1.x must upgrade it, even if it never uses the logging.
 
 ## Backwards-incompatible changes
 
-### An installed PSR-18 HTTP client is now used by default
+### Bring your own HTTP client (PSR-18)
 
-When no client is passed to the `OnPayAPI` constructor, the SDK auto-discovers an
-installed PSR-18 client (via `php-http/discovery`) and uses it for all API and
-OAuth traffic, falling back to the bundled cURL client only when none is
-installed. If your project already has a PSR-18 client (e.g. Guzzle), OnPay
-traffic now runs over its transport — its timeouts, proxies, retries, TLS
-settings and middleware apply. The requests themselves are unchanged, and the
-existing two-argument constructor, `getLastHttpRequest()` and
-`getLastHttpResponse()` keep working.
+The bundled cURL client is gone. The SDK sends all traffic through a
+[PSR-18](https://www.php-fig.org/psr/psr-18/) client and
+[PSR-17](https://www.php-fig.org/psr/psr-17/) factories: pass them to the
+`OnPayAPI` constructor, or install one (e.g. `guzzlehttp/guzzle`) and the SDK
+discovers it. Without either, the constructor throws `\InvalidArgumentException`.
+
+Timeouts, proxies and TLS settings are now those of your client — the SDK no
+longer applies its own 30-second timeout.
+
+### The vendored OAuth client is removed
+
+`OnPay\OAuth\Client\*`, `OnPay\CurlHttpClientLogger` and `OnPay\Session` no
+longer exist; OAuth is handled by `league/oauth2-client` internally.
+
+- Tokens stored by 1.x keep working, including refresh. On first use they are
+  re-saved through your `TokenStorageInterface` in the new, shorter format.
+- Errors are still `TokenException`/`ConnectionException`, but their messages
+  now include the underlying reason, and `getPrevious()` no longer returns an
+  `OnPay\OAuth\Client\Exception\*` instance.
 
 ### Public method signatures are now typed (Psalm level 1)
 
@@ -36,7 +47,7 @@ returns became nullable to reflect values they could always return:
 - `OnPayAPI::get()`/`post()` return `array`; `getPlatform()` returns `?string`;
   `getLastHttpRequest()`/`getLastHttpResponse()` are nullable.
 - `TransactionCollection::$pagination` and `SubscriptionCollection::$pagination` are `?Pagination`.
-- `StaticToken::getToken()` returns `?string`.
+- `StaticToken::getToken()` takes no arguments and returns `?string`.
 - Cart/PaymentWindow setters previously documented as `mixed` now document concrete types
   (e.g. `Cart::setShipping()`/`setHandling()` `$name` is `?string`).
 
@@ -55,27 +66,15 @@ A few places that previously coerced malformed data now fail fast:
   (e.g. a transaction's `uuid`/`amount`/`created`), instead of yielding an object
   with `null` fields. Fields the API genuinely leaves out stay optional and are
   unaffected.
-- `OnPay\OAuth\Client\AccessToken` throws `AccessTokenException` when a required
-  field (`provider_id`, `issued_at`, `access_token`, `token_type`) is present but
-  not a string.
-- An OAuth callback with a missing or non-string `code`/`state` throws
-  `OAuthException` immediately, instead of surfacing later as a state mismatch.
+- A stored token that is not valid JSON, has no `access_token`, or (1.x format)
+  has an unparseable `issued_at` throws `TokenException` when it is read.
 
 Well-formed API responses and tokens behave exactly as before.
 
-### Interfaces you implement now require native types
+### `TokenStorageInterface` now requires native types
 
-If you implement one of the SDK's interfaces, your methods must declare matching
-native types, or the class fatals at load:
-
-- `OnPay\TokenStorageInterface` — `getToken(): ?string`
-- `OnPay\OAuth\Client\TokenStorageInterface` — `getAccessTokenList(string $userId): array`,
-  `storeAccessToken(string $userId, AccessToken $accessToken): void`,
-  `deleteAccessToken(string $userId, AccessToken $accessToken): void`
-- `OnPay\OAuth\Client\SessionInterface` — `take(string $key): mixed`, `set(string $key, mixed $value): void`
-- `OnPay\OAuth\Client\Http\HttpClientInterface` — `send(Request $request): Response`; the
-  `Response` constructor is `(int $statusCode, string $responseBody, array $headers = [])`,
-  so passing a `null` body throws.
+Your `OnPay\TokenStorageInterface` implementation must declare matching native
+types, or the class fatals at load: `getToken(): ?string`, `saveToken(string $token)`.
 
 ### `null` is rejected where parameters are non-nullable
 

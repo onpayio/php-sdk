@@ -149,9 +149,8 @@ class LoggingTest extends ApiTestCase
         $this->assertCount(1, $records);
         $this->assertSame('OnPay {method} {uri} failed: {reason}', $records[0]['message']);
         $this->assertSame('network down', $records[0]['context']['reason']);
-        // The PSR-18 exception is wrapped by the transport; the original is reachable via the chain.
-        $this->assertInstanceOf(\Throwable::class, $records[0]['context']['exception']);
-        $this->assertSame($exception, $records[0]['context']['exception']->getPrevious());
+        // The PSR-18 exception passes through the transport untouched.
+        $this->assertSame($exception, $records[0]['context']['exception']);
         $this->assertArrayNotHasKey('response_body', $records[0]['context']);
     }
 
@@ -201,7 +200,10 @@ class LoggingTest extends ApiTestCase
 
         $this->assertSame(self::BASE_URI . '/oauth2/access_token', $context['uri']);
         $this->assertSame('[redacted]', $context['request_headers']['Authorization']);
-        $this->assertSame('grant_type=refresh_token&refresh_token=%5Bredacted%5D&scope=full', $context['request_body']);
+        $this->assertSame(
+            'client_id=test_client_id&redirect_uri=https%3A%2F%2Fexample.test%2Fredirect&grant_type=refresh_token&refresh_token=%5Bredacted%5D&scope=full',
+            $context['request_body']
+        );
         $this->assertSame('{"error":"server_error","access_token":"[redacted]"}', $context['response_body']);
 
         $dump = $this->logger->dump();

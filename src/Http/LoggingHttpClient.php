@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace OnPay\Http;
 
 use OnPay\Log\Redactor;
-use OnPay\OAuth\Client\Http\Request;
-use OnPay\OAuth\Client\Http\Response;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
@@ -35,65 +35,58 @@ class LoggingHttpClient implements RecordingHttpClientInterface {
         $this->redactor = $redactor ?? new Redactor();
     }
 
-    /**
-     * @param Request $request
-     *
-     * @return Response
-     */
-    public function send(Request $request): Response {
+    public function sendRequest(RequestInterface $request): ResponseInterface {
+        $method = $request->getMethod();
+        $uri = (string) $request->getUri();
+
         try {
-            $response = $this->inner->send($request);
+            $response = $this->inner->sendRequest($request);
         } catch (\Throwable $e) {
             $this->logger->error('OnPay {method} {uri} failed: {reason}', [
-                'method' => $request->getMethod(),
-                'uri' => $request->getUri(),
+                'method' => $method,
+                'uri' => $uri,
                 'reason' => $e->getMessage(),
-                'request_headers' => $this->redactor->redactHeaders($request->getHeaders()),
-                'request_body' => $this->redactor->redactBody($request->getBody(), $request->getHeaders()),
+                'request_headers' => $this->redactor->redactHeaders(MessageUtil::flattenHeaders($request)),
+                'request_body' => $this->redactor->redactBody(MessageUtil::bodyOrNull($request), MessageUtil::flattenHeaders($request)),
                 'exception' => $e,
             ]);
 
             throw $e;
         }
 
-        if ($response->isOkay()) {
+        $status = $response->getStatusCode();
+        if ($status >= 200 && $status < 300) {
             $this->logger->debug('OnPay {method} {uri} responded HTTP {status}', [
-                'method' => $request->getMethod(),
-                'uri' => $request->getUri(),
-                'status' => $response->getStatusCode(),
+                'method' => $method,
+                'uri' => $uri,
+                'status' => $status,
             ]);
 
             return $response;
         }
 
         $this->logger->log(
-            $response->getStatusCode() >= 500 ? LogLevel::ERROR : LogLevel::WARNING,
+            $status >= 500 ? LogLevel::ERROR : LogLevel::WARNING,
             'OnPay {method} {uri} responded HTTP {status}',
             [
-                'method' => $request->getMethod(),
-                'uri' => $request->getUri(),
-                'status' => $response->getStatusCode(),
-                'request_headers' => $this->redactor->redactHeaders($request->getHeaders()),
-                'request_body' => $this->redactor->redactBody($request->getBody(), $request->getHeaders()),
-                'response_headers' => $this->redactor->redactHeaders($response->getHeaders()),
-                'response_body' => $this->redactor->redactBody($response->getBody(), $response->getHeaders()),
+                'method' => $method,
+                'uri' => $uri,
+                'status' => $status,
+                'request_headers' => $this->redactor->redactHeaders(MessageUtil::flattenHeaders($request)),
+                'request_body' => $this->redactor->redactBody(MessageUtil::bodyOrNull($request), MessageUtil::flattenHeaders($request)),
+                'response_headers' => $this->redactor->redactHeaders(MessageUtil::flattenHeaders($response)),
+                'response_body' => $this->redactor->redactBody(MessageUtil::bodyOrNull($response), MessageUtil::flattenHeaders($response)),
             ]
         );
 
         return $response;
     }
 
-    /**
-     * @return Request|null
-     */
-    public function getLastRequest(): ?Request {
+    public function getLastRequest(): ?RequestInterface {
         return $this->inner->getLastRequest();
     }
 
-    /**
-     * @return Response|null
-     */
-    public function getLastResponse(): ?Response {
+    public function getLastResponse(): ?ResponseInterface {
         return $this->inner->getLastResponse();
     }
 
