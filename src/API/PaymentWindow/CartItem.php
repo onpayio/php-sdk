@@ -51,7 +51,7 @@ class CartItem {
 
     /**
      * @internal
-     * @return array
+     * @return array<string, int|string>
      */
     public function getFields() {
         $output = [];

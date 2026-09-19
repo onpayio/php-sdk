@@ -10,6 +10,6 @@ class PaymentWindowDesignCollection
     /**
      * @var SimplePaymentWindowDesign[]
      */
-    public $paymentWindowDesigns = [];
+    public array $paymentWindowDesigns = [];
 }
 

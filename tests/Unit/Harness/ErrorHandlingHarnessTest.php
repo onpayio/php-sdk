@@ -31,6 +31,36 @@ class ErrorHandlingHarnessTest extends ApiTestCase
         $api->transaction()->getTransaction('does-not-exist');
     }
 
+    public function testInvalidJsonOn200BecomesApiException(): void
+    {
+        $this->http->willReturn(
+            new Response(200, ['Content-Type' => 'application/json'], '{invalid json'),
+            'GET'
+        );
+
+        $api = $this->createApi();
+
+        $this->expectException(ApiException::class);
+        $this->expectExceptionMessage('Failed to decode JSON body-response');
+
+        $api->ping();
+    }
+
+    public function testNonArrayJsonOn200BecomesApiException(): void
+    {
+        $this->http->willReturn(
+            new Response(200, ['Content-Type' => 'application/json'], json_encode('a bare string')),
+            'GET'
+        );
+
+        $api = $this->createApi();
+
+        $this->expectException(ApiException::class);
+        $this->expectExceptionMessage('Expected a JSON object in the response body');
+
+        $api->ping();
+    }
+
     public function testForbiddenBecomesTokenException(): void
     {
         $this->http->willReturn(

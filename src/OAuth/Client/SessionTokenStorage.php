@@ -14,11 +14,17 @@ class SessionTokenStorage implements TokenStorageInterface
     public function getAccessTokenList($userId)
     {
         self::requireSession();
-        if (false === \array_key_exists(\sprintf('_oauth2_token_%s', $userId), $_SESSION)) {
+        $key = \sprintf('_oauth2_token_%s', $userId);
+        if (false === isset($_SESSION[$key])) {
             return [];
         }
 
-        return $_SESSION[\sprintf('_oauth2_token_%s', $userId)];
+        return \array_filter(
+            \is_array($_SESSION[$key]) ? $_SESSION[$key] : [],
+            static function ($token): bool {
+                return $token instanceof AccessToken;
+            }
+        );
     }
 
     /**
@@ -29,7 +35,10 @@ class SessionTokenStorage implements TokenStorageInterface
     public function storeAccessToken($userId, AccessToken $accessToken)
     {
         self::requireSession();
-        $_SESSION[\sprintf('_oauth2_token_%s', $userId)][] = $accessToken;
+        $key = \sprintf('_oauth2_token_%s', $userId);
+        $list = isset($_SESSION[$key]) && \is_array($_SESSION[$key]) ? $_SESSION[$key] : [];
+        $list[] = $accessToken;
+        $_SESSION[$key] = $list;
     }
 
     /**
@@ -40,13 +49,19 @@ class SessionTokenStorage implements TokenStorageInterface
     public function deleteAccessToken($userId, AccessToken $accessToken)
     {
         self::requireSession();
-        foreach ($this->getAccessTokenList($userId) as $k => $v) {
+        $key = \sprintf('_oauth2_token_%s', $userId);
+        if (false === isset($_SESSION[$key])) {
+            return;
+        }
+        $list = $this->getAccessTokenList($userId);
+        foreach ($list as $k => $v) {
             if ($accessToken->getProviderId() === $v->getProviderId()) {
                 if ($accessToken->getToken() === $v->getToken()) {
-                    unset($_SESSION[\sprintf('_oauth2_token_%s', $userId)][$k]);
+                    unset($list[$k]);
                 }
             }
         }
+        $_SESSION[$key] = $list;
     }
 
     /**

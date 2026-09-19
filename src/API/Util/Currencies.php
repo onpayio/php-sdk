@@ -41,24 +41,22 @@ final class Currencies {
     }
 
     /**
-     * @param string $alpha3
-     * @return bool|string
+     * @param int|string $alpha3
+     * @return string|false
      */
     public static function isValidAlpha3($alpha3) {
-        $currencyArray = self::CURRENCIES;
-        if (!isset($currencyArray[$alpha3])) {
-            return false;
+        if (is_string($alpha3) && isset(self::CURRENCIES[$alpha3])) {
+            return $alpha3;
         }
-        return $alpha3;
+        return false;
     }
 
     /**
-     * @param int $ISO4217
-     * @return bool|string
+     * @param int|string $ISO4217
+     * @return string|false
      */
     public static function isValidISO4217($ISO4217) {
-        $currencyArray = self::CURRENCIES;
-        foreach ($currencyArray as $alpha3 => $currencyData) {
+        foreach (self::CURRENCIES as $alpha3 => $currencyData) {
             if ($currencyData['ISO4217'] === $ISO4217) {
                 return $alpha3;
             }

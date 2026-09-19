@@ -29,15 +29,16 @@ class Currency {
      * @throws ApiException
      */
     public function __construct($currencyCode) {
-        $this->alpha3 = Currencies::isValidAlpha3($currencyCode);
-        if (!$this->alpha3) {
-            $this->alpha3 = Currencies::isValidISO4217($currencyCode);
+        $alpha3 = Currencies::isValidAlpha3($currencyCode);
+        if ($alpha3 === false) {
+            $alpha3 = Currencies::isValidISO4217($currencyCode);
         }
-        if (!$this->alpha3) {
+        if ($alpha3 === false) {
             throw new ApiException("Unsupported currency provided: " . $currencyCode);
         }
-        $this->ISO4217 = Currencies::CURRENCIES[$this->alpha3]['ISO4217'];
-        $this->exponent = Currencies::CURRENCIES[$this->alpha3]['exponent'];
+        $this->alpha3 = $alpha3;
+        $this->ISO4217 = Currencies::CURRENCIES[$alpha3]['ISO4217'];
+        $this->exponent = Currencies::CURRENCIES[$alpha3]['exponent'];
     }
 
     /**

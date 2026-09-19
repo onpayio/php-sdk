@@ -65,6 +65,50 @@ $api = new OnPay\OnPayAPI($tokenStorage, $options, new \GuzzleHttp\Client(), $fa
 The existing two-argument constructor still works; `getLastHttpRequest()` /
 `getLastHttpResponse()` keep working on every path.
 
+### Public method signatures are now typed (Psalm level 1)
+
+**What changed:** As part of making `src/` pass Psalm at its strictest level, most public
+methods gained native parameter and return types, and several returns became nullable to
+reflect values they always could return. Notable examples:
+
+- `OnPay\API\Http\Response::getStatusCode()` returns `?int` (was documented `string`);
+  `Request`/`Response` getters (`getMethod`/`getUri`/`getBody`) return `?string`.
+- `OnPayAPI::get()`/`post()` return `array`; `getPlatform()` returns `?string`;
+  `getLastHttpRequest()`/`getLastHttpResponse()` are nullable.
+- `TransactionCollection::$pagination` and `SubscriptionCollection::$pagination` are `?Pagination`.
+- `StaticToken::getToken()` returns `?string`.
+- Cart/PaymentWindow setters previously documented as `mixed` now document concrete types
+  (e.g. `Cart::setShipping()`/`setHandling()` `$name` is `?string`).
+
+**Why:** honest types catch misuse at analysis time and are required to pass static analysis.
+
+**Impact:** runtime behaviour for correct usage is unchanged. Because these classes are not
+`final`, adding native types is technically breaking for code that **subclasses** them and
+overrides these methods — an override must now use a compatible (typed) signature.
+
+**How to migrate:** if you extend these SDK classes, update your overridden method signatures
+to match. If you only call the SDK, no change is needed.
+
+### Stricter response and token validation
+
+**What changed:** A few places that previously coerced malformed data now fail fast:
+
+- A `200` response whose body is not a JSON object now throws `ApiException` (previously it
+  was silently treated as an empty result).
+- `OnPay\OAuth\Client\AccessToken` throws `AccessTokenException` when a required field
+  (`provider_id`, `issued_at`, `access_token`, `token_type`) is present but not a string.
+- An OAuth callback with a missing or non-string `code`/`state` throws `OAuthException`
+  immediately, instead of continuing and surfacing later as a state mismatch.
+
+**Why:** these inputs indicate a malformed response or misuse; failing with a clear exception
+is safer than proceeding with empty/placeholder values.
+
+**Impact:** only malformed inputs are affected; well-formed API responses and tokens behave
+exactly as before.
+
+**How to migrate:** no change for normal usage. If you construct `AccessToken` or feed
+responses to the SDK directly (e.g. in tests), ensure the data is well-formed.
+
 <!--
 Template for a new entry:
 

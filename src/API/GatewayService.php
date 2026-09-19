@@ -7,6 +7,7 @@ use OnPay\API\Gateway\Information;
 use OnPay\API\Gateway\PaymentWindowDesignCollection;
 use OnPay\API\Gateway\PaymentWindowIntegrationSettings;
 use OnPay\API\Gateway\SimplePaymentWindowDesign;
+use OnPay\API\Util\DataReader;
 use OnPay\OnPayAPI;
 
 class GatewayService
@@ -31,7 +32,7 @@ class GatewayService
     public function getInformation() {
         $result = $this->api->get('gateway/information');
 
-        $information = new Information($result['data']);
+        $information = new Information(DataReader::arrayOr($result, 'data'));
         return $information;
     }
 
@@ -43,7 +44,7 @@ class GatewayService
     public function getPaymentWindowIntegrationSettings() {
         $result = $this->api->get('gateway/window/v3/integration');
 
-        $settings = new PaymentWindowIntegrationSettings($result['data']);
+        $settings = new PaymentWindowIntegrationSettings(DataReader::arrayOr($result, 'data'));
         return $settings;
     }
 
@@ -55,9 +56,10 @@ class GatewayService
     public function getPaymentWindowDesigns() {
         $results = $this->api->get('gateway/window/v3/design/');
 
+        $data = DataReader::arrayOr($results, 'data');
         $designs = [];
-        foreach ($results['data'] as $result) {
-            $designs[] = new SimplePaymentWindowDesign($result);
+        foreach (array_keys($data) as $key) {
+            $designs[] = new SimplePaymentWindowDesign(is_array($data[$key]) ? $data[$key] : []);
         }
 
         $collection = new PaymentWindowDesignCollection();

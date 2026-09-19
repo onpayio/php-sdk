@@ -2,6 +2,7 @@
 
 namespace OnPay\API\Gateway;
 
+use OnPay\API\Util\DataReader;
 
 class PaymentWindowIntegrationSettings
 {
@@ -12,11 +13,8 @@ class PaymentWindowIntegrationSettings
      */
     public function __construct(array $data)
     {
-        $this->secret = (isset($data['secret'])) ? $data['secret'] : '';
+        $this->secret = DataReader::stringOrNull($data, 'secret') ?? '';
     }
 
-    /**
-     * @var string
-     */
-    public $secret;
+    public string $secret = '';
 }

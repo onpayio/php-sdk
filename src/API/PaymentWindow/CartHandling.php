@@ -6,10 +6,7 @@ namespace OnPay\API\PaymentWindow;
  * @internal Use the methods on the Cart class instead
  */
 class CartHandling {
-    /** @var int */
-    public $price;
-    /** @var int */
-    public $tax;
-    /** @var string|null */
-    public $name = null;
+    public int $price = 0;
+    public int $tax = 0;
+    public ?string $name = null;
 }

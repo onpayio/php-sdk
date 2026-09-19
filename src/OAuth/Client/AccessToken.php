@@ -5,6 +5,7 @@ namespace OnPay\OAuth\Client;
 use DateInterval;
 use DateTime;
 use Exception;
+use OnPay\API\Util\DataReader;
 use OnPay\OAuth\Client\Exception\AccessTokenException;
 
 class AccessToken
@@ -40,25 +41,38 @@ class AccessToken
         }
 
         // set required keys
-        $this->setProviderId($tokenData['provider_id']);
-        $this->setIssuedAt($tokenData['issued_at']);
-        $this->setAccessToken($tokenData['access_token']);
-        $this->setTokenType($tokenData['token_type']);
+        $this->setProviderId($this->requireStringKey($tokenData, 'provider_id'));
+        $this->setIssuedAt($this->requireStringKey($tokenData, 'issued_at'));
+        $this->setAccessToken($this->requireStringKey($tokenData, 'access_token'));
+        $this->setTokenType($this->requireStringKey($tokenData, 'token_type'));
 
         // set optional keys
         if (\array_key_exists('expires_in', $tokenData)) {
             $this->setExpiresIn($tokenData['expires_in']);
         }
         if (\array_key_exists('refresh_token', $tokenData)) {
-            $this->setRefreshToken($tokenData['refresh_token']);
+            $this->setRefreshToken(DataReader::stringOrNull($tokenData, 'refresh_token'));
         }
         if (\array_key_exists('scope', $tokenData)) {
-            $this->setScope($tokenData['scope']);
+            $this->setScope(DataReader::stringOrNull($tokenData, 'scope'));
         }
     }
 
     /**
-     * @param string $scope
+     * @param array<array-key, mixed> $tokenData
+     */
+    private function requireStringKey(array $tokenData, string $key): string
+    {
+        $value = DataReader::stringOrNull($tokenData, $key);
+        if (null === $value) {
+            throw new AccessTokenException(\sprintf('key "%s" must be a string', $key));
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param string|null $scope
      *
      * @return AccessToken
      */
@@ -196,7 +210,11 @@ class AccessToken
      */
     public static function fromJson($jsonString)
     {
-        return new self(Json::decode($jsonString));
+        if (false === \is_array($tokenData = Json::decode($jsonString))) {
+            throw new AccessTokenException('invalid token data');
+        }
+
+        return new self($tokenData);
     }
 
     /**

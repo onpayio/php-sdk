@@ -73,6 +73,18 @@ class AccessTokenTest extends TestCase
         new AccessToken($data);
     }
 
+    #[DataProvider('missingRequiredKeyProvider')]
+    public function testNonStringRequiredKeyThrows(string $key): void
+    {
+        $data = $this->validTokenData();
+        $data[$key] = ['not', 'a', 'string'];
+
+        $this->expectException(AccessTokenException::class);
+        $this->expectExceptionMessage(\sprintf('key "%s" must be a string', $key));
+
+        new AccessToken($data);
+    }
+
     public static function missingRequiredKeyProvider(): array
     {
         return [
@@ -238,6 +250,14 @@ class AccessTokenTest extends TestCase
         $restored = AccessToken::fromJson($original->toJson());
 
         $this->assertSame($original->toJson(), $restored->toJson());
+    }
+
+    public function testFromJsonThrowsWhenJsonIsNotAnArray(): void
+    {
+        $this->expectException(AccessTokenException::class);
+        $this->expectExceptionMessage('invalid token data');
+
+        AccessToken::fromJson('"a string"');
     }
 
     // --- fromCodeResponse ----------------------------------------------------

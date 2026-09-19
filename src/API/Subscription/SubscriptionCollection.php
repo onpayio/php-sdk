@@ -8,8 +8,7 @@ class SubscriptionCollection
      */
     public $subscriptions = [];
     /**
-     * @var Pagination
+     * @var ?Pagination
      */
-    public $pagination;
+    public $pagination = null;
 }
-

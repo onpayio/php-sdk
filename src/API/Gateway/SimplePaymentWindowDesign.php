@@ -2,6 +2,7 @@
 
 namespace OnPay\API\Gateway;
 
+use OnPay\API\Util\DataReader;
 
 class SimplePaymentWindowDesign
 {
@@ -12,11 +13,8 @@ class SimplePaymentWindowDesign
      */
     public function __construct(array $data)
     {
-        $this->name = (isset($data['name'])) ? $data['name'] : null;
+        $this->name = DataReader::stringOrNull($data, 'name');
     }
 
-    /**
-     * @var string|null
-     */
-    public $name;
+    public ?string $name = null;
 }

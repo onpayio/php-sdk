@@ -18,6 +18,7 @@ class Request {
     /**
      * @param string $requestMethod
      * @param string $requestUri
+     * @param array<string,string> $requestHeaders
      * @param string|null $requestBody
      */
     public function __construct($requestMethod, $requestUri, array $requestHeaders = [], $requestBody = null)
@@ -55,7 +56,7 @@ class Request {
 
     /**
      * @param string $requestUri
-     * @param array<string,string> $queryParameters
+     * @param array<string, string|null> $queryParameters
      * @param array<string,string> $requestHeaders
      * @return Request
      */
@@ -71,7 +72,7 @@ class Request {
 
     /**
      * @param string $requestUri
-     * @param array<string,string> $postData
+     * @param array<string, string|null> $postData
      * @param array<string,string> $requestHeaders
      *
      * @return Request
@@ -125,7 +126,7 @@ class Request {
     }
 
     /**
-     * @return array
+     * @return array<string,string>
      */
     public function getHeaders()
     {

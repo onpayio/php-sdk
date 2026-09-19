@@ -29,12 +29,12 @@ class InternalTokenStorage implements oauthTokenStorageInterface {
 
     /**
      * InternalTokenStorage constructor.
-     * @param TokenStorageInterface $storageToken
-     * @param $authUrl
-     * @param $clientId
-     * @param $scope
+     * @param onpayTokenStorageInterface $storageToken
+     * @param string $authUrl
+     * @param string $clientId
+     * @param string $scope
      */
-    public function __construct($storageToken, $authUrl, $clientId, $scope) {
+    public function __construct(onpayTokenStorageInterface $storageToken, string $authUrl, string $clientId, string $scope) {
         $this->onpayTokenInterface = $storageToken;
         $this->authUrl = $authUrl;
         $this->clientId = $clientId;
@@ -43,7 +43,7 @@ class InternalTokenStorage implements oauthTokenStorageInterface {
 
     /**
      * @param string $userId
-     * @return array
+     * @return array<AccessToken>
      * @throws \OnPay\OAuth\Client\Exception\AccessTokenException
      */
     public function getAccessTokenList($userId) {
@@ -88,7 +88,7 @@ class InternalTokenStorage implements oauthTokenStorageInterface {
             } else {
                 // Json is of league/oauth2-client format
                 $this->convertToken();
-                $accessToken = AccessToken::fromJson($this->onpayTokenInterface->getToken());
+                $accessToken = AccessToken::fromJson((string) $this->onpayTokenInterface->getToken());
             }
             return $accessToken;
         }
@@ -98,18 +98,19 @@ class InternalTokenStorage implements oauthTokenStorageInterface {
     /**
      * Convert the token from the old league/oauth2-client format to OnPay/oauth2-client format
      */
-    private function convertToken() {
-        $json = $this->onpayTokenInterface->getToken();
-        $decoded = json_decode($json, true);
+    private function convertToken(): void {
+        $decoded = (array) json_decode((string) $this->onpayTokenInterface->getToken(), true);
 
         // Populate required fields with data indicating that the access token is expired, triggering the oauth2 client to refresh it.
         $decoded['provider_id'] = $this->authUrl . '|' . $this->clientId;
-        $decoded['issued_at'] = date('Y-m-d H:i:s', strtotime('-1 month'));
+        $decoded['issued_at'] = date('Y-m-d H:i:s', (int) strtotime('-1 month'));
         $decoded['expires_in'] = 3600;
         $decoded['scope'] = $this->scope;
 
         $json = json_encode($decoded);
 
-        $this->onpayTokenInterface->saveToken($json);
+        if (false !== $json) {
+            $this->onpayTokenInterface->saveToken($json);
+        }
     }
 }

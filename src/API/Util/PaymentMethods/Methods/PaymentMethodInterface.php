@@ -6,9 +6,12 @@ use OnPay\API\Util\Currency;
 
 interface PaymentMethodInterface {
 
-    public function isAvailableForCurrency(Currency $currency);
+    public function isAvailableForCurrency(Currency $currency): bool;
 
-    public function getCurrencies();
+    /**
+     * @return Currency[]
+     */
+    public function getCurrencies(): array;
 
-    public function getName();
+    public function getName(): string;
 }

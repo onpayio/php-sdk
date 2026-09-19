@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="1"
+    resolveFromConfigFile="true"
+    findUnusedCode="false"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+>
+    <!-- phpVersion is deliberately unset: Psalm derives it from composer.json's require.php floor. -->
+    <projectFiles>
+        <directory name="src" />
+        <ignoreFiles>
+            <directory name="vendor" />
+        </ignoreFiles>
+    </projectFiles>
+
+    <issueHandlers>
+        <!-- #[\Override] requires PHP 8.3; the floor is 8.2. -->
+        <MissingOverrideAttribute errorLevel="suppress" />
+        <!-- Deferred: which classes become final is decided with the 2.0 architecture work. -->
+        <ClassMustBeFinal errorLevel="suppress" />
+    </issueHandlers>
+</psalm>

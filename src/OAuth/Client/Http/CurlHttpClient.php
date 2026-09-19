@@ -6,13 +6,13 @@ use OnPay\OAuth\Client\Http\Exception\CurlException;
 
 class CurlHttpClient implements HttpClientInterface
 {
-    /** @var resource */
+    /** @var \CurlHandle */
     private $curlChannel;
 
     /** @var bool */
     private $allowHttp = false;
 
-    /** @var array */
+    /** @var array<string,string> */
     private $responseHeaderList = [];
 
     public function __construct(array $configData = [])
@@ -73,6 +73,8 @@ class CurlHttpClient implements HttpClientInterface
     }
 
     /**
+     * @param array<string,string> $requestHeaders
+     *
      * @return Response
      */
     private function exec(array $curlOptions, array $requestHeaders)
@@ -119,7 +121,7 @@ class CurlHttpClient implements HttpClientInterface
 
         // @codeCoverageIgnoreStart
         return new Response(
-            \curl_getinfo($this->curlChannel, CURLINFO_HTTP_CODE),
+            (int) \curl_getinfo($this->curlChannel, CURLINFO_HTTP_CODE),
             $responseData,
             $this->responseHeaderList
         );
@@ -136,15 +138,15 @@ class CurlHttpClient implements HttpClientInterface
     {
         // we do NOT support multiple response headers with the same key, the
         // later one(s) will overwrite the earlier one
-        if (false !== \strpos($headerData, ':')) {
-            list($key, $value) = \explode(':', $headerData, 2);
-            $this->responseHeaderList[\trim($key)] = \trim($value);
+        $headerParts = \explode(':', $headerData, 2);
+        if (2 === \count($headerParts)) {
+            $this->responseHeaderList[\trim($headerParts[0])] = \trim($headerParts[1]);
         }
 
         return self::safeStrlen($headerData);
     }
 
-    public static function safeStrlen(string $str)
+    public static function safeStrlen(string $str): int
     {
         if (\function_exists('mb_strlen')) {
             // mb_strlen in PHP 7.x can return false.

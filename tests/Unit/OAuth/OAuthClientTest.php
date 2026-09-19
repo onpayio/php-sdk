@@ -272,6 +272,32 @@ class OAuthClientTest extends TestCase
         }
     }
 
+    public function testHandleCallbackThrowsWhenSessionDataIsNotAnArray(): void
+    {
+        [$client, $session] = $this->makeClient(new FakeOnPayTokenStorage(), new FakeHttpClient());
+        $session->set('_oauth2_session', 'not-an-array');
+
+        $this->expectException(OAuthException::class);
+        $this->expectExceptionMessage('invalid session (state)');
+        $client->handleCallback($this->provider(), self::USER_ID, ['code' => 'c', 'state' => 'the-state']);
+    }
+
+    public function testHandleCallbackThrowsWhenTokenResponseBodyIsNotAnArray(): void
+    {
+        $http = new FakeHttpClient([
+            new Response(200, \json_encode('a string'), ['Content-Type' => 'application/json']),
+        ]);
+        [$client, $session] = $this->makeClient(new FakeOnPayTokenStorage(), $http);
+        $this->seedValidSession($session, ['state' => 'the-state']);
+
+        try {
+            $client->handleCallback($this->provider(), self::USER_ID, ['code' => 'c', 'state' => 'the-state']);
+            $this->fail('expected TokenException');
+        } catch (TokenException $e) {
+            $this->assertSame('unable to obtain access_token', $e->getMessage());
+        }
+    }
+
     // --- send: token lookup / expiry / refresh -------------------------------
 
     public function testSendReturnsFalseWhenNoAccessTokenAvailable(): void
@@ -393,6 +419,32 @@ class OAuthClientTest extends TestCase
     {
         $storage = new FakeOnPayTokenStorage($this->storedToken(-7200, 1, 'expired-access', 'old-refresh'));
         $http = new FakeHttpClient([$this->jsonResponse(400, [])]);
+        [$client] = $this->makeClient($storage, $http);
+
+        $this->expectException(TokenException::class);
+        $this->expectExceptionMessage('unable to refresh access_token');
+        $client->send($this->provider(), self::USER_ID, self::SCOPE, Request::get('https://api.example.com/resource'));
+    }
+
+    public function testSendRefreshErrorBodyNotArrayThrowsTokenException(): void
+    {
+        $storage = new FakeOnPayTokenStorage($this->storedToken(-7200, 1, 'expired-access', 'old-refresh'));
+        $http = new FakeHttpClient([
+            new Response(400, \json_encode('a string'), ['Content-Type' => 'application/json']),
+        ]);
+        [$client] = $this->makeClient($storage, $http);
+
+        $this->expectException(TokenException::class);
+        $this->expectExceptionMessage('unable to refresh access_token');
+        $client->send($this->provider(), self::USER_ID, self::SCOPE, Request::get('https://api.example.com/resource'));
+    }
+
+    public function testSendRefreshSuccessBodyNotArrayThrowsTokenException(): void
+    {
+        $storage = new FakeOnPayTokenStorage($this->storedToken(-7200, 1, 'expired-access', 'old-refresh'));
+        $http = new FakeHttpClient([
+            new Response(200, \json_encode('a string'), ['Content-Type' => 'application/json']),
+        ]);
         [$client] = $this->makeClient($storage, $http);
 
         $this->expectException(TokenException::class);

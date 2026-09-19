@@ -84,6 +84,16 @@ class SessionTokenStorageTest extends SessionTestCase
         self::assertSame([], $storage->getAccessTokenList('other'));
     }
 
+    public function testDeleteReturnsEarlyWhenNothingStoredForUser(): void
+    {
+        $this->startSession();
+        $storage = new SessionTokenStorage();
+
+        $storage->deleteAccessToken('someUser', $this->makeToken('onpay', 'tok'));
+
+        self::assertSame([], $storage->getAccessTokenList('someUser'));
+    }
+
     public function testDeleteRemovesOnlyMatchingProviderAndToken(): void
     {
         $this->startSession();

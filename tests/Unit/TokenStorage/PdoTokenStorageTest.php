@@ -90,4 +90,31 @@ class PdoTokenStorageTest extends TestCase
         $storage = new PdoTokenStorage($db);
         self::assertInstanceOf(PdoTokenStorage::class, $storage);
     }
+
+    public function testGetAccessTokenListSkipsNonArrayRows(): void
+    {
+        $validRow = [
+            'provider_id' => 'onpay',
+            'issued_at' => '2020-01-01 00:00:00',
+            'access_token' => 'tok-abc',
+            'token_type' => 'Bearer',
+            'expires_in' => 3600,
+            'refresh_token' => 'refresh-1',
+            'scope' => 'full',
+        ];
+
+        $stmt = $this->createMock(\PDOStatement::class);
+        $stmt->method('fetchAll')->willReturn([$validRow, 'not-a-row']);
+
+        $db = $this->createMock(PDO::class);
+        $db->method('getAttribute')->willReturn('mysql');
+        $db->method('prepare')->willReturn($stmt);
+
+        $storage = new PdoTokenStorage($db);
+        $list = $storage->getAccessTokenList('user1');
+
+        self::assertCount(1, $list);
+        self::assertSame('tok-abc', $list[0]->getToken());
+        self::assertSame('onpay', $list[0]->getProviderId());
+    }
 }

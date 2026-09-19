@@ -4,40 +4,40 @@ namespace OnPay\API\Http;
 
 class Response {
     /**
-     * @var string $statusCode
+     * @var int|null $statusCode
      */
-    protected $statusCode;
+    protected ?int $statusCode = null;
 
     /**
-     * @var string $body
+     * @var string|null $body
      */
-    protected $body;
+    protected ?string $body = null;
 
     /**
-     * @return string
+     * @return int|null
      */
-    public function getStatusCode() {
+    public function getStatusCode(): ?int {
         return $this->statusCode;
     }
 
     /**
-     * @param string $statusCode
+     * @param int|null $statusCode
      */
-    public function setStatusCode($statusCode) {
+    public function setStatusCode($statusCode): void {
         $this->statusCode = $statusCode;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getBody() {
+    public function getBody(): ?string {
         return $this->body;
     }
 
     /**
-     * @param string $body
+     * @param string|null $body
      */
-    public function setBody($body) {
+    public function setBody($body): void {
         $this->body = $body;
     }
 }

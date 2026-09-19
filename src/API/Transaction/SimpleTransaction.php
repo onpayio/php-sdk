@@ -4,6 +4,7 @@ namespace OnPay\API\Transaction;
 
 
 use OnPay\API\Util\Converter;
+use OnPay\API\Util\DataReader;
 use OnPay\API\Util\Link;
 
 class SimpleTransaction {
@@ -15,98 +16,73 @@ class SimpleTransaction {
      */
     public function __construct(array $data)
     {
-        $this->uuid = (isset($data['uuid'])) ? $data['uuid'] : null;
-        $this->threeDs = (isset($data['3dsecure'])) ? $data['3dsecure'] : null;
-        $this->acquirer = isset($data['acquirer']) ? $data['acquirer'] :  null;
-        $this->amount = (isset($data['amount'])) ? $data['amount'] : null;
-        $this->cardType = (isset($data['card_type'])) ? $data['card_type'] : null;
-        $this->charged = (isset($data['charged'])) ? $data['charged'] : null;
-        if (isset($data['created'])) {
-            $this->created = Converter::toDateTimeFromString($data['created']);
+        $this->uuid = DataReader::stringOrNull($data, 'uuid');
+        $this->threeDs = DataReader::boolOrNull($data, '3dsecure');
+        $this->acquirer = DataReader::stringOrNull($data, 'acquirer');
+        $this->amount = DataReader::intOrNull($data, 'amount');
+        $this->cardType = DataReader::stringOrNull($data, 'card_type');
+        $this->charged = DataReader::intOrNull($data, 'charged');
+        $created = DataReader::stringOrNull($data, 'created');
+        if (null !== $created) {
+            $createdDateTime = Converter::toDateTimeFromString($created);
+            if (false !== $createdDateTime) {
+                $this->created = $createdDateTime;
+            }
         }
-        $this->currencyCode = (isset($data['currency_code'])) ? $data['currency_code'] : null;
-        $this->orderId = (isset($data['order_id'])) ? $data['order_id'] :  null;
-        $this->refunded = (isset($data['refunded'])) ? $data['refunded'] :  null;
-        $this->status = (isset($data['status'])) ? $data['status'] :  null;
-        $this->transactionNumber = (isset($data['transaction_number'])) ? $data['transaction_number'] :  null;
-        $this->wallet = (isset($data['wallet'])) ? $data['wallet'] : null;
-        $this->hasCardholderData = isset($data['has_cardholder_data']) ? $data['has_cardholder_data'] : false;
-        $this->testMode = isset($data['testmode']) ? $data['testmode'] : false;
+        $this->currencyCode = DataReader::intOrNull($data, 'currency_code');
+        $this->orderId = DataReader::stringOrNull($data, 'order_id');
+        $this->refunded = DataReader::intOrNull($data, 'refunded');
+        $this->status = DataReader::stringOrNull($data, 'status');
+        $this->transactionNumber = DataReader::intOrNull($data, 'transaction_number');
+        $this->wallet = DataReader::stringOrNull($data, 'wallet');
+        $this->hasCardholderData = DataReader::boolOr($data, 'has_cardholder_data', false);
+        $this->testMode = DataReader::boolOr($data, 'testmode', false);
     }
 
     /**
      * @internal Shall not be used outside the library
      * @param array $links
      */
-    public function setLinks(array $links) {
-        foreach ($links as $rel => $link) {
-            $linkItem = new Link($rel, $link);
-            $this->links[] = $linkItem;
+    public function setLinks(array $links): void {
+        $result = [];
+        foreach (array_keys($links) as $rel) {
+            $result[] = new Link((string) $rel, DataReader::stringOrNull($links, (string) $rel));
         }
+        $this->links = $result;
     }
 
+    public ?int $amount = null;
+
+    public ?string $acquirer = null;
+
+    public ?string $cardType = null;
+
+    public ?int $charged = null;
+
+    public ?\DateTime $created = null;
+
+    public ?int $currencyCode = null;
+
+    public ?string $orderId = null;
+
+    public ?int $refunded = null;
+
+    public ?string $status = null;
+
+    public ?bool $threeDs = null;
+
+    public ?int $transactionNumber = null;
+
+    public ?string $uuid = null;
+
+    public ?string $wallet = null;
+
+    public bool $hasCardholderData = false;
+
+    public bool $testMode = false;
+
     /**
-     * @var int
+     * @var Link[]|null
      */
-    public $amount;
-    /**
-     * @var string
-     */
-    public $acquirer;
-    /**
-     * @var string
-     */
-    public $cardType;
-    /**
-     * @var int
-     */
-    public $charged;
-    /**
-     * @var \DateTime
-     */
-    public $created;
-    /**
-     * @var string
-     */
-    public $currencyCode;
-    /**
-     * @var string
-     */
-    public $orderId;
-    /**
-     * @var int
-     */
-    public $refunded;
-    /**
-     * @var string
-     */
-    public $status;
-    /**
-     * @var bool
-     */
-    public $threeDs;
-    /**
-     * @var string
-     */
-    public $transactionNumber;
-    /**
-     * @var string
-     */
-    public $uuid;
-    /**
-     * @var string
-     */
-    public $wallet;
-    /**
-     * @var bool
-     */
-    public $hasCardholderData;
-    /**
-     * @var bool
-     */
-    public $testMode;
-    /**
-     * @var Link[]
-     */
-    public $links;
+    public ?array $links = null;
 }
