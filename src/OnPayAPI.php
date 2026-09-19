@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay;
 
 use OnPay\OAuth\Client\Http\CurlHttpClient;
@@ -36,99 +38,99 @@ class OnPayAPI {
     /**
      * @var InternalTokenStorage
      */
-    protected $tokenStorage;
+    protected InternalTokenStorage $tokenStorage;
 
     /**
-     * @var array
+     * @var array<array-key, mixed>
      */
-    protected $options = [];
-
-    /**
-     * @var string
-     */
-    protected $baseUri;
+    protected array $options = [];
 
     /**
      * @var string
      */
-    protected $baseAuthorizeUri;
+    protected string $baseUri;
 
     /**
      * @var string
      */
-    protected $clientId;
+    protected string $baseAuthorizeUri;
 
     /**
      * @var string
      */
-    protected $redirectUri;
+    protected string $clientId;
+
+    /**
+     * @var string
+     */
+    protected string $redirectUri;
 
     /**
      * @var Provider
      */
-    protected $oauth2Provider;
+    protected Provider $oauth2Provider;
 
     /**
      * @var OAuthClient|null
      */
-    protected $client = null;
+    protected ?OAuthClient $client = null;
 
     /**
      * @var TransactionService|null
      */
-    protected $transactionService = null;
+    protected ?TransactionService $transactionService = null;
 
     /**
      * @var SubscriptionService|null
      */
-    protected $subscriptionService = null;
+    protected ?SubscriptionService $subscriptionService = null;
 
     /**
      * @var PaymentService|null
      */
-    protected $paymentService = null;
+    protected ?PaymentService $paymentService = null;
 
     /**
      * @var GatewayService|null
      */
-    protected $gatewayService = null;
+    protected ?GatewayService $gatewayService = null;
 
     /**
      * Not really used in the context of this implementation of OnPay/oauth2-client, however we set it as the same value for consistency.
      *
      * @var string
      */
-    protected $userId = 'sdk_user';
+    protected string $userId = 'sdk_user';
 
     /**
      * @var string
      */
-    protected $scope = 'full';
+    protected string $scope = 'full';
 
     /**
      * @var HttpRequest|null $request
      */
-    protected $request = null;
+    protected ?HttpRequest $request = null;
 
     /**
      * @var HttpResponse|null $response
      */
-    protected $response = null;
+    protected ?HttpResponse $response = null;
 
     /**
      * @var RecordingHttpClientInterface
      */
-    protected $httpClient;
+    protected RecordingHttpClientInterface $httpClient;
 
     /**
      * @var LoggerInterface
      */
-    protected $logger;
+    protected LoggerInterface $logger;
 
     /**
      * @var string|null
      */
-    protected $platform = null;
+    protected ?string $platform = null;
 
     /**
      * OnPayAPI constructor.
@@ -233,7 +235,7 @@ class OnPayAPI {
         ?ClientInterface $httpClient,
         ?RequestFactoryInterface $requestFactory,
         ?StreamFactoryInterface $streamFactory
-    ) {
+    ): RecordingHttpClientInterface {
         if (null !== $httpClient) {
             try {
                 $requestFactory = $requestFactory ?? Psr17FactoryDiscovery::findRequestFactory();
@@ -265,7 +267,7 @@ class OnPayAPI {
     /**
      * @return OAuthClient
      */
-    protected function getClient() {
+    protected function getClient(): OAuthClient {
         if (null === $this->client) {
             $this->client = new OAuthClient(
                 $this->tokenStorage,
@@ -291,7 +293,7 @@ class OnPayAPI {
      *
      * @return bool
      */
-    public function isAuthorized() {
+    public function isAuthorized(): bool {
         // If we're able to ping the API, we're authorized.
         try {
             $this->ping();
@@ -305,7 +307,7 @@ class OnPayAPI {
      * Returns the platform value set.
      * @return string|null
      */
-    public function getPlatform() {
+    public function getPlatform(): ?string {
         return $this->platform;
     }
 
@@ -314,14 +316,14 @@ class OnPayAPI {
      *
      * @return string
      */
-    public function authorize() {
+    public function authorize(): string {
         return $this->getClient()->getAuthorizeUri($this->oauth2Provider, $this->userId, $this->scope, $this->redirectUri);
     }
 
     /**
      * @param string $code
      */
-    public function finishAuthorize($code): void {
+    public function finishAuthorize(string $code): void {
         $this->getClient()->handleCallback(
             $this->oauth2Provider, $this->userId,
             [
@@ -337,7 +339,7 @@ class OnPayAPI {
      * @return array<array-key, mixed>
      * @throws ApiException
      */
-    public function ping() {
+    public function ping(): array {
         return $this->get('ping');
     }
 
@@ -349,7 +351,7 @@ class OnPayAPI {
      * @throws TokenException
      * @throws ConnectionException
      */
-    public function get($url): array {
+    public function get(string $url): array {
         try {
             $request = Request::get( $this->baseUri . '/v1/' . $url, [], ['User-Agent' => (string) $this->platform]);
             $response = $this->getClient()->send(
@@ -367,7 +369,7 @@ class OnPayAPI {
             throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
         } catch (\OnPay\OAuth\Client\Exception\TokenException $e) {
             throw new TokenException($e->getMessage(), $e->getCode(), $e);
-        } catch (\OnPay\OAUth\Client\Exception\AccessTokenException $e) {
+        } catch (\OnPay\OAuth\Client\Exception\AccessTokenException $e) {
             throw new TokenException($e->getMessage(), $e->getCode(), $e);
         }
     }
@@ -381,9 +383,13 @@ class OnPayAPI {
      * @throws TokenException
      * @throws ConnectionException
      */
-    public function post($url, $postBody = null): array {
+    public function post(string $url, mixed $postBody = null): array {
         try {
-            $encodedBody = json_encode($postBody, JSON_UNESCAPED_SLASHES);
+            try {
+                $encodedBody = json_encode($postBody, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+            } catch (\JsonException $e) {
+                throw new ApiException('Failed to encode request body as JSON: ' . $e->getMessage(), $e->getCode(), $e);
+            }
             $request = new Request(
                 'POST',
                 $this->baseUri . '/v1/' . $url,
@@ -391,7 +397,7 @@ class OnPayAPI {
                     'Content-Type' => 'application/json',
                     'User-Agent' => (string) $this->platform,
                 ],
-                false === $encodedBody ? null : $encodedBody
+                $encodedBody
             );
             $response = $this->getClient()->send(
                 $this->oauth2Provider,
@@ -408,13 +414,15 @@ class OnPayAPI {
             throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
         } catch (\OnPay\OAuth\Client\Exception\TokenException $e) {
             throw new TokenException($e->getMessage(), $e->getCode(), $e);
+        } catch (\OnPay\OAuth\Client\Exception\AccessTokenException $e) {
+            throw new TokenException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
     /**
      * @return string
      */
-    private function requireStringOption(string $name) {
+    private function requireStringOption(string $name): string {
         $value = DataReader::stringOrNull($this->options, $name);
         if (null === $value) {
             throw new \InvalidArgumentException(\sprintf('Option "%s" must be a string', $name));
@@ -427,7 +435,7 @@ class OnPayAPI {
      * @param TokenStorageInterface $tokenStorage
      * @return string[]
      */
-    private function getRequiredOptions(TokenStorageInterface $tokenStorage) {
+    private function getRequiredOptions(TokenStorageInterface $tokenStorage): array {
         $options = [
             'client_id'
         ];
@@ -446,17 +454,18 @@ class OnPayAPI {
      * @throws ApiException
      * @throws TokenException
      */
-    private function handleResponse($response): array {
+    private function handleResponse(Response|false $response): array {
         if (false === $response) {
             // When response is false we're dealing with an invalid token.
             throw new TokenException('Invalid response. Possible invalid token.');
         }
 
         if ($response->isOkay()) {
-            /** @var mixed $decoded */
-            $decoded = json_decode($response->getBody(), true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new ApiException('Failed to decode JSON body-response: ' . json_last_error_msg(), $response->getStatusCode());
+            try {
+                /** @var mixed $decoded */
+                $decoded = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+            } catch (\JsonException $e) {
+                throw new ApiException('Failed to decode JSON body-response: ' . $e->getMessage(), $response->getStatusCode(), $e);
             }
             if (!is_array($decoded)) {
                 throw new ApiException('Expected a JSON object in the response body', $response->getStatusCode());
@@ -467,10 +476,13 @@ class OnPayAPI {
 
         $message = '';
         if ('' !== $response->getBody() && $response->getHeader('content-type') === 'application/json') {
-            $body = (array) json_decode($response->getBody(), true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new ApiException('Failed to decode JSON body-response: ' . json_last_error_msg(), $response->getStatusCode());
+            try {
+                /** @var mixed $decoded */
+                $decoded = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+            } catch (\JsonException $e) {
+                throw new ApiException('Failed to decode JSON body-response: ' . $e->getMessage(), $response->getStatusCode(), $e);
             }
+            $body = (array) $decoded;
             if (isset($body['errors'][0]['message']) && is_string($body['errors'][0]['message'])) {
                 $message = $body['errors'][0]['message'];
             }
@@ -487,7 +499,7 @@ class OnPayAPI {
     /**
      * @return TransactionService
      */
-    public function transaction() {
+    public function transaction(): TransactionService {
         if (null === $this->transactionService) {
             $this->transactionService = new TransactionService($this);
         }
@@ -497,7 +509,7 @@ class OnPayAPI {
     /**
      * @return SubscriptionService
      */
-    public function subscription() {
+    public function subscription(): SubscriptionService {
         if(null === $this->subscriptionService) {
             $this->subscriptionService = new SubscriptionService($this);
         }
@@ -507,7 +519,7 @@ class OnPayAPI {
     /**
      * @return PaymentService
      */
-    public function payment() {
+    public function payment(): PaymentService {
         if (null === $this->paymentService) {
             $this->paymentService = new PaymentService($this);
         }
@@ -517,7 +529,7 @@ class OnPayAPI {
     /**
      * @return GatewayService
      */
-    public function gateway() {
+    public function gateway(): GatewayService {
         if(null === $this->gatewayService) {
             $this->gatewayService = new GatewayService($this);
         }
@@ -527,7 +539,7 @@ class OnPayAPI {
     /**
      * @param mixed $request
      */
-    private function setLastHttpRequest($request): void {
+    private function setLastHttpRequest(mixed $request): void {
         $httpRequest = new HttpRequest();
         if ($request instanceof Request) {
             $httpRequest->setMethod($request->getMethod());
@@ -541,7 +553,7 @@ class OnPayAPI {
     /**
      * @param mixed $response
      */
-    private function setLastHttpResponse($response): void {
+    private function setLastHttpResponse(mixed $response): void {
         $httpResponse = new HttpResponse();
         if ($response instanceof Response) {
             $httpResponse->setStatusCode($response->getStatusCode());
@@ -554,7 +566,7 @@ class OnPayAPI {
      * Returns the last HTTP Request send to the API
      * @return HttpRequest|null
      */
-    public function getLastHttpRequest() {
+    public function getLastHttpRequest(): ?HttpRequest {
         return $this->request;
     }
 
@@ -562,7 +574,7 @@ class OnPayAPI {
      * Returns the last HTTP Response received from the API
      * @return HttpResponse|null
      */
-    public function getLastHttpResponse() {
+    public function getLastHttpResponse(): ?HttpResponse {
         return $this->response;
     }
 }

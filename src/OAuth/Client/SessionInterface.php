@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\OAuth\Client;
 
 interface SessionInterface {
@@ -10,7 +12,7 @@ interface SessionInterface {
      *
      * @return mixed
      */
-    public function take($key);
+    public function take(string $key): mixed;
 
     /**
      * Set key to value.
@@ -20,5 +22,5 @@ interface SessionInterface {
      *
      * @return void
      */
-    public function set($key, $value);
+    public function set(string $key, mixed $value): void;
 }

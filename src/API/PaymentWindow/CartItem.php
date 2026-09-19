@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\PaymentWindow;
 
 class CartItem {
@@ -7,24 +9,15 @@ class CartItem {
     const TYPE_VIRTUAL = 'virtual';
     const TYPE_GIFTCARD = 'giftcard';
 
-    /** @var string */
-    private $name;
-    /** @var string|null */
-    private $description = null;
-    /** @var string|null */
-    private $sku = null;
-    /** @var int */
-    private $price;
-    /** @var int */
-    private $quantity;
-    /** @var int */
-    private $tax;
-    /** @var string|null */
-    private $quantity_unit;
-    /** @var string|null */
-    private $global_trade_item_number;
-    /** @var string|null */
-    private $type;
+    private string $name;
+    private ?string $description = null;
+    private ?string $sku = null;
+    private int $price;
+    private int $quantity;
+    private int $tax;
+    private ?string $quantity_unit;
+    private ?string $global_trade_item_number;
+    private ?string $type;
 
     /**
      * @param string $name 1-127 bytes
@@ -37,7 +30,7 @@ class CartItem {
      * @param string|null $global_trade_item_number 1-50 bytes
      * @param string|null $type 1-127 bytes
      */
-    public function __construct($name, $price, $quantity, $tax, $description = null, $sku = null, $quantity_unit = null, $global_trade_item_number = null, $type = null) {
+    public function __construct(string $name, int $price, int $quantity, int $tax, ?string $description = null, ?string $sku = null, ?string $quantity_unit = null, ?string $global_trade_item_number = null, ?string $type = null) {
         $this->name = $name;
         $this->description = $description;
         $this->sku = $sku;
@@ -53,7 +46,7 @@ class CartItem {
      * @internal
      * @return array<string, int|string>
      */
-    public function getFields() {
+    public function getFields(): array {
         $output = [];
         $output['name'] = $this->name;
         if (null !== $this->description) {
@@ -81,63 +74,63 @@ class CartItem {
     /**
      * @return int
      */
-    public function getPrice() {
+    public function getPrice(): int {
         return $this->price;
     }
 
     /**
      * @return int
      */
-    public function getQuantity() {
+    public function getQuantity(): int {
         return $this->quantity;
     }
 
     /**
      * @return int
      */
-    public function getTax() {
+    public function getTax(): int {
         return $this->tax;
     }
 
     /**
      * @return string
      */
-    public function getName() {
+    public function getName(): string {
         return $this->name;
     }
 
     /**
      * @return string|null
      */
-    public function getDescription() {
+    public function getDescription(): ?string {
         return $this->description;
     }
 
     /**
      * @return string|null
      */
-    public function getSku() {
+    public function getSku(): ?string {
         return $this->sku;
     }
 
     /**
      * @return string|null
      */
-    public function getQuantityUnit() {
+    public function getQuantityUnit(): ?string {
         return $this->quantity_unit;
     }
 
     /**
      * @return string|null
      */
-    public function getGlobalTradeItemNumber() {
+    public function getGlobalTradeItemNumber(): ?string {
         return $this->global_trade_item_number;
     }
 
     /**
      * @return string|null
      */
-    public function getType() {
+    public function getType(): ?string {
         return $this->type;
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API;
 
 use OnPay\API\Exception\InvalidFormatException;
@@ -12,19 +14,16 @@ class PaymentService {
     /**
      * @var array<array-key, mixed> Submitted Payment Data
      */
-    private $paymentData = [];
+    private array $paymentData = [];
     /**
      * @var string[] An array of fields that must be present for creating new payments
      */
-    private $requiredFields;
+    private array $requiredFields;
     /**
      * @var PaymentWindow|null Holds the data for this payment request
      */
-    private $paymentWindow = null;
-    /**
-     * @var OnPayAPI
-     */
-    private $api;
+    private ?PaymentWindow $paymentWindow = null;
+    private OnPayAPI $api;
 
     const CREATE_PAYMENT_API = 'payment/create';
 
@@ -48,7 +47,7 @@ class PaymentService {
      * @throws InvalidFormatException
      * @throws MissingDataException
      */
-    public function createNewPayment($paymentWindow) {
+    public function createNewPayment($paymentWindow): SimplePayment {
         //We can only proceed with this request if we have a valid PaymentWindow Object.
         if (!$paymentWindow instanceof PaymentWindow) {
             throw new InvalidFormatException("Creating a payment request requires a valid PaymentWindow object.");

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\Http;
 
 use OnPay\OAuth\Client\Http\Exception\CurlException;
@@ -21,19 +23,19 @@ use Psr\Http\Message\StreamFactoryInterface;
  */
 class Psr18HttpClient implements RecordingHttpClientInterface {
     /** @var ClientInterface */
-    private $client;
+    private ClientInterface $client;
 
     /** @var RequestFactoryInterface */
-    private $requestFactory;
+    private RequestFactoryInterface $requestFactory;
 
     /** @var StreamFactoryInterface */
-    private $streamFactory;
+    private StreamFactoryInterface $streamFactory;
 
     /** @var Request|null */
-    private $lastRequest;
+    private ?Request $lastRequest = null;
 
     /** @var Response|null */
-    private $lastResponse;
+    private ?Response $lastResponse = null;
 
     public function __construct(
         ClientInterface $client,
@@ -50,7 +52,7 @@ class Psr18HttpClient implements RecordingHttpClientInterface {
      *
      * @return Response
      */
-    public function send(Request $request) {
+    public function send(Request $request): Response {
         // Record the OnPay request (already carries the real headers, incl. the
         // Bearer token added upstream by OAuthClient::send()).
         $this->lastRequest = $request;
@@ -87,14 +89,14 @@ class Psr18HttpClient implements RecordingHttpClientInterface {
     /**
      * @return Request|null
      */
-    public function getLastRequest() {
+    public function getLastRequest(): ?Request {
         return $this->lastRequest;
     }
 
     /**
      * @return Response|null
      */
-    public function getLastResponse() {
+    public function getLastResponse(): ?Response {
         return $this->lastResponse;
     }
 

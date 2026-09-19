@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Http;
 
 class Response {
@@ -23,7 +25,7 @@ class Response {
     /**
      * @param int|null $statusCode
      */
-    public function setStatusCode($statusCode): void {
+    public function setStatusCode(?int $statusCode): void {
         $this->statusCode = $statusCode;
     }
 
@@ -37,7 +39,7 @@ class Response {
     /**
      * @param string|null $body
      */
-    public function setBody($body): void {
+    public function setBody(?string $body): void {
         $this->body = $body;
     }
 }

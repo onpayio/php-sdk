@@ -20,12 +20,15 @@ class JsonTest extends TestCase
         Json::encode(NAN);
     }
 
-    public function testEncodeThrowsOnNullBecauseItSerialisesToLiteralNull(): void
+    public function testEncodeNullReturnsLiteralNull(): void
     {
-        $this->expectException(JsonException::class);
-        // asserts current behaviour: encoding null yields the string 'null', which is treated as an error (code 0)
-        $this->expectExceptionMessage('unable to encode JSON, error code "0"');
-        Json::encode(null);
+        // null serialises to the valid JSON literal 'null' and no longer throws
+        $this->assertSame('null', Json::encode(null));
+    }
+
+    public function testEncodeUsesUnescapedSlashes(): void
+    {
+        $this->assertSame('{"u":"http://x/y"}', Json::encode(['u' => 'http://x/y']));
     }
 
     public function testDecodeObjectToAssocArray(): void
@@ -42,7 +45,6 @@ class JsonTest extends TestCase
     public function testDecodeThrowsOnMalformedJson(): void
     {
         $this->expectException(JsonException::class);
-        $this->expectExceptionMessage('unable to decode JSON, error code');
         Json::decode('{not valid json');
     }
 }

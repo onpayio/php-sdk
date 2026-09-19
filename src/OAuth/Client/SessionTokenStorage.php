@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\OAuth\Client;
 
 use OnPay\OAuth\Client\Exception\SessionException;
@@ -11,7 +13,7 @@ class SessionTokenStorage implements TokenStorageInterface
      *
      * @return array<AccessToken>
      */
-    public function getAccessTokenList($userId)
+    public function getAccessTokenList(string $userId): array
     {
         self::requireSession();
         $key = \sprintf('_oauth2_token_%s', $userId);
@@ -32,7 +34,7 @@ class SessionTokenStorage implements TokenStorageInterface
      *
      * @return void
      */
-    public function storeAccessToken($userId, AccessToken $accessToken)
+    public function storeAccessToken(string $userId, AccessToken $accessToken): void
     {
         self::requireSession();
         $key = \sprintf('_oauth2_token_%s', $userId);
@@ -46,7 +48,7 @@ class SessionTokenStorage implements TokenStorageInterface
      *
      * @return void
      */
-    public function deleteAccessToken($userId, AccessToken $accessToken)
+    public function deleteAccessToken(string $userId, AccessToken $accessToken): void
     {
         self::requireSession();
         $key = \sprintf('_oauth2_token_%s', $userId);
@@ -67,7 +69,7 @@ class SessionTokenStorage implements TokenStorageInterface
     /**
      * @return void
      */
-    private static function requireSession()
+    private static function requireSession(): void
     {
         if (PHP_SESSION_ACTIVE !== \session_status()) {
             // if we have no active session, bail, we expect an active session

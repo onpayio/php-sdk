@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Exception;
 
 class InvalidCartException extends \Exception {
@@ -8,7 +10,7 @@ class InvalidCartException extends \Exception {
      *
      * @var string[]
      */
-    public $errors;
+    public array $errors = [];
 
     /**
      * @param string[] $errors

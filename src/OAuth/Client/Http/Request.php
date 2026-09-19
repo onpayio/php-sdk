@@ -1,27 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\OAuth\Client\Http;
 
 class Request {
-    /** @var string */
-    private $requestMethod;
+    private string $requestMethod;
 
-    /** @var string */
-    private $requestUri;
+    private string $requestUri;
 
-    /** @var string|null */
-    private $requestBody;
+    private ?string $requestBody;
 
     /** @var array<string,string> */
-    private $requestHeaders;
+    private array $requestHeaders;
 
     /**
-     * @param string $requestMethod
-     * @param string $requestUri
      * @param array<string,string> $requestHeaders
-     * @param string|null $requestBody
      */
-    public function __construct($requestMethod, $requestUri, array $requestHeaders = [], $requestBody = null)
+    public function __construct(string $requestMethod, string $requestUri, array $requestHeaders = [], ?string $requestBody = null)
     {
         $this->requestMethod = $requestMethod;
         $this->requestUri = $requestUri;
@@ -29,10 +25,7 @@ class Request {
         $this->requestHeaders = $requestHeaders;
     }
 
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         $requestHeaders = [];
         foreach ($this->requestHeaders as $k => $v) {
@@ -55,12 +48,10 @@ class Request {
     }
 
     /**
-     * @param string $requestUri
      * @param array<string, string|null> $queryParameters
      * @param array<string,string> $requestHeaders
-     * @return Request
      */
-    public static function get($requestUri, array $queryParameters = [], array $requestHeaders = [])
+    public static function get(string $requestUri, array $queryParameters = [], array $requestHeaders = []): self
     {
         if (0 !== \count($queryParameters)) {
             $qP = \http_build_query($queryParameters, '', '&', PHP_QUERY_RFC3986);
@@ -71,13 +62,10 @@ class Request {
     }
 
     /**
-     * @param string $requestUri
      * @param array<string, string|null> $postData
      * @param array<string,string> $requestHeaders
-     *
-     * @return Request
      */
-    public static function post($requestUri, array $postData = [], array $requestHeaders = [])
+    public static function post(string $requestUri, array $postData = [], array $requestHeaders = []): self
     {
         return new self(
             'POST',
@@ -90,37 +78,22 @@ class Request {
         );
     }
 
-    /**
-     * @param string $key
-     * @param string $value
-     *
-     * @return void
-     */
-    public function setHeader($key, $value)
+    public function setHeader(string $key, string $value): void
     {
         $this->requestHeaders[$key] = $value;
     }
 
-    /**
-     * @return string
-     */
-    public function getMethod()
+    public function getMethod(): string
     {
         return $this->requestMethod;
     }
 
-    /**
-     * @return string
-     */
-    public function getUri()
+    public function getUri(): string
     {
         return $this->requestUri;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getBody()
+    public function getBody(): ?string
     {
         return $this->requestBody;
     }
@@ -128,7 +101,7 @@ class Request {
     /**
      * @return array<string,string>
      */
-    public function getHeaders()
+    public function getHeaders(): array
     {
         return $this->requestHeaders;
     }

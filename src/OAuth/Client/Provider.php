@@ -1,27 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\OAuth\Client;
 
 class Provider {
     /** @var string */
-    private $clientId;
+    private string $clientId;
 
     /** @var string */
-    private $clientSecret;
+    private string $clientSecret;
 
     /** @var string */
-    private $authorizationEndpoint;
+    private string $authorizationEndpoint;
 
     /** @var string */
-    private $tokenEndpoint;
+    private string $tokenEndpoint;
 
-    /**
-     * @param string $clientId
-     * @param string $clientSecret
-     * @param string $authorizationEndpoint
-     * @param string $tokenEndpoint
-     */
-    public function __construct($clientId, $clientSecret, $authorizationEndpoint, $tokenEndpoint)
+    public function __construct(string $clientId, string $clientSecret, string $authorizationEndpoint, string $tokenEndpoint)
     {
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
@@ -29,42 +25,27 @@ class Provider {
         $this->tokenEndpoint = $tokenEndpoint;
     }
 
-    /**
-     * @return string
-     */
-    public function getProviderId()
+    public function getProviderId(): string
     {
         return \sprintf('%s|%s', $this->getAuthorizationEndpoint(), $this->getClientId());
     }
 
-    /**
-     * @return string
-     */
-    public function getClientId()
+    public function getClientId(): string
     {
         return $this->clientId;
     }
 
-    /**
-     * @return string
-     */
-    public function getSecret()
+    public function getSecret(): string
     {
         return $this->clientSecret;
     }
 
-    /**
-     * @return string
-     */
-    public function getAuthorizationEndpoint()
+    public function getAuthorizationEndpoint(): string
     {
         return $this->authorizationEndpoint;
     }
 
-    /**
-     * @return string
-     */
-    public function getTokenEndpoint()
+    public function getTokenEndpoint(): string
     {
         return $this->tokenEndpoint;
     }

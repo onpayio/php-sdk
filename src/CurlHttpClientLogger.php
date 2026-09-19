@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay;
 
 use OnPay\Http\RecordingHttpClientInterface;
@@ -11,19 +13,19 @@ class CurlHttpClientLogger extends CurlHttpClient implements RecordingHttpClient
     /**
      * @var Request|null
      */
-    protected $lastRequest = null;
+    protected ?Request $lastRequest = null;
 
     /**
      * @var Response|null
      */
-    protected $lastResponse = null;
+    protected ?Response $lastResponse = null;
 
     /**
      * @param Request $request
      *
      * @return Response
      */
-    public function send(Request $request) {
+    public function send(Request $request): Response {
         $this->lastRequest = $request;
         $response = parent::send($request);
         // @codeCoverageIgnoreStart
@@ -35,14 +37,14 @@ class CurlHttpClientLogger extends CurlHttpClient implements RecordingHttpClient
     /**
      * @return Request|null
      */
-    public function getLastRequest() {
+    public function getLastRequest(): ?Request {
         return $this->lastRequest;
     }
 
     /**
      * @return Response|null
      */
-    public function getLastResponse() {
+    public function getLastResponse(): ?Response {
         return $this->lastResponse;
     }
 }

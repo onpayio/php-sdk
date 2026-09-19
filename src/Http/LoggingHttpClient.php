@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\Http;
 
 use OnPay\Log\Redactor;
@@ -38,7 +40,7 @@ class LoggingHttpClient implements RecordingHttpClientInterface {
      *
      * @return Response
      */
-    public function send(Request $request) {
+    public function send(Request $request): Response {
         try {
             $response = $this->inner->send($request);
         } catch (\Throwable $e) {
@@ -84,14 +86,14 @@ class LoggingHttpClient implements RecordingHttpClientInterface {
     /**
      * @return Request|null
      */
-    public function getLastRequest() {
+    public function getLastRequest(): ?Request {
         return $this->inner->getLastRequest();
     }
 
     /**
      * @return Response|null
      */
-    public function getLastResponse() {
+    public function getLastResponse(): ?Response {
         return $this->inner->getLastResponse();
     }
 

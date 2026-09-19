@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Http;
 
 class Request {
@@ -33,7 +35,7 @@ class Request {
     /**
      * @param string|null $method
      */
-    public function setMethod($method): void {
+    public function setMethod(?string $method): void {
         $this->method = $method;
     }
 
@@ -47,7 +49,7 @@ class Request {
     /**
      * @param string|null $uri
      */
-    public function setUri($uri): void {
+    public function setUri(?string $uri): void {
         $this->uri = $uri;
     }
 
@@ -61,7 +63,7 @@ class Request {
     /**
      * @param array $headers
      */
-    public function setHeaders($headers): void {
+    public function setHeaders(array $headers): void {
         $this->headers = $headers;
     }
 
@@ -75,7 +77,7 @@ class Request {
     /**
      * @param string|null $body
      */
-    public function setBody($body): void {
+    public function setBody(?string $body): void {
         $this->body = $body;
     }
 }

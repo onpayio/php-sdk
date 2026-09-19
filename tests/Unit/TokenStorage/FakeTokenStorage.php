@@ -21,10 +21,7 @@ class FakeTokenStorage implements TokenStorageInterface
         $this->token = $token;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getToken()
+    public function getToken(): ?string
     {
         return $this->token;
     }

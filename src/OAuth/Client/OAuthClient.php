@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\OAuth\Client;
 
 use OnPay\API\Util\DataReader;
@@ -14,16 +16,16 @@ use OnPay\InternalTokenStorage;
 
 class OAuthClient {
     /** @var SessionInterface */
-    protected $session;
+    protected SessionInterface $session;
 
     /** @var \DateTime */
-    protected $dateTime;
+    protected \DateTime $dateTime;
 
     /** @var TokenStorageInterface */
-    private $tokenStorage;
+    private TokenStorageInterface $tokenStorage;
 
     /** @var Http\HttpClientInterface */
-    private $httpClient;
+    private HttpClientInterface $httpClient;
 
     public function __construct(InternalTokenStorage $tokenStorage, HttpClientInterface $httpClient) {
         $this->tokenStorage = $tokenStorage;
@@ -35,7 +37,7 @@ class OAuthClient {
     /**
      * @return void
      */
-    public function setSession(SessionInterface $session) {
+    public function setSession(SessionInterface $session): void {
         $this->session = $session;
     }
 
@@ -49,7 +51,7 @@ class OAuthClient {
      *
      * @return false|Http\Response
      */
-    public function get(Provider $provider, $userId, $requestScope, $requestUri, array $requestHeaders = [])
+    public function get(Provider $provider, string $userId, string $requestScope, string $requestUri, array $requestHeaders = []): Http\Response|false
     {
         return $this->send($provider, $userId, $requestScope, Request::get($requestUri, $requestHeaders));
     }
@@ -65,7 +67,7 @@ class OAuthClient {
      *
      * @return false|Http\Response
      */
-    public function post(Provider $provider, $userId, $requestScope, $requestUri, array $postBody, array $requestHeaders = [])
+    public function post(Provider $provider, string $userId, string $requestScope, string $requestUri, array $postBody, array $requestHeaders = []): Http\Response|false
     {
         return $this->send($provider, $userId, $requestScope, Request::post($requestUri, $postBody, $requestHeaders));
     }
@@ -76,7 +78,7 @@ class OAuthClient {
      *
      * @return false|Http\Response
      */
-    public function send(Provider $provider, $userId, $requestScope, Request $request) {
+    public function send(Provider $provider, string $userId, string $requestScope, Request $request): Http\Response|false {
         $accessToken = $this->getAccessToken($provider, $userId, $requestScope);
         if (false === $accessToken) {
             return false;
@@ -129,7 +131,7 @@ class OAuthClient {
      * @see https://tools.ietf.org/html/rfc6749#section-3.3
      * @see https://tools.ietf.org/html/rfc6749#section-3.1.2
      */
-    public function getAuthorizeUri(Provider $provider, $userId, $scope, $redirectUri) {
+    public function getAuthorizeUri(Provider $provider, string $userId, string $scope, string $redirectUri): string {
         $codeVerifier = \str_replace('=', '', \base64_encode(\random_bytes(32)));
         $queryParameters = [
             'client_id' => $provider->getClientId(),
@@ -167,7 +169,7 @@ class OAuthClient {
      *
      * @return void
      */
-    public function handleCallback(Provider $provider, $userId, array $getData) {
+    public function handleCallback(Provider $provider, string $userId, array $getData): void {
         if (\array_key_exists('error', $getData)) {
             // remove the session
             $this->session->take('_oauth2_session');
@@ -199,7 +201,7 @@ class OAuthClient {
      *
      * @return void
      */
-    private function doHandleCallback(Provider $provider, string $userId, string $responseCode, string $responseState) {
+    private function doHandleCallback(Provider $provider, string $userId, string $responseCode, string $responseState): void {
         // get and delete the OAuth session information
         if (false === \is_array($sessionData = $this->session->take('_oauth2_session'))) {
             throw new OAuthException('invalid session (state)');
@@ -268,7 +270,7 @@ class OAuthClient {
      *
      * @return false|AccessToken
      */
-    private function refreshAccessToken(Provider $provider, $userId, AccessToken $accessToken)
+    private function refreshAccessToken(Provider $provider, string $userId, AccessToken $accessToken): AccessToken|false
     {
         // prepare access_token request
         $tokenRequestData = [
@@ -328,7 +330,7 @@ class OAuthClient {
     /**
      * @return false|AccessToken
      */
-    private function getAccessToken(Provider $provider, string $userId, string $scope) {
+    private function getAccessToken(Provider $provider, string $userId, string $scope): AccessToken|false {
         $accessTokenList = $this->tokenStorage->getAccessTokenList($userId);
         foreach ($accessTokenList as $accessToken) {
             if ($provider->getProviderId() !== $accessToken->getProviderId()) {
@@ -350,7 +352,7 @@ class OAuthClient {
      *
      * @return array<string,string>
      */
-    private static function getAuthorizationHeader($authUser, $authPass) {
+    private static function getAuthorizationHeader(string $authUser, string $authPass): array {
         return [
             'Accept' => 'application/json',
             'Authorization' => \sprintf(

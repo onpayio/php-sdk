@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\OAuth\Client;
 
 use DateInterval;
@@ -11,25 +13,25 @@ use OnPay\OAuth\Client\Exception\AccessTokenException;
 class AccessToken
 {
     /** @var string */
-    private $providerId;
+    private string $providerId;
 
     /** @var \DateTime */
-    private $issuedAt;
+    private DateTime $issuedAt;
 
     /** @var string */
-    private $accessToken;
+    private string $accessToken;
 
     /** @var string */
-    private $tokenType;
+    private string $tokenType;
 
     /** @var int|null */
-    private $expiresIn = null;
+    private ?int $expiresIn = null;
 
     /** @var string|null */
-    private $refreshToken = null;
+    private ?string $refreshToken = null;
 
     /** @var string|null */
-    private $scope = null;
+    private ?string $scope = null;
 
     public function __construct(array $tokenData)
     {
@@ -76,7 +78,7 @@ class AccessToken
      *
      * @return AccessToken
      */
-    public static function fromCodeResponse(Provider $provider, DateTime $dateTime, array $tokenData, $scope)
+    public static function fromCodeResponse(Provider $provider, DateTime $dateTime, array $tokenData, ?string $scope): self
     {
         $tokenData['provider_id'] = $provider->getProviderId();
 
@@ -98,7 +100,7 @@ class AccessToken
      *
      * @return AccessToken
      */
-    public static function fromRefreshResponse(Provider $provider, DateTime $dateTime, array $tokenData, self $accessToken)
+    public static function fromRefreshResponse(Provider $provider, DateTime $dateTime, array $tokenData, self $accessToken): self
     {
         $tokenData['provider_id'] = $provider->getProviderId();
 
@@ -120,48 +122,36 @@ class AccessToken
         return new self($tokenData);
     }
 
-    /**
-     * @return string
-     */
-    public function getProviderId()
+    public function getProviderId(): string
     {
         return $this->providerId;
     }
 
-    /**
-     * @return \DateTime
-     */
-    public function getIssuedAt()
+    public function getIssuedAt(): DateTime
     {
         return $this->issuedAt;
     }
 
     /**
-     * @return string
-     *
      * @see https://tools.ietf.org/html/rfc6749#section-5.1
      */
-    public function getToken()
+    public function getToken(): string
     {
         return $this->accessToken;
     }
 
     /**
-     * @return string
-     *
      * @see https://tools.ietf.org/html/rfc6749#section-7.1
      */
-    public function getTokenType()
+    public function getTokenType(): string
     {
         return $this->tokenType;
     }
 
     /**
-     * @return int|null
-     *
      * @see https://tools.ietf.org/html/rfc6749#section-5.1
      */
-    public function getExpiresIn()
+    public function getExpiresIn(): ?int
     {
         return $this->expiresIn;
     }
@@ -171,25 +161,20 @@ class AccessToken
      *
      * @see https://tools.ietf.org/html/rfc6749#section-1.5
      */
-    public function getRefreshToken()
+    public function getRefreshToken(): ?string
     {
         return $this->refreshToken;
     }
 
     /**
-     * @return string|null
-     *
      * @see https://tools.ietf.org/html/rfc6749#section-3.3
      */
-    public function getScope()
+    public function getScope(): ?string
     {
         return $this->scope;
     }
 
-    /**
-     * @return bool
-     */
-    public function isExpired(DateTime $dateTime)
+    public function isExpired(DateTime $dateTime): bool
     {
         if (null === $expiresIn = $this->getExpiresIn()) {
             // if no expiry was indicated, assume it is valid
@@ -208,7 +193,7 @@ class AccessToken
      *
      * @return self
      */
-    public static function fromJson($jsonString)
+    public static function fromJson(string $jsonString): self
     {
         if (false === \is_array($tokenData = Json::decode($jsonString))) {
             throw new AccessTokenException('invalid token data');
@@ -217,10 +202,7 @@ class AccessToken
         return new self($tokenData);
     }
 
-    /**
-     * @return string
-     */
-    public function toJson()
+    public function toJson(): string
     {
         $jsonData = [
                 'provider_id' => $this->getProviderId(),
@@ -240,7 +222,7 @@ class AccessToken
      *
      * @return void
      */
-    private function setProviderId($providerId)
+    private function setProviderId(string $providerId): void
     {
         $this->providerId = $providerId;
     }
@@ -250,7 +232,7 @@ class AccessToken
      *
      * @return void
      */
-    private function setIssuedAt($issuedAt)
+    private function setIssuedAt(string $issuedAt): void
     {
         if (1 !== \preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/', $issuedAt)) {
             throw new AccessTokenException('invalid "expires_at" (syntax)');
@@ -269,7 +251,7 @@ class AccessToken
      *
      * @return void
      */
-    private function setAccessToken($accessToken)
+    private function setAccessToken(string $accessToken): void
     {
         // access-token = 1*VSCHAR
         // VSCHAR       = %x20-7E
@@ -284,7 +266,7 @@ class AccessToken
      *
      * @return void
      */
-    private function setTokenType($tokenType)
+    private function setTokenType(string $tokenType): void
     {
         if ('bearer' !== $tokenType && 'Bearer' !== $tokenType) {
             throw new AccessTokenException('unsupported "token_type"');
@@ -297,7 +279,7 @@ class AccessToken
      *
      * @return void
      */
-    private function setExpiresIn($expiresIn)
+    private function setExpiresIn(mixed $expiresIn): void
     {
         if (null !== $expiresIn) {
             if (false === \is_int($expiresIn)) {
@@ -315,7 +297,7 @@ class AccessToken
      *
      * @return void
      */
-    private function setRefreshToken($refreshToken)
+    private function setRefreshToken(?string $refreshToken): void
     {
         if (null !== $refreshToken) {
             // refresh-token = 1*VSCHAR
@@ -332,7 +314,7 @@ class AccessToken
      *
      * @return void
      */
-    private function setScope($scope)
+    private function setScope(?string $scope): void
     {
         if (null !== $scope) {
             // scope       = scope-token *( SP scope-token )

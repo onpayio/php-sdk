@@ -1,40 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\OAuth\Client;
 
 use OnPay\OAuth\Client\Exception\JsonException;
 
 class Json
 {
-    /**
-     * @param mixed $jsonData
-     *
-     * @return string
-     */
-    public static function encode($jsonData)
+    public static function encode(mixed $jsonData): string
     {
-        $jsonString = \json_encode($jsonData);
-        // 5.5.0 	The return value on failure was changed from null string to FALSE.
-        if (false === $jsonString || 'null' === $jsonString) {
-            throw new JsonException(\sprintf('unable to encode JSON, error code "%d"', \json_last_error()));
+        try {
+            return \json_encode($jsonData, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+        } catch (\JsonException $e) {
+            throw new JsonException($e->getMessage(), 0, $e);
         }
-
-        return $jsonString;
     }
 
-    /**
-     * @param string $jsonString
-     *
-     * @return mixed
-     */
-    public static function decode($jsonString)
+    public static function decode(string $jsonString): mixed
     {
-        /** @var mixed $data */
-        $data = \json_decode($jsonString, true);
-        if (null === $data && JSON_ERROR_NONE !== \json_last_error()) {
-            throw new JsonException(\sprintf('unable to decode JSON, error code "%d"', \json_last_error()));
+        try {
+            return \json_decode($jsonString, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new JsonException($e->getMessage(), 0, $e);
         }
-
-        return $data;
     }
 }

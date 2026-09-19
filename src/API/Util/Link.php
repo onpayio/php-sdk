@@ -1,7 +1,8 @@
 <?php
 
-namespace OnPay\API\Util;
+declare(strict_types=1);
 
+namespace OnPay\API\Util;
 
 class Link
 {

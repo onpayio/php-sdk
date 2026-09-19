@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\OAuth\Client;
 
 use OnPay\OAuth\Client\Exception\SessionException;
@@ -12,7 +14,7 @@ class Session implements SessionInterface
      *
      * @return void
      */
-    public function set($key, $value)
+    public function set(string $key, mixed $value): void
     {
         self::requireSession();
         /** @psalm-suppress MixedAssignment $value is mixed by the SessionInterface contract */
@@ -26,7 +28,7 @@ class Session implements SessionInterface
      *
      * @return mixed
      */
-    public function take($key)
+    public function take(string $key): mixed
     {
         self::requireSession();
         if (false === isset($_SESSION[$key])) {
@@ -43,7 +45,7 @@ class Session implements SessionInterface
     /**
      * @return void
      */
-    private static function requireSession()
+    private static function requireSession(): void
     {
         if (PHP_SESSION_ACTIVE !== \session_status()) {
             // if we have no active session, bail, we expect an active session

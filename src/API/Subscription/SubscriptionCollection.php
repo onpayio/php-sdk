@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace OnPay\API\Subscription;
 use OnPay\API\Util\Pagination;
 class SubscriptionCollection
@@ -6,9 +9,7 @@ class SubscriptionCollection
     /**
      * @var SimpleSubscription[]
      */
-    public $subscriptions = [];
-    /**
-     * @var ?Pagination
-     */
-    public $pagination = null;
+    public array $subscriptions = [];
+
+    public ?Pagination $pagination = null;
 }

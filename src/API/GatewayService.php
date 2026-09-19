@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API;
 
 
@@ -13,11 +15,11 @@ use OnPay\OnPayAPI;
 class GatewayService
 {
 
-    private $api;
+    private OnPayAPI $api;
 
     /**
      * @internal Should never be called outside the library
-     * TransactionService constructor.
+     * GatewayService constructor.
      * @param OnPayAPI $onPayAPI
      */
     public function __construct(OnPayAPI $onPayAPI) {
@@ -29,7 +31,7 @@ class GatewayService
      * @throws Exception\ApiException
      * @throws Exception\ConnectionException
      */
-    public function getInformation() {
+    public function getInformation(): Information {
         $result = $this->api->get('gateway/information');
 
         $information = new Information(DataReader::arrayOr($result, 'data'));
@@ -41,7 +43,7 @@ class GatewayService
      * @throws Exception\ApiException
      * @throws Exception\ConnectionException
      */
-    public function getPaymentWindowIntegrationSettings() {
+    public function getPaymentWindowIntegrationSettings(): PaymentWindowIntegrationSettings {
         $result = $this->api->get('gateway/window/v3/integration');
 
         $settings = new PaymentWindowIntegrationSettings(DataReader::arrayOr($result, 'data'));
@@ -53,7 +55,7 @@ class GatewayService
      * @throws Exception\ApiException
      * @throws Exception\ConnectionException
      */
-    public function getPaymentWindowDesigns() {
+    public function getPaymentWindowDesigns(): PaymentWindowDesignCollection {
         $results = $this->api->get('gateway/window/v3/design/');
 
         $data = DataReader::arrayOr($results, 'data');
