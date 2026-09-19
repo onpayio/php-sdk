@@ -55,7 +55,7 @@ class SubscriptionService
                 'direction' => $direction
             ]);
 
-        $results = (array) $this->api->get('subscription/?' . $queryString);
+        $results = $this->api->get('subscription/?' . $queryString);
         $subscriptions = [];
 
         $data = DataReader::arrayOr($results, 'data');
@@ -85,7 +85,7 @@ class SubscriptionService
             throw new ApiException('Subscription ID must be provided');
         }
 
-        $result = (array) $this->api->get('subscription/' . $subscriptionId);
+        $result = $this->api->get('subscription/' . $subscriptionId);
         $subscription = new DetailedSubscription(DataReader::arrayOr($result, 'data'));
         $subscription->setLinks(DataReader::arrayOr($result, 'links'));
 
@@ -103,7 +103,7 @@ class SubscriptionService
             throw new ApiException('Subscription ID must be provided');
         }
 
-        $result = (array) $this->api->post('subscription/' . $subscriptionId . '/cancel');
+        $result = $this->api->post('subscription/' . $subscriptionId . '/cancel');
         $subscription = new DetailedSubscription(DataReader::arrayOr($result, 'data'));
         $subscription->setLinks(DataReader::arrayOr($result, 'links'));
         return $subscription;
@@ -133,7 +133,7 @@ class SubscriptionService
             ],
         ];
 
-        $result = (array) $this->api->post('subscription/' . $uuid . '/authorize', $json);
+        $result = $this->api->post('subscription/' . $uuid . '/authorize', $json);
 
         $transaction = new DetailedTransaction(DataReader::arrayOr($result, 'data'));
         $transaction->setLinks(DataReader::arrayOr($result, 'links'));

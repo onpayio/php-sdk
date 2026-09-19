@@ -300,13 +300,13 @@ class OnPayAPI {
 
     /**
      * @internal
-     * @param $url
-     * @return mixed
+     * @param string $url
+     * @return array<array-key, mixed>
      * @throws ApiException
      * @throws TokenException
      * @throws ConnectionException
      */
-    public function get($url) {
+    public function get($url): array {
         try {
             $request = Request::get( $this->options['base_uri'] . '/v1/' . $url, [], ['User-Agent' => $this->platform]);
             $response = $this->getClient()->send(
@@ -331,13 +331,14 @@ class OnPayAPI {
 
     /**
      * @internal
-     * @param $url
-     * @return mixed
+     * @param string $url
+     * @param mixed $postBody
+     * @return array<array-key, mixed>
      * @throws ApiException
      * @throws TokenException
      * @throws ConnectionException
      */
-    public function post($url, $postBody = null) {
+    public function post($url, $postBody = null): array {
         try {
             $request = new Request(
                 'POST',
@@ -389,23 +390,32 @@ class OnPayAPI {
      * @throws ApiException
      * @throws TokenException
      */
-    private function handleResponse($response) {
+    private function handleResponse($response): array {
         if (false === $response) {
             // When response is false we're dealing with an invalid token.
             throw new TokenException('Invalid response. Possible invalid token.');
         }
 
         if ($response->isOkay()) {
-            return json_decode($response->getBody(), true);
+            /** @var mixed $decoded */
+            $decoded = json_decode($response->getBody(), true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new ApiException('Failed to decode JSON body-response: ' . json_last_error_msg(), $response->getStatusCode());
+            }
+            if (!is_array($decoded)) {
+                throw new ApiException('Expected a JSON object in the response body', $response->getStatusCode());
+            }
+
+            return $decoded;
         }
 
         $message = '';
         if ('' !== $response->getBody() && null !== $response->getBody() && $response->getHeader('content-type') === 'application/json') {
             $body = json_decode($response->getBody(), true);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new ApiException('Failed to decode JSON body-response: ' . json_last_error_msg(), $response->getStatusCode());   
+                throw new ApiException('Failed to decode JSON body-response: ' . json_last_error_msg(), $response->getStatusCode());
             }
-            if (array_key_exists('errors', $body)) {
+            if (is_array($body) && isset($body['errors'][0]['message']) && is_string($body['errors'][0]['message'])) {
                 $message = $body['errors'][0]['message'];
             }
         }

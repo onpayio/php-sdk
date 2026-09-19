@@ -32,7 +32,7 @@ class TransactionService {
         if (empty($identifier)) {
             throw new ApiException('Transaction number must be provided');
         }
-        $result = (array) $this->api->get('transaction/' . urlencode($identifier));
+        $result = $this->api->get('transaction/' . urlencode($identifier));
 
         $detailedTransaction = new DetailedTransaction(DataReader::arrayOr($result, 'data'));
         $detailedTransaction->setLinks(DataReader::arrayOr($result, 'links'));
@@ -57,7 +57,7 @@ class TransactionService {
             $direction = 'DESC';
         }
         $queryString = http_build_query(['page' => $page, 'page_size' => $pageSize, 'order_by' => $orderBy, 'query' => $query, 'status' => $status, 'date_after' => $dateAfter, 'date_before' => $dateBefore, 'direction' => $direction]);
-        $results = (array) $this->api->get('transaction/?' . $queryString);
+        $results = $this->api->get('transaction/?' . $queryString);
 
         $transactions = [];
 
@@ -118,7 +118,7 @@ class TransactionService {
 
         }
 
-        $result = (array) $this->api->post('transaction/' . $transactionNumber . '/capture', $jsonBody);
+        $result = $this->api->post('transaction/' . $transactionNumber . '/capture', $jsonBody);
         $transaction = new DetailedTransaction(DataReader::arrayOr($result, 'data'));
         $transaction->setLinks(DataReader::arrayOr($result, 'links'));
 
@@ -134,7 +134,7 @@ class TransactionService {
         if (empty($transactionNumber)) {
             throw new ApiException('Transaction number must be provided');
         }
-        $result = (array) $this->api->post('transaction/' . $transactionNumber . '/cancel');
+        $result = $this->api->post('transaction/' . $transactionNumber . '/cancel');
         $transaction = new DetailedTransaction(DataReader::arrayOr($result, 'data'));
         $transaction->setLinks(DataReader::arrayOr($result, 'links'));
         return $transaction;
@@ -181,7 +181,7 @@ class TransactionService {
             ];
         }
 
-        $result = (array) $this->api->post('transaction/' . $transactionNumber . '/refund', $jsonBody);
+        $result = $this->api->post('transaction/' . $transactionNumber . '/refund', $jsonBody);
         $transaction = new DetailedTransaction(DataReader::arrayOr($result, 'data'));
         $transaction->setLinks(DataReader::arrayOr($result, 'links'));
 
