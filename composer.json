@@ -21,16 +21,16 @@
         "psr/http-factory": "^1.0",
         "psr/http-message": "^1.1 || ^2.0",
         "php-http/discovery": "^1.19",
-        "psr/log": "^2.0 || ^3.0"
+        "psr/log": "^2.0 || ^3.0",
+        "league/oauth2-client": "^2.9"
     },
     "require-dev": {
         "phpunit/phpunit": "^11.5",
-        "guzzlehttp/guzzle": "^7.0",
         "vimeo/psalm": "~6.17.0"
     },
     "suggest": {
-        "guzzlehttp/guzzle": "A PSR-18 HTTP client with PSR-17 factories; auto-discovered if installed, or inject it explicitly.",
-        "nyholm/psr7": "A lightweight PSR-7/PSR-17 implementation to pair with a PSR-18 client."
+        "guzzlehttp/guzzle": "A PSR-18 client + PSR-17 factories the SDK will auto-discover (currently also pulled in by league/oauth2-client 2.x).",
+        "nyholm/psr7": "A lightweight PSR-7/PSR-17 implementation to pair with a custom PSR-18 client."
     },
     "config": {
         "allow-plugins": {
