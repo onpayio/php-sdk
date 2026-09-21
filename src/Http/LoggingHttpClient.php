@@ -89,8 +89,4 @@ final class LoggingHttpClient implements RecordingHttpClientInterface {
     public function getLastResponse(): ?ResponseInterface {
         return $this->inner->getLastResponse();
     }
-
-    public function getInnerClient(): RecordingHttpClientInterface {
-        return $this->inner;
-    }
 }

@@ -8,12 +8,12 @@ final class Response {
     /**
      * @var int|null $statusCode
      */
-    protected ?int $statusCode = null;
+    private ?int $statusCode = null;
 
     /**
      * @var string|null $body
      */
-    protected ?string $body = null;
+    private ?string $body = null;
 
     /**
      * @return int|null

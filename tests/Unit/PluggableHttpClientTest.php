@@ -47,7 +47,7 @@ class PluggableHttpClientTest extends TestCase {
         $this->assertInstanceOf(LoggingHttpClient::class, $httpClient);
 
         // The transport is wrapped in the PSR-3 decorator; unwrap it to assert on the transport tier.
-        return $httpClient->getInnerClient();
+        return (new \ReflectionProperty(LoggingHttpClient::class, 'inner'))->getValue($httpClient);
     }
 
     public function testInjectedPsr18ClientBuildsAndSendsRequest(): void {

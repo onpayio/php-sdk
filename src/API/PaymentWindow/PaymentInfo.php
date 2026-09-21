@@ -23,49 +23,49 @@ final class PaymentInfo {
     /**
      * @var array<string, string>
      */
-    protected array $availableFields;
-    protected ?string $account_id = null;
-    protected ?string $account_date_created = null;
-    protected ?string $account_date_change = null;
-    protected ?string $account_date_password_change = null;
-    protected ?string $account_purchases = null;
-    protected ?string $account_attempts = null;
-    protected ?string $account_shipping_first_use_date = null;
-    protected ?string $account_shipping_identical_name = null;
-    protected ?string $account_suspicious = null;
-    protected ?string $account_attempts_day = null;
-    protected ?string $account_attempts_year = null;
-    protected ?string $address_identical_shipping = null;
-    protected ?string $billing_address_city = null;
-    protected ?string $billing_address_country = null;
-    protected ?string $billing_address_line1 = null;
-    protected ?string $billing_address_line2 = null;
-    protected ?string $billing_address_line3 = null;
-    protected ?string $billing_address_postal_code = null;
-    protected ?string $billing_address_state = null;
-    protected ?string $shipping_address_city = null;
-    protected ?string $shipping_address_country = null;
-    protected ?string $shipping_address_line1 = null;
-    protected ?string $shipping_address_line2 = null;
-    protected ?string $shipping_address_line3 = null;
-    protected ?string $shipping_address_postal_code = null;
-    protected ?string $shipping_address_state = null;
-    protected ?string $name = null;
-    protected ?string $email = null;
-    protected ?string $phone_home_cc = null;
-    protected ?string $phone_home_number = null;
-    protected ?string $phone_mobile_cc = null;
-    protected ?string $phone_mobile_number = null;
-    protected ?string $phone_work_cc = null;
-    protected ?string $phone_work_number = null;
-    protected ?string $delivery_email = null;
-    protected ?string $delivery_time_frame = null;
-    protected ?string $gift_card_amount = null;
-    protected ?string $gift_card_count = null;
-    protected ?string $preorder = null;
-    protected ?string $preorder_date = null;
-    protected ?string $reorder = null;
-    protected ?string $shipping_method = null;
+    private array $availableFields;
+    private ?string $account_id = null;
+    private ?string $account_date_created = null;
+    private ?string $account_date_change = null;
+    private ?string $account_date_password_change = null;
+    private ?string $account_purchases = null;
+    private ?string $account_attempts = null;
+    private ?string $account_shipping_first_use_date = null;
+    private ?string $account_shipping_identical_name = null;
+    private ?string $account_suspicious = null;
+    private ?string $account_attempts_day = null;
+    private ?string $account_attempts_year = null;
+    private ?string $address_identical_shipping = null;
+    private ?string $billing_address_city = null;
+    private ?string $billing_address_country = null;
+    private ?string $billing_address_line1 = null;
+    private ?string $billing_address_line2 = null;
+    private ?string $billing_address_line3 = null;
+    private ?string $billing_address_postal_code = null;
+    private ?string $billing_address_state = null;
+    private ?string $shipping_address_city = null;
+    private ?string $shipping_address_country = null;
+    private ?string $shipping_address_line1 = null;
+    private ?string $shipping_address_line2 = null;
+    private ?string $shipping_address_line3 = null;
+    private ?string $shipping_address_postal_code = null;
+    private ?string $shipping_address_state = null;
+    private ?string $name = null;
+    private ?string $email = null;
+    private ?string $phone_home_cc = null;
+    private ?string $phone_home_number = null;
+    private ?string $phone_mobile_cc = null;
+    private ?string $phone_mobile_number = null;
+    private ?string $phone_work_cc = null;
+    private ?string $phone_work_number = null;
+    private ?string $delivery_email = null;
+    private ?string $delivery_time_frame = null;
+    private ?string $gift_card_amount = null;
+    private ?string $gift_card_count = null;
+    private ?string $preorder = null;
+    private ?string $preorder_date = null;
+    private ?string $reorder = null;
+    private ?string $shipping_method = null;
 
     public function __construct() {
         $this->availableFields = [
@@ -118,7 +118,7 @@ final class PaymentInfo {
      * @param string $name
      * @param string|null $value
      */
-    protected function validateField($name, $value): bool {
+    private function validateField($name, $value): bool {
         if (isset($this->availableFields[$name])) {
             if (null === $value) {
                 return true;

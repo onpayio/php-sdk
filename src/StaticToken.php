@@ -21,7 +21,7 @@ use OnPay\API\Exception\TokenException;
  */
 
 final class StaticToken implements TokenStorageInterface {
-    protected string $staticToken;
+    private string $staticToken;
 
     /**
      * StaticToken constructor.

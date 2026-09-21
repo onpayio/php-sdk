@@ -8,22 +8,22 @@ final class Request {
     /**
      * @var string|null $method
      */
-    protected ?string $method = null;
+    private ?string $method = null;
 
     /**
      * @var string|null $uri
      */
-    protected ?string $uri = null;
+    private ?string $uri = null;
 
     /**
      * @var array $headers
      */
-    protected array $headers = [];
+    private array $headers = [];
 
     /**
      * @var string|null $body
      */
-    protected ?string $body = '';
+    private ?string $body = '';
 
     /**
      * @return string|null

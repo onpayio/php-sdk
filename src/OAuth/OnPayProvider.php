@@ -37,11 +37,11 @@ final class OnPayProvider extends AbstractProvider {
 
     const DEFAULT_SCOPE = 'full';
 
-    protected string $urlAuthorize;
+    private string $urlAuthorize;
 
-    protected string $urlAccessToken;
+    private string $urlAccessToken;
 
-    protected bool $pkceEnabled = false;
+    private bool $pkceEnabled = false;
 
     /**
      * @param array<string,mixed> $options
