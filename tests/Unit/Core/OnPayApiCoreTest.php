@@ -76,6 +76,33 @@ class OnPayApiCoreTest extends ApiTestCase
         $this->assertSame(json_encode($body, JSON_UNESCAPED_SLASHES), $lastResponse->getBody());
     }
 
+    public function testSuccessfulRefreshThenApiCallCapturesTheApiRequestNotTheRefresh(): void
+    {
+        // An expired token triggers a refresh (POST /oauth2/access_token) inside the same
+        // recording transport, immediately before the API GET. The refresh records first and
+        // the API call overwrites it, so the debug DTO must reflect the API request — not the
+        // token exchange. This pins the ordering across the TokenManager/ApiClient seam.
+        $this->http->willReturnJson([
+            'access_token' => 'freshly_issued_token',
+            'token_type' => 'Bearer',
+            'expires_in' => 3600,
+            'refresh_token' => 'fresh_refresh_token',
+            'scope' => 'full',
+        ], 200, 'POST', 'oauth2/access_token');
+        $this->http->willReturnJson(['data' => ['pong' => 'ok']], 200, 'GET', 'ping');
+
+        $api = $this->createApi([], $this->expiredTokenStorage());
+
+        $result = $api->ping();
+
+        $this->assertSame(['data' => ['pong' => 'ok']], $result);
+
+        $lastRequest = $api->getLastHttpRequest();
+        $this->assertInstanceOf(HttpRequest::class, $lastRequest);
+        $this->assertSame('GET', $lastRequest->getMethod());
+        $this->assertSame(self::BASE_URI . '/v1/ping', $lastRequest->getUri());
+    }
+
     // ---------------------------------------------------------------------
     // post() request construction + body encoding
     // ---------------------------------------------------------------------

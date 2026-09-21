@@ -12,20 +12,20 @@ use OnPay\API\Transaction\DetailedTransaction;
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Util\DataReader;
 use OnPay\API\Util\Pagination;
-use OnPay\OnPayAPI;
+use OnPay\Http\ApiClient;
 
 class SubscriptionService
 {
-    private OnPayAPI $api;
+    private ApiClient $api;
 
     /**
      * @internal Should never be called outside library
      * SubscriptionService constructor.
-     * @param OnPayAPI $api
+     * @param ApiClient $apiClient
      */
-    public function __construct(OnPayAPI $api)
+    public function __construct(ApiClient $apiClient)
     {
-        $this->api = $api;
+        $this->api = $apiClient;
     }
 
     /**

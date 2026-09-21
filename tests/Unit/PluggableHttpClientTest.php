@@ -42,7 +42,8 @@ class PluggableHttpClientTest extends TestCase {
 
     private function getHttpClient(OnPayAPI $api): object {
         // Private members are reflection-accessible without setAccessible() on PHP 8.1+.
-        $httpClient = (new \ReflectionProperty(OnPayAPI::class, 'httpClient'))->getValue($api);
+        $apiClient = (new \ReflectionProperty(OnPayAPI::class, 'apiClient'))->getValue($api);
+        $httpClient = (new \ReflectionProperty(\OnPay\Http\ApiClient::class, 'httpClient'))->getValue($apiClient);
         $this->assertInstanceOf(LoggingHttpClient::class, $httpClient);
 
         // The transport is wrapped in the PSR-3 decorator; unwrap it to assert on the transport tier.

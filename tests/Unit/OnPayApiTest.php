@@ -123,8 +123,9 @@ class OnPayApiTest extends TestCase {
 
     private function getAuthorizationEndpoint(OnPayAPI $api): string {
         // Private members are reflection-accessible without setAccessible() on PHP 8.1+.
+        $tokenManager = (new \ReflectionProperty(OnPayAPI::class, 'tokenManager'))->getValue($api);
         /** @var OnPayProvider $provider */
-        $provider = (new \ReflectionProperty(OnPayAPI::class, 'oauth2Provider'))->getValue($api);
+        $provider = (new \ReflectionProperty(\OnPay\Auth\TokenManager::class, 'oauth2Provider'))->getValue($tokenManager);
         return $provider->getBaseAuthorizationUrl();
     }
 }

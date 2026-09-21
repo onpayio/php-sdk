@@ -113,6 +113,43 @@ under PHP's default error handler, but **a project whose `set_error_handler` esc
 finishing authorization — wire up an `AuthStateStorageInterface` to resolve it (and gain
 the CSRF/PKCE protection).
 
+### `PaymentService` is constructed only via the facade
+
+`OnPayAPI` no longer builds and sends requests itself; that work moved to internal
+collaborators (`OnPay\Http\ApiClient`, `OnPay\Auth\TokenManager`). The public facade
+surface is unchanged, but the API service classes are now constructed with an
+`OnPay\Http\ApiClient` instead of `OnPayAPI`.
+
+Only `OnPay\API\PaymentService` is affected in practice: in 1.x its constructor was the
+one service constructor not marked `@internal`, and the 1.x README showed it being
+constructed directly. It is now `@internal` and takes an `ApiClient`. Construct it
+through the facade, not with `new`:
+
+```php
+// Before (1.x)
+$payment = new \OnPay\API\PaymentService($onPayApi);
+// After (2.0)
+$payment = $onPayApi->payment();
+```
+
+`TransactionService`, `SubscriptionService` and `GatewayService` were already
+`@internal` in 1.x, so their equivalent change breaks no supported usage. All four
+service classes and their methods remain part of the public API — only constructing
+them directly is unsupported.
+
+### `OnPayAPI` is `final`
+
+`OnPayAPI` can no longer be extended. A class declared `extends OnPayAPI` fatals at
+load. Its public methods are the supported surface; wrap or compose the facade instead
+of subclassing it.
+
+This formalises what the refactoring above already did: the `protected` members a 1.x
+subclass could have reached (`$tokenStorage`, `$oauth2Provider`, `$client`, `$httpClient`,
+`$scope`, `$userId`, `$platform`, `$request`, `$response` and the `getClient()` method)
+no longer exist on `OnPayAPI`. The token and HTTP internals now live in the `@internal`
+`OnPay\Auth\TokenManager` and `OnPay\Http\ApiClient` classes and are not part of the
+public API.
+
 <!--
 Template for a new entry:
 
