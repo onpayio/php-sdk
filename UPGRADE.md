@@ -150,6 +150,46 @@ no longer exist on `OnPayAPI`. The token and HTTP internals now live in the `@in
 `OnPay\Auth\TokenManager` and `OnPay\Http\ApiClient` classes and are not part of the
 public API.
 
+### Payment methods are a PHP enum
+
+The payment-method identifiers were defined twice — `PaymentWindow::METHOD_*` and the
+`OnPay\API\Util\PaymentMethods\Enums\Methods` class of string constants. Both are now
+defined in terms of a real enum, `OnPay\API\Enum\PaymentMethod`, which is the single
+source of truth:
+
+```php
+// Before (1.x, still works but deprecated)
+$paymentWindow->setMethod(\OnPay\API\PaymentWindow::METHOD_CARD);
+$paymentWindow->setMethod(\OnPay\API\Util\PaymentMethods\Enums\Methods::CARD);
+// After (2.0)
+$paymentWindow->setMethod(\OnPay\API\Enum\PaymentMethod::CARD);
+```
+
+Nothing breaks for callers:
+
+- Both old constant sources are kept and `@deprecated`, with exactly their current values
+  (`PaymentWindow::METHOD_CARD === PaymentMethod::CARD->value === 'card'`). Your IDE and
+  static analyser will flag them; the values on the wire are identical.
+- `PaymentWindow::setMethod()`, `PaymentMethods::getCurrenciesByMethod()` and
+  `Currency::isPaymentMethodAvailable()` now take `string|PaymentMethod`. A method passed as
+  a string is **not** validated against the enum, because the gateway can offer a method
+  before this SDK lists it — an unknown identifier is passed through exactly as in 1.x.
+- `PaymentWindow::getMethod()` still returns the raw `?string` sent to the gateway, not an
+  enum case.
+
+The one genuine break is for code that *implements* `PaymentMethodInterface` itself: the
+interface gained `getMethod(): PaymentMethod` alongside the unchanged `getName(): string`,
+so such an implementation must add the method. The SDK's own (`@internal`) method classes
+implement it, and their `METHOD_NAME` constants are deprecated in favour of `getMethod()`.
+
+Currencies and languages were reviewed for the same duplication and deliberately left
+alone. `Util\PaymentMethods\Enums\CurrencyCodes` is not a duplicate definition: it only
+names the keys of `Util\Currencies::CURRENCIES`, which stays the single source of supported
+currencies, and it carries the `ALL_CURRENCY_CODES` sentinel, which is not a currency — so
+it is not an enum and keeps its constants. The SDK has no language constants at all
+(`PaymentWindow::setLanguage()` takes a free-form string), so there was nothing to
+consolidate.
+
 <!--
 Template for a new entry:
 

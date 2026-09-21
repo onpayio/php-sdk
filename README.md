@@ -47,7 +47,7 @@ $paymentWindow->setDesign("DesignName");
 // Force 3D secure
 $paymentWindow->setSecureEnabled(true);
 // Set payment method to be card
-$paymentWindow->setMethod(\OnPay\API\PaymentWindow::METHOD_CARD);
+$paymentWindow->setMethod(\OnPay\API\Enum\PaymentMethod::CARD);
 // Enable testmode
 $paymentWindow->setTestMode(true);
 $paymentWindow->setLanguage("en");
@@ -196,7 +196,7 @@ if($onPayAPI->isAuthorized()) {
     $paymentWindow->setDeclineUrl('https://yourwebsite/declineurl.php');
     $paymentWindow->setCallbackUrl('https://yourwebsite/callbackurl.php');
     $paymentWindow->setType('subscription');
-    $paymentWindow->setMethod(OnPay\API\Util\PaymentMethods\Enums\Methods::CARD);
+    $paymentWindow->setMethod(OnPay\API\Enum\PaymentMethod::CARD);
     $paymentWindow->setLanguage('da');
     $paymentWindow->setDesign('my_window');
     $paymentWindow->setExpiration(86400);
