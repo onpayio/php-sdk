@@ -53,6 +53,11 @@ class ExceptionHierarchyTest extends TestCase
         self::assertTrue(is_subclass_of(OnPayException::class, \Exception::class));
     }
 
+    public function testTheCommonBaseCannotBeThrownDirectly(): void
+    {
+        self::assertTrue((new \ReflectionClass(OnPayException::class))->isAbstract());
+    }
+
     public function testASubclassIsCatchableAsTheCommonBaseAndAsException(): void
     {
         $thrown = new TokenException('boom');
