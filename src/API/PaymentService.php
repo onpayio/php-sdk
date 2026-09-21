@@ -7,7 +7,7 @@ namespace OnPay\API;
 use OnPay\API\Exception\InvalidFormatException;
 use OnPay\API\Exception\MissingDataException;
 use OnPay\API\Payment\SimplePayment;
-use OnPay\OnPayAPI;
+use OnPay\Http\ApiClient;
 
 class PaymentService {
 
@@ -23,11 +23,16 @@ class PaymentService {
      * @var PaymentWindow|null Holds the data for this payment request
      */
     private ?PaymentWindow $paymentWindow = null;
-    private OnPayAPI $api;
+    private ApiClient $api;
 
     const CREATE_PAYMENT_API = 'payment/create';
 
-    public function __construct(OnPayAPI $onPayAPI) {
+    /**
+     * @internal Should never be called outside the library
+     * PaymentService constructor.
+     * @param ApiClient $apiClient
+     */
+    public function __construct(ApiClient $apiClient) {
         //Specifically required fields for the create payment endpoint
         $this->requiredFields = [
             "currency",
@@ -35,7 +40,7 @@ class PaymentService {
             "reference",
             "website",
         ];
-        $this->api = $onPayAPI;
+        $this->api = $apiClient;
     }
 
     /**

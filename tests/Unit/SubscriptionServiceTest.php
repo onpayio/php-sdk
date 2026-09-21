@@ -16,7 +16,7 @@ class SubscriptionServiceTest extends TestCase {
     private $service;
 
     protected function setUp(): void {
-        $this->apiMock = $this->createMock(\OnPay\OnPayAPI::class);
+        $this->apiMock = $this->createMock(\OnPay\Http\ApiClient::class);
         $this->service = new SubscriptionService($this->apiMock);
     }
 

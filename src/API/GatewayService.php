@@ -10,20 +10,20 @@ use OnPay\API\Gateway\PaymentWindowDesignCollection;
 use OnPay\API\Gateway\PaymentWindowIntegrationSettings;
 use OnPay\API\Gateway\SimplePaymentWindowDesign;
 use OnPay\API\Util\DataReader;
-use OnPay\OnPayAPI;
+use OnPay\Http\ApiClient;
 
 class GatewayService
 {
 
-    private OnPayAPI $api;
+    private ApiClient $api;
 
     /**
      * @internal Should never be called outside the library
      * GatewayService constructor.
-     * @param OnPayAPI $onPayAPI
+     * @param ApiClient $apiClient
      */
-    public function __construct(OnPayAPI $onPayAPI) {
-        $this->api = $onPayAPI;
+    public function __construct(ApiClient $apiClient) {
+        $this->api = $apiClient;
     }
 
     /**

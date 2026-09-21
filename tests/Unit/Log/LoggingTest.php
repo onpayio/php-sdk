@@ -33,9 +33,10 @@ class LoggingTest extends ApiTestCase
         $api = $this->createApi();
 
         $this->assertSame($this->logger, (new \ReflectionProperty(OnPayAPI::class, 'logger'))->getValue($api));
+        $apiClient = (new \ReflectionProperty(OnPayAPI::class, 'apiClient'))->getValue($api);
         $this->assertInstanceOf(
             LoggingHttpClient::class,
-            (new \ReflectionProperty(OnPayAPI::class, 'httpClient'))->getValue($api)
+            (new \ReflectionProperty(\OnPay\Http\ApiClient::class, 'httpClient'))->getValue($apiClient)
         );
     }
 

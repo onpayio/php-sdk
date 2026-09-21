@@ -10,19 +10,19 @@ use OnPay\API\Transaction\SimpleTransaction;
 use OnPay\API\Transaction\TransactionCollection;
 use OnPay\API\Util\DataReader;
 use OnPay\API\Util\Pagination;
-use OnPay\OnPayAPI;
+use OnPay\Http\ApiClient;
 
 class TransactionService {
 
-    private OnPayAPI $api;
+    private ApiClient $api;
 
     /**
      * @internal Should never be called outside the library
      * TransactionService constructor.
-     * @param OnPayAPI $onPayAPI
+     * @param ApiClient $apiClient
      */
-    public function __construct(OnPayAPI $onPayAPI) {
-        $this->api = $onPayAPI;
+    public function __construct(ApiClient $apiClient) {
+        $this->api = $apiClient;
     }
 
     /**
