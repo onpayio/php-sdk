@@ -211,7 +211,7 @@ class PaymentWindow
 
     /**
      * @param bool $secureEnabled
-     * @deprecated
+     * @deprecated Use {@see PaymentWindow::set3DSecure()} instead.
      */
     public function setSecureEnabled(bool $secureEnabled): void
     {
@@ -220,7 +220,7 @@ class PaymentWindow
 
     /**
      * @return bool
-     * @deprecated
+     * @deprecated Use {@see PaymentWindow::is3DSecure()} instead.
      */
     public function hasSecureEnabled() {
         return $this->is3DSecure();
