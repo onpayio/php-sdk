@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OnPay\API\Util\PaymentMethods\Methods;
 
+use OnPay\API\Enum\PaymentMethod;
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Util\Currencies;
 use OnPay\API\Util\Currency;
@@ -19,6 +20,9 @@ abstract class PaymentMethodAbstract implements PaymentMethodInterface {
      */
     const CURRENCIES = [];
     /**
+     * @deprecated Use {@see PaymentMethodAbstract::getMethod()} or the {@see PaymentMethod}
+     *             enum instead. Every concrete method class still declares this constant
+     *             with its current value.
      * @var string
      */
     const METHOD_NAME = '';
@@ -59,7 +63,7 @@ abstract class PaymentMethodAbstract implements PaymentMethodInterface {
      * @internal Internal use only
      */
     public function getName(): string {
-        return static::METHOD_NAME;
+        return $this->getMethod()->value;
     }
 
 }

@@ -2,6 +2,8 @@
 
 namespace Tests\Unit\PaymentWindow;
 
+use OnPay\API\Enum\DeliveryDisabled;
+use OnPay\API\Enum\PaymentMethod;
 use OnPay\API\Exception\InvalidCartException;
 use OnPay\API\PaymentWindow;
 use OnPay\API\PaymentWindow\Cart;
@@ -152,6 +154,68 @@ class PaymentWindowTest extends TestCase
 
         $window->setSurchargeVatRate(25);
         $this->assertSame(25, $window->getSurchargeVatRate());
+    }
+
+    public function testSetMethodAcceptsAStringOrAPaymentMethodEnum(): void
+    {
+        $window = new PaymentWindow();
+
+        // The enum is unwrapped to its wire value; getMethod() keeps returning the raw string.
+        $window->setMethod(PaymentMethod::MOBILEPAY);
+        $this->assertSame('mobilepay', $window->getMethod());
+
+        $window->setMethod('mobilepay');
+        $this->assertSame('mobilepay', $window->getMethod());
+    }
+
+    public function testStringAndEnumMethodProduceIdenticalFormFields(): void
+    {
+        $fromString = $this->makeWindow();
+        $fromString->setMethod('card');
+
+        $fromEnum = $this->makeWindow();
+        $fromEnum->setMethod(PaymentMethod::CARD);
+
+        // Identical down to the HMAC, so switching to the enum cannot change the signature.
+        $this->assertSame($fromString->getFormFields(), $fromEnum->getFormFields());
+        $this->assertSame('card', $fromEnum->getFormFields()['onpay_method']);
+    }
+
+    public function testSetMethodAcceptsAMethodTheSdkDoesNotKnow(): void
+    {
+        // The gateway can add a method before the SDK does, so arbitrary strings must pass
+        // through unvalidated and reach the window as-is.
+        $window = $this->makeWindow();
+        $window->setMethod('some-future-method');
+
+        $this->assertSame('some-future-method', $window->getMethod());
+        $this->assertSame('some-future-method', $window->getFormFields()['onpay_method']);
+    }
+
+    public function testSetDeliveryDisabledAcceptsAStringAnEnumOrNull(): void
+    {
+        $window = new PaymentWindow();
+
+        $window->setDeliveryDisabled(DeliveryDisabled::NOT_PHYSICAL);
+        $this->assertSame('not-physical', $window->getDeliveryDisabled());
+
+        $window->setDeliveryDisabled('not-physical');
+        $this->assertSame('not-physical', $window->getDeliveryDisabled());
+
+        $window->setDeliveryDisabled(null);
+        $this->assertNull($window->getDeliveryDisabled());
+    }
+
+    public function testStringAndEnumDeliveryDisabledProduceIdenticalFormFields(): void
+    {
+        $fromString = $this->makeWindow();
+        $fromString->setDeliveryDisabled('store-pick-up');
+
+        $fromEnum = $this->makeWindow();
+        $fromEnum->setDeliveryDisabled(DeliveryDisabled::STORE_PICK_UP);
+
+        $this->assertSame($fromString->getFormFields(), $fromEnum->getFormFields());
+        $this->assertSame('store-pick-up', $fromEnum->getFormFields()['onpay_delivery_disabled']);
     }
 
     public function testSurchargeEnabledFlag(): void

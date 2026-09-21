@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Util;
 
+use OnPay\API\Enum\PaymentMethod;
 use OnPay\API\Util\Currency;
 use OnPay\API\Util\PaymentMethods\Enums\CurrencyCodes;
 use OnPay\API\Util\PaymentMethods\Enums\Methods;
@@ -57,6 +58,16 @@ class PaymentMethodsTest extends TestCase
         $this->assertContainsOnlyInstancesOf(Currency::class, $currencies);
         $alpha3 = array_map(static fn (Currency $c) => $c->getAlpha3(), $currencies);
         $this->assertSame(['DKK', 'NOK', 'SEK', 'GBP', 'USD', 'EUR'], $alpha3);
+    }
+
+    public function testGetCurrenciesByMethodAcceptsAPaymentMethodEnum(): void
+    {
+        $paymentMethods = new PaymentMethods();
+
+        $this->assertEquals(
+            $paymentMethods->getCurrenciesByMethod('mobilepay'),
+            $paymentMethods->getCurrenciesByMethod(PaymentMethod::MOBILEPAY)
+        );
     }
 
     public function testGetCurrenciesByMethodReturnsEmptyForUnknownMethod(): void

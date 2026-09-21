@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OnPay\API\Util\PaymentMethods;
 
+use OnPay\API\Enum\PaymentMethod;
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Util\Currency;
 use OnPay\API\Util\PaymentMethods\Methods\Anyday;
@@ -52,14 +53,17 @@ class PaymentMethods {
     }
 
     /**
-     * @param string $method
+     * @param string|PaymentMethod $method A {@see PaymentMethod} case, or a raw method
+     *                                     identifier. An unknown identifier yields an
+     *                                     empty array rather than an error.
      * @return Currency[]
      */
-    public function getCurrenciesByMethod(string $method): array {
+    public function getCurrenciesByMethod(string|PaymentMethod $method): array {
         $currencies = [];
+        $methodName = $method instanceof PaymentMethod ? $method->value : $method;
 
         foreach ($this->paymentMethods as $paymentMethod) {
-            if (strtolower($paymentMethod->getName()) === strtolower($method)) {
+            if (strtolower($paymentMethod->getName()) === strtolower($methodName)) {
                 $currencies = $paymentMethod->getCurrencies();
                 break;
             }
