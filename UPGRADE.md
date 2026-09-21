@@ -207,6 +207,50 @@ The five `PaymentWindow::DELIVERY_DISABLED_*` constants are kept and `@deprecate
 their current values, a string is still passed through unvalidated, `null` still clears the
 field, and `getDeliveryDisabled()` still returns `?string`. Nothing breaks.
 
+### Inconsistently named `PaymentWindow` methods have properly named replacements
+
+Three spots on `PaymentWindow` did not match the rest of its method surface. All three
+keep working — the old names are now `@deprecated` aliases — but new code should use the
+replacements:
+
+| Deprecated | Use instead |
+| --- | --- |
+| `isSurcharge_enabled()` | `isSurchargeEnabled(): ?bool` |
+| `setTestMode($mixed)` | `setTestModeEnabled(bool $enabled): void` |
+| `getTestMode()` | `isTestModeEnabled(): bool` |
+| `setSecureEnabled()` | `set3DSecure()` |
+| `hasSecureEnabled()` | `is3DSecure()` |
+
+`isSurcharge_enabled()` was the SDK's only method mixing snake_case and camelCase; the
+setter `setSurchargeEnabled()` was already correct. The new getter returns the same
+`?bool`, including `null` when the flag was never set.
+
+`setSecureEnabled()`/`hasSecureEnabled()` have been deprecated since 1.x and are unchanged
+here — only their docblocks now name the replacement.
+
+Test mode was the SDK's one untyped setter (`setTestMode()` accepted anything and
+`getTestMode()` returned `int|bool|string|null`), so the typed pair is what you want:
+
+```php
+// Before (1.x, still works but deprecated)
+$paymentWindow->setTestMode(true);
+// After (2.0)
+$paymentWindow->setTestModeEnabled(true);
+```
+
+**One behavioural difference to be aware of when you migrate the `false` case.**
+`setTestModeEnabled(false)` stores `null`, which leaves `onpay_testmode` out of
+`getFormFields()` entirely — the same way `set3DSecure(false)` clears its field. The old
+`setTestMode(false)` instead sent `onpay_testmode=0`. Both mean "test mode off", and the
+create-payment API call sends `testmode: false` either way, but the payment window's
+signed field set differs, so the HMAC is not the same. Switching
+`setTestMode(true)` → `setTestModeEnabled(true)` *is* HMAC-neutral: `1` and `true` both
+render as `1` in the signed query string.
+
+`isTestModeEnabled()` applies the same `boolval()` the API call path already applied, so it
+also reads a value stored through the deprecated setter — `setTestMode('yes')` then
+`isTestModeEnabled() === true`.
+
 <!--
 Template for a new entry:
 

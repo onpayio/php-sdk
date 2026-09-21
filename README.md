@@ -45,11 +45,11 @@ $paymentWindow->setWebsite('https://example.com/');
 $paymentWindow->setType("payment");
 $paymentWindow->setDesign("DesignName");
 // Force 3D secure
-$paymentWindow->setSecureEnabled(true);
+$paymentWindow->set3DSecure(true);
 // Set payment method to be card
 $paymentWindow->setMethod(\OnPay\API\Enum\PaymentMethod::CARD);
 // Enable testmode
-$paymentWindow->setTestMode(true);
+$paymentWindow->setTestModeEnabled(true);
 $paymentWindow->setLanguage("en");
 
 // Add additional info
@@ -200,7 +200,7 @@ if($onPayAPI->isAuthorized()) {
     $paymentWindow->setLanguage('da');
     $paymentWindow->setDesign('my_window');
     $paymentWindow->setExpiration(86400);
-    $paymentWindow->setTestMode(true);
+    $paymentWindow->setTestModeEnabled(true);
     
     // -- Optional Payment Info Fields -- //
     // see: https://onpay.io/docs/technical/api_v1.html#paymentinfo
