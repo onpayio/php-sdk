@@ -13,6 +13,8 @@ class InvalidCartException extends OnPayException {
     public array $errors = [];
 
     /**
+     * @internal Raised by the SDK; shall not be constructed outside the library.
+     *
      * @param string[] $errors
      */
     public function __construct(array $errors) {

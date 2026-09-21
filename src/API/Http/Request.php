@@ -33,6 +33,8 @@ class Request {
     }
 
     /**
+     * @internal Populated by the SDK; shall not be called outside the library.
+     *
      * @param string|null $method
      */
     public function setMethod(?string $method): void {
@@ -47,6 +49,8 @@ class Request {
     }
 
     /**
+     * @internal Populated by the SDK; shall not be called outside the library.
+     *
      * @param string|null $uri
      */
     public function setUri(?string $uri): void {
@@ -61,6 +65,8 @@ class Request {
     }
 
     /**
+     * @internal Populated by the SDK; shall not be called outside the library.
+     *
      * @param array $headers
      */
     public function setHeaders(array $headers): void {
@@ -75,6 +81,8 @@ class Request {
     }
 
     /**
+     * @internal Populated by the SDK; shall not be called outside the library.
+     *
      * @param string|null $body
      */
     public function setBody(?string $body): void {

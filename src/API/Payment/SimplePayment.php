@@ -17,6 +17,8 @@ class SimplePayment {
     private string $paymentLink;
 
     /**
+     * @internal Shall not be used outside the library
+     *
      * @param array $response
      *
      * @throws \OnPay\API\Exception\ApiException

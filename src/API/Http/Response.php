@@ -23,6 +23,8 @@ class Response {
     }
 
     /**
+     * @internal Populated by the SDK; shall not be called outside the library.
+     *
      * @param int|null $statusCode
      */
     public function setStatusCode(?int $statusCode): void {
@@ -37,6 +39,8 @@ class Response {
     }
 
     /**
+     * @internal Populated by the SDK; shall not be called outside the library.
+     *
      * @param string|null $body
      */
     public function setBody(?string $body): void {
