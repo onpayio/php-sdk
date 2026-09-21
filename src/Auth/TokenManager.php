@@ -122,11 +122,7 @@ class TokenManager {
      * @throws ConnectionException
      */
     private function exchangeAuthorizationCode(string $code): void {
-        try {
-            $token = $this->requestAccessToken('authorization_code', ['code' => $code], 'unable to obtain access_token');
-        } catch (ClientExceptionInterface $e) {
-            throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
-        }
+        $token = $this->requestAccessToken('authorization_code', ['code' => $code], 'unable to obtain access_token');
 
         $this->tokenStorage->storeAccessToken($token);
     }
@@ -137,7 +133,7 @@ class TokenManager {
      *
      * @param array<string,mixed> $options headers/body for the request
      * @throws TokenException when there is no usable token
-     * @throws ClientExceptionInterface on a transport failure while refreshing
+     * @throws ConnectionException on a transport failure while refreshing
      */
     public function authenticateRequest(string $method, string $absoluteUrl, array $options): RequestInterface {
         $token = $this->getValidAccessToken();
@@ -153,7 +149,7 @@ class TokenManager {
      * no usable token (nothing stored, or expired without a refresh token).
      *
      * @throws TokenException
-     * @throws ClientExceptionInterface
+     * @throws ConnectionException
      */
     private function getValidAccessToken(): ?AccessTokenInterface {
         $token = $this->tokenStorage->getAccessToken();
@@ -179,19 +175,24 @@ class TokenManager {
     }
 
     /**
-     * Calls the token endpoint, translating league's failures into the SDK's
-     * TokenException. Transport failures (ClientExceptionInterface) pass through.
+     * Calls the token endpoint — the single choke point for both the authorization-code
+     * exchange and the refresh grant — and maps every failure to the SDK's exception
+     * tree: league's protocol/parse failures become a {@see TokenException}, and a
+     * transport failure ({@see ClientExceptionInterface}) becomes a {@see ConnectionException},
+     * matching the mapping {@see \OnPay\Http\ApiClient} applies to the API call path.
      *
      * @param string|AbstractGrant $grant
      * @param array<string,mixed> $options
      * @throws TokenException
-     * @throws ClientExceptionInterface
+     * @throws ConnectionException
      */
     private function requestAccessToken($grant, array $options, string $failure): AccessTokenInterface {
         try {
             return $this->oauth2Provider->getAccessToken($grant, $options);
         } catch (IdentityProviderException | \UnexpectedValueException $e) {
             throw new TokenException($failure . ': ' . $e->getMessage(), $e->getCode(), $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
         }
     }
 

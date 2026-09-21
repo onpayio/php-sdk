@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OnPay\API\Exception;
 
-class ConnectionException extends \Exception
+class ConnectionException extends OnPayException
 {
 
 }
