@@ -239,18 +239,8 @@ $paymentWindow->setTestMode(true);
 $paymentWindow->setTestModeEnabled(true);
 ```
 
-**One behavioural difference to be aware of when you migrate the `false` case.**
-`setTestModeEnabled(false)` stores `null`, which leaves `onpay_testmode` out of
-`getFormFields()` entirely — the same way `set3DSecure(false)` clears its field. The old
-`setTestMode(false)` instead sent `onpay_testmode=0`. Both mean "test mode off", and the
-create-payment API call sends `testmode: false` either way, but the payment window's
-signed field set differs, so the HMAC is not the same. Switching
-`setTestMode(true)` → `setTestModeEnabled(true)` *is* HMAC-neutral: `1` and `true` both
-render as `1` in the signed query string.
-
-`isTestModeEnabled()` applies the same `boolval()` that
-`PaymentService::buildCreatePaymentData()` already applied, so it also reads a value stored
-through the deprecated setter — `setTestMode('yes')` then `isTestModeEnabled() === true`.
+`isTestModeEnabled()` also reads a value stored through the deprecated setter —
+`setTestMode('yes')` then `isTestModeEnabled() === true`.
 
 <!--
 Template for a new entry:
