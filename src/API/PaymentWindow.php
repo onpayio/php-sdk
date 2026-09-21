@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OnPay\API;
 
+use OnPay\API\Enum\PaymentMethod;
 use OnPay\API\PaymentWindow\Cart;
 use OnPay\API\PaymentWindow\PaymentInfo;
 use OnPay\OnPayAPI;
@@ -13,17 +14,28 @@ class PaymentWindow
     const SDK_VERSION = OnPayAPI::SDK_VERSION;
     const SDK_VERSION_STRING = 'php-sdk' . '/' . OnPayAPI::SDK_VERSION;
 
-    const METHOD_CARD = 'card';
-    const METHOD_MOBILEPAY = 'mobilepay';
-    const METHOD_MOBILEPAY_CHECKOUT = 'mobilepay_checkout';
-    const METHOD_VIABILL = 'viabill';
-    const METHOD_ANYDAY = 'anyday';
-    const METHOD_APPLEPAY = 'applepay';
-    const METHOD_GOOGLEPAY = 'googlepay';
-    const METHOD_VIPPS = 'vipps';
-    const METHOD_SWISH = 'swish';
-    const METHOD_PAYPAL = 'paypal';
-    const METHOD_KLARNA = 'klarna';
+    /** @deprecated Use {@see PaymentMethod::CARD} instead. */
+    const METHOD_CARD = PaymentMethod::CARD->value;
+    /** @deprecated Use {@see PaymentMethod::MOBILEPAY} instead. */
+    const METHOD_MOBILEPAY = PaymentMethod::MOBILEPAY->value;
+    /** @deprecated Use {@see PaymentMethod::MOBILEPAY_CHECKOUT} instead. */
+    const METHOD_MOBILEPAY_CHECKOUT = PaymentMethod::MOBILEPAY_CHECKOUT->value;
+    /** @deprecated Use {@see PaymentMethod::VIABILL} instead. */
+    const METHOD_VIABILL = PaymentMethod::VIABILL->value;
+    /** @deprecated Use {@see PaymentMethod::ANYDAY} instead. */
+    const METHOD_ANYDAY = PaymentMethod::ANYDAY->value;
+    /** @deprecated Use {@see PaymentMethod::APPLE_PAY} instead. */
+    const METHOD_APPLEPAY = PaymentMethod::APPLE_PAY->value;
+    /** @deprecated Use {@see PaymentMethod::GOOGLE_PAY} instead. */
+    const METHOD_GOOGLEPAY = PaymentMethod::GOOGLE_PAY->value;
+    /** @deprecated Use {@see PaymentMethod::VIPPS} instead. */
+    const METHOD_VIPPS = PaymentMethod::VIPPS->value;
+    /** @deprecated Use {@see PaymentMethod::SWISH} instead. */
+    const METHOD_SWISH = PaymentMethod::SWISH->value;
+    /** @deprecated Use {@see PaymentMethod::PAYPAL} instead. */
+    const METHOD_PAYPAL = PaymentMethod::PAYPAL->value;
+    /** @deprecated Use {@see PaymentMethod::KLARNA} instead. */
+    const METHOD_KLARNA = PaymentMethod::KLARNA->value;
 
     const DELIVERY_DISABLED_NO_REASON = 'no-reason';
     const DELIVERY_DISABLED_NOT_PHYSICAL = 'not-physical';
@@ -169,14 +181,22 @@ class PaymentWindow
     }
 
     /**
-     * @param string $method
+     * Sets the payment method the window opens with.
+     *
+     * Accepts a {@see PaymentMethod} case or the raw identifier as a string. Strings are
+     * passed through unvalidated, so a method the gateway supports but this SDK does not
+     * know yet still works.
+     *
+     * @param string|PaymentMethod $method
      */
-    public function setMethod(string $method): void
+    public function setMethod(string|PaymentMethod $method): void
     {
-        $this->method = $method;
+        $this->method = $method instanceof PaymentMethod ? $method->value : $method;
     }
 
     /**
+     * Returns the raw method identifier as it is sent to the gateway.
+     *
      * @return string|null
      */
     public function getMethod() {

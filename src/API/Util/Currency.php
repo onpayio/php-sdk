@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OnPay\API\Util;
 
+use OnPay\API\Enum\PaymentMethod;
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Util\PaymentMethods\Methods\PaymentMethodInterface;
 use OnPay\API\Util\PaymentMethods\PaymentMethods;
@@ -72,13 +73,16 @@ class Currency {
     }
 
     /**
-     * @param string $paymentMethodName
+     * @param string|PaymentMethod $paymentMethodName A {@see PaymentMethod} case, or a raw
+     *                                                method identifier. An unknown
+     *                                                identifier returns false.
      * @return bool
      */
-    public function isPaymentMethodAvailable(string $paymentMethodName): bool {
+    public function isPaymentMethodAvailable(string|PaymentMethod $paymentMethodName): bool {
+        $name = $paymentMethodName instanceof PaymentMethod ? $paymentMethodName->value : $paymentMethodName;
         $availablePaymentMethods = $this->getPaymentMethods();
         foreach ($availablePaymentMethods as $availablePaymentMethod) {
-            if ($availablePaymentMethod->getName() === $paymentMethodName) {
+            if ($availablePaymentMethod->getName() === $name) {
                 return true;
             }
         }

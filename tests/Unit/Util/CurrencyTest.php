@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Util;
 
+use OnPay\API\Enum\PaymentMethod;
 use OnPay\API\Exception\ApiException;
 use OnPay\API\Util\Currency;
 use OnPay\API\Util\PaymentMethods\Enums\Methods;
@@ -83,5 +84,18 @@ class CurrencyTest extends TestCase
     {
         // Swish is SEK-only, so it is not available for DKK.
         $this->assertFalse((new Currency('DKK'))->isPaymentMethodAvailable(Methods::SWISH));
+    }
+
+    public function testIsPaymentMethodAvailableAcceptsAPaymentMethodEnum(): void
+    {
+        $currency = new Currency('DKK');
+
+        $this->assertTrue($currency->isPaymentMethodAvailable(PaymentMethod::CARD));
+        $this->assertFalse($currency->isPaymentMethodAvailable(PaymentMethod::SWISH));
+    }
+
+    public function testIsPaymentMethodAvailableReturnsFalseForAnUnknownMethodString(): void
+    {
+        $this->assertFalse((new Currency('DKK'))->isPaymentMethodAvailable('some-future-method'));
     }
 }
