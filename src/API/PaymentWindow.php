@@ -398,8 +398,9 @@ class PaymentWindow
     /**
      * Returns whether test mode is enabled.
      *
-     * Any value stored through the deprecated {@see PaymentWindow::setTestMode()} is
-     * interpreted the same way the gateway does it: truthy means test mode.
+     * Applies the same `boolval()` that `PaymentService::buildCreatePaymentData()` applies
+     * before the API call, so a value stored through the deprecated
+     * {@see PaymentWindow::setTestMode()} is read back the same way it is sent.
      */
     public function isTestModeEnabled(): bool
     {

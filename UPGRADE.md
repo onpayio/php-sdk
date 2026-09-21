@@ -228,8 +228,9 @@ setter `setSurchargeEnabled()` was already correct. The new getter returns the s
 `setSecureEnabled()`/`hasSecureEnabled()` have been deprecated since 1.x and are unchanged
 here — only their docblocks now name the replacement.
 
-Test mode was the SDK's one untyped setter (`setTestMode()` accepted anything and
-`getTestMode()` returned `int|bool|string|null`), so the typed pair is what you want:
+Test mode was `PaymentWindow`'s one untyped setter — `setTestMode()` accepted anything and
+`getTestMode()` returned `int|bool|string|null`, so nothing in the signature said test mode
+is a flag. The typed pair does:
 
 ```php
 // Before (1.x, still works but deprecated)
@@ -247,9 +248,9 @@ signed field set differs, so the HMAC is not the same. Switching
 `setTestMode(true)` → `setTestModeEnabled(true)` *is* HMAC-neutral: `1` and `true` both
 render as `1` in the signed query string.
 
-`isTestModeEnabled()` applies the same `boolval()` the API call path already applied, so it
-also reads a value stored through the deprecated setter — `setTestMode('yes')` then
-`isTestModeEnabled() === true`.
+`isTestModeEnabled()` applies the same `boolval()` that
+`PaymentService::buildCreatePaymentData()` already applied, so it also reads a value stored
+through the deprecated setter — `setTestMode('yes')` then `isTestModeEnabled() === true`.
 
 <!--
 Template for a new entry:
