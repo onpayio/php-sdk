@@ -342,17 +342,6 @@ class PaymentWindowTest extends TestCase
         $this->assertFalse($window->is3DSecure());
     }
 
-    public function testDeprecatedSecureEnabledAliasesDelegate(): void
-    {
-        $window = new PaymentWindow();
-        $window->setSecureEnabled(true);
-        $this->assertTrue($window->hasSecureEnabled());
-        $this->assertTrue($window->is3DSecure());
-
-        $window->setSecureEnabled(false);
-        $this->assertFalse($window->hasSecureEnabled());
-    }
-
     // ---------------------------------------------------------------------
     // Subscription-with-transaction flag
     // ---------------------------------------------------------------------

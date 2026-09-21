@@ -4,6 +4,7 @@ namespace Tests\Unit\Transaction;
 
 use OnPay\API\Transaction\CardholderData;
 use PHPUnit\Framework\TestCase;
+use Tests\Support\FixtureLoader;
 
 /**
  * Direct value-object coverage for {@see CardholderData}, pinning both sides of the
@@ -63,10 +64,6 @@ class CardholderDataTest extends TestCase
         $this->assertSame('Hansen ApS', $cardholder->company);
         $this->assertSame('Hovedgaden 1', $cardholder->address1);
         $this->assertSame('2. sal', $cardholder->address2);
-        $this->assertSame('Hovedgaden', $cardholder->street);
-        $this->assertSame('1', $cardholder->number);
-        $this->assertSame('2', $cardholder->floor);
-        $this->assertSame('th', $cardholder->door);
         $this->assertSame('1000', $cardholder->postalCode);
         $this->assertSame('Koebenhavn', $cardholder->city);
         $this->assertSame(208, $cardholder->country);
@@ -79,10 +76,6 @@ class CardholderDataTest extends TestCase
         $this->assertSame('Nielsen A/S', $cardholder->deliveryCompany);
         $this->assertSame('Nyvej 2', $cardholder->deliveryAddress1);
         $this->assertSame('Bygning B', $cardholder->deliveryAddress2);
-        $this->assertSame('Nyvej', $cardholder->deliveryStreet);
-        $this->assertSame('2', $cardholder->deliveryNumber);
-        $this->assertSame('1', $cardholder->deliveryFloor);
-        $this->assertSame('tv', $cardholder->deliveryDoor);
         $this->assertSame('2000', $cardholder->deliveryPostalCode);
         $this->assertSame('Frederiksberg', $cardholder->deliveryCity);
         $this->assertSame(752, $cardholder->deliveryCountry);
@@ -100,10 +93,6 @@ class CardholderDataTest extends TestCase
         $this->assertNull($cardholder->company);
         $this->assertNull($cardholder->address1);
         $this->assertNull($cardholder->address2);
-        $this->assertNull($cardholder->street);
-        $this->assertNull($cardholder->number);
-        $this->assertNull($cardholder->floor);
-        $this->assertNull($cardholder->door);
         $this->assertNull($cardholder->postalCode);
         $this->assertNull($cardholder->city);
         $this->assertNull($cardholder->country);
@@ -124,10 +113,6 @@ class CardholderDataTest extends TestCase
         $this->assertNull($cardholder->deliveryCompany);
         $this->assertNull($cardholder->deliveryAddress1);
         $this->assertNull($cardholder->deliveryAddress2);
-        $this->assertNull($cardholder->deliveryStreet);
-        $this->assertNull($cardholder->deliveryNumber);
-        $this->assertNull($cardholder->deliveryFloor);
-        $this->assertNull($cardholder->deliveryDoor);
         $this->assertNull($cardholder->deliveryPostalCode);
         $this->assertNull($cardholder->deliveryCity);
         $this->assertNull($cardholder->deliveryCountry);
@@ -201,5 +186,44 @@ class CardholderDataTest extends TestCase
             ['custom_reference' => 'ref-123', 'loyalty_tier' => 'gold'],
             $cardholder->extraFields
         );
+    }
+
+    /**
+     * The API still sends the split address components (`street`/`number`/`floor`/`door`,
+     * in both the billing block and `delivery_address`) — the stock fixture carries them.
+     * 2.0 removed the properties that surfaced them, so the reader must simply ignore the
+     * keys: no fatal, no dynamic property, and the `address1`/`address2` pair still read.
+     */
+    public function testWireAddressComponentKeysAreIgnored(): void
+    {
+        $fixture = FixtureLoader::load('transaction/detailed-with-cardholder');
+        $data = $fixture['data']['cardholder_data'];
+
+        // Guard the premise: the fixture really does carry the keys on both sides.
+        foreach (['street', 'number', 'floor', 'door'] as $key) {
+            $this->assertArrayHasKey($key, $data);
+            $this->assertArrayHasKey($key, $data['delivery_address']);
+        }
+
+        $cardholder = new CardholderData($data);
+
+        foreach ([
+            'street',
+            'number',
+            'floor',
+            'door',
+            'deliveryStreet',
+            'deliveryNumber',
+            'deliveryFloor',
+            'deliveryDoor',
+        ] as $removed) {
+            $this->assertObjectNotHasProperty($removed, $cardholder);
+        }
+
+        // The replacements carry the same information and are unaffected.
+        $this->assertSame('Hovedgaden 1', $cardholder->address1);
+        $this->assertSame('2. sal', $cardholder->address2);
+        $this->assertSame('Nyvej 2', $cardholder->deliveryAddress1);
+        $this->assertSame('3. sal', $cardholder->deliveryAddress2);
     }
 }
