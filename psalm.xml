@@ -18,7 +18,5 @@
     <issueHandlers>
         <!-- #[\Override] requires PHP 8.3; the floor is 8.2. -->
         <MissingOverrideAttribute errorLevel="suppress" />
-        <!-- Deferred: which classes become final is decided with the 2.0 architecture work. -->
-        <ClassMustBeFinal errorLevel="suppress" />
     </issueHandlers>
 </psalm>

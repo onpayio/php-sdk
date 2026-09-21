@@ -4,20 +4,23 @@ namespace Tests\Unit;
 
 use OnPay\API\SubscriptionService;
 use OnPay\API\Exception\ApiException;
-use PHPUnit\Framework\TestCase;
+use Tests\Support\ApiTestCase;
 
 /**
  * Guard/validation unit tests for SubscriptionService. The success/parse paths are covered
  * end-to-end by {@see \Tests\Unit\Harness\SubscriptionHarnessTest}; this file keeps only the
  * unique argument-guard behaviour that runs before any HTTP call.
+ *
+ * The service is taken from a real OnPayAPI wired to the {@see \Tests\Support\FakeHttpClient}
+ * rather than from a mocked ApiClient: the guards short-circuit before any request, so the
+ * fake is never asked for a response.
  */
-class SubscriptionServiceTest extends TestCase {
-    private $apiMock;
-    private $service;
+class SubscriptionServiceTest extends ApiTestCase {
+    private SubscriptionService $service;
 
     protected function setUp(): void {
-        $this->apiMock = $this->createMock(\OnPay\Http\ApiClient::class);
-        $this->service = new SubscriptionService($this->apiMock);
+        parent::setUp();
+        $this->service = $this->createApi()->subscription();
     }
 
     public function testGetSubscriptionThrowsOnEmptyId() {

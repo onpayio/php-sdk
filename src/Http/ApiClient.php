@@ -22,7 +22,7 @@ use Psr\Http\Message\ResponseInterface;
  *
  * @internal
  */
-class ApiClient {
+final class ApiClient {
     private RecordingHttpClientInterface $httpClient;
 
     private TokenManager $tokenManager;
