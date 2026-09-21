@@ -252,6 +252,78 @@ class PaymentWindowTest extends TestCase
     }
 
     // ---------------------------------------------------------------------
+    // Test mode (incl. the deprecated untyped pair)
+    // ---------------------------------------------------------------------
+
+    public function testTestModeEnabledIsOffByDefault(): void
+    {
+        $window = new PaymentWindow();
+
+        $this->assertFalse($window->isTestModeEnabled());
+        $this->assertNull($window->getTestMode());
+    }
+
+    public function testSetTestModeEnabledTrueSendsTestmodeOne(): void
+    {
+        $window = $this->makeWindow();
+        $window->setTestModeEnabled(true);
+
+        $this->assertTrue($window->isTestModeEnabled());
+        $this->assertSame(1, $window->getTestMode());
+        $this->assertSame(1, $window->getFormFields()['onpay_testmode']);
+    }
+
+    public function testSetTestModeEnabledFalseOmitsTheFieldEntirely(): void
+    {
+        $window = $this->makeWindow();
+        $window->setTestModeEnabled(true);
+        $window->setTestModeEnabled(false);
+
+        $this->assertFalse($window->isTestModeEnabled());
+        $this->assertNull($window->getTestMode());
+        // null means "unset", so the field is left out rather than sent as 0.
+        $this->assertArrayNotHasKey('onpay_testmode', $window->getFormFields());
+        $this->assertSame($this->makeWindow()->getFormFields(), $window->getFormFields());
+    }
+
+    public function testSetTestModeEnabledTrueIsHmacIdenticalToTheDeprecatedSetter(): void
+    {
+        $fromTyped = $this->makeWindow();
+        $fromTyped->setTestModeEnabled(true);
+
+        $fromDeprecated = $this->makeWindow();
+        $fromDeprecated->setTestMode(true);
+
+        // http_build_query() renders both `1` and `true` as "1", so migrating to the
+        // typed setter cannot change the signed query string.
+        $this->assertSame($fromDeprecated->generateSecret(), $fromTyped->generateSecret());
+        $this->assertSame($fromDeprecated->getFormFields()['onpay_hmac_sha1'], $fromTyped->getFormFields()['onpay_hmac_sha1']);
+    }
+
+    #[DataProvider('storedTestModeProvider')]
+    public function testIsTestModeEnabledReadsValuesStoredByTheDeprecatedSetter(mixed $stored, bool $expected): void
+    {
+        $window = new PaymentWindow();
+        $window->setTestMode($stored);
+
+        $this->assertSame($expected, $window->isTestModeEnabled());
+        $this->assertSame($stored, $window->getTestMode());
+    }
+
+    public static function storedTestModeProvider(): array
+    {
+        return [
+            'int one' => [1, true],
+            'int zero' => [0, false],
+            'bool true' => [true, true],
+            'bool false' => [false, false],
+            'non-empty string' => ['yes', true],
+            'empty string' => ['', false],
+            'null' => [null, false],
+        ];
+    }
+
+    // ---------------------------------------------------------------------
     // 3D-Secure (incl. deprecated aliases)
     // ---------------------------------------------------------------------
 
