@@ -20,7 +20,7 @@ use Psr\Http\Message\StreamInterface;
  *
  * @internal Shall not be used outside the library.
  */
-class Psr17RequestFactory extends RequestFactory {
+final class Psr17RequestFactory extends RequestFactory {
     private RequestFactoryInterface $requestFactory;
 
     private StreamFactoryInterface $streamFactory;

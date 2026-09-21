@@ -12,7 +12,7 @@ use OnPay\API\Util\PaymentMethods\PaymentMethods;
 /**
  * This currency helper class will assist with ensuring currencies used are supported and in the correct format
  */
-class Currency {
+final class Currency {
 
     /**
      * @var string

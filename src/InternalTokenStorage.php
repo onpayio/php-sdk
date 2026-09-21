@@ -20,7 +20,7 @@ use OnPay\API\Util\DataReader;
  *
  * @internal Shall not be used outside the library.
  */
-class InternalTokenStorage {
+final class InternalTokenStorage {
     private TokenStorageInterface $storage;
 
     public function __construct(TokenStorageInterface $storage) {

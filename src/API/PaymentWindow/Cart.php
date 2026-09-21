@@ -6,7 +6,7 @@ namespace OnPay\API\PaymentWindow;
 
 use OnPay\API\Exception\InvalidCartException;
 
-class Cart {
+final class Cart {
     private ?CartShipping $shipping = null;
     private ?CartHandling $handling = null;
     private ?int $discount = null;

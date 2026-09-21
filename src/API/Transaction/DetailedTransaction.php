@@ -6,7 +6,7 @@ namespace OnPay\API\Transaction;
 
 use OnPay\API\Util\DataReader;
 
-class DetailedTransaction extends SimpleTransaction {
+final class DetailedTransaction extends SimpleTransaction {
 
     /**
      * @internal Shall not be used outside the library

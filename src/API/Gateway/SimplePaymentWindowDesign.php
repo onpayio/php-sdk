@@ -6,7 +6,7 @@ namespace OnPay\API\Gateway;
 
 use OnPay\API\Util\DataReader;
 
-class SimplePaymentWindowDesign
+final class SimplePaymentWindowDesign
 {
     /**
      * @internal Shall not be used outside the library

@@ -14,7 +14,7 @@ use Psr\Http\Message\ResponseInterface;
  *
  * @internal Shall not be used outside the library.
  */
-class Psr18HttpClient implements RecordingHttpClientInterface {
+final class Psr18HttpClient implements RecordingHttpClientInterface {
     private ClientInterface $client;
 
     private ?RequestInterface $lastRequest = null;

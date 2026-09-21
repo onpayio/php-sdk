@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace OnPay\API\Http;
 
-class Response {
+final class Response {
     /**
      * @var int|null $statusCode
      */
-    protected ?int $statusCode = null;
+    private ?int $statusCode = null;
 
     /**
      * @var string|null $body
      */
-    protected ?string $body = null;
+    private ?string $body = null;
 
     /**
      * @return int|null
@@ -23,6 +23,8 @@ class Response {
     }
 
     /**
+     * @internal Populated by the SDK; shall not be called outside the library.
+     *
      * @param int|null $statusCode
      */
     public function setStatusCode(?int $statusCode): void {
@@ -37,6 +39,8 @@ class Response {
     }
 
     /**
+     * @internal Populated by the SDK; shall not be called outside the library.
+     *
      * @param string|null $body
      */
     public function setBody(?string $body): void {

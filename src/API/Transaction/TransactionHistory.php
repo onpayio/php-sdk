@@ -7,7 +7,7 @@ namespace OnPay\API\Transaction;
 
 use OnPay\API\Util\DataReader;
 
-class TransactionHistory {
+final class TransactionHistory {
 
     /**
      * @internal Shall not be used outside the library

@@ -10,7 +10,7 @@ use OnPay\API\PaymentWindow\Cart;
 use OnPay\API\PaymentWindow\PaymentInfo;
 use OnPay\OnPayAPI;
 
-class PaymentWindow
+final class PaymentWindow
 {
     const SDK_VERSION = OnPayAPI::SDK_VERSION;
     const SDK_VERSION_STRING = 'php-sdk' . '/' . OnPayAPI::SDK_VERSION;
@@ -207,23 +207,6 @@ class PaymentWindow
      */
     public function getMethod() {
         return $this->method;
-    }
-
-    /**
-     * @param bool $secureEnabled
-     * @deprecated Use {@see PaymentWindow::set3DSecure()} instead.
-     */
-    public function setSecureEnabled(bool $secureEnabled): void
-    {
-        $this->set3DSecure($secureEnabled);
-    }
-
-    /**
-     * @return bool
-     * @deprecated Use {@see PaymentWindow::is3DSecure()} instead.
-     */
-    public function hasSecureEnabled() {
-        return $this->is3DSecure();
     }
 
     /**

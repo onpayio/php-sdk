@@ -22,7 +22,7 @@ use Psr\Http\Message\ResponseInterface;
  *
  * @internal Shall not be used outside the library.
  */
-class GuzzleClientAdapter implements GuzzleClientInterface {
+final class GuzzleClientAdapter implements GuzzleClientInterface {
     private ClientInterface $client;
 
     public function __construct(ClientInterface $client) {

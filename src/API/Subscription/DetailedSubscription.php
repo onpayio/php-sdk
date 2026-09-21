@@ -8,7 +8,7 @@ namespace OnPay\API\Subscription;
 use OnPay\API\Transaction\SimpleTransaction;
 use OnPay\API\Util\DataReader;
 
-class DetailedSubscription extends SimpleSubscription
+final class DetailedSubscription extends SimpleSubscription
 {
     /**
      * @internal Shall not be used outside the library

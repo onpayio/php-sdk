@@ -4,26 +4,26 @@ declare(strict_types=1);
 
 namespace OnPay\API\Http;
 
-class Request {
+final class Request {
     /**
      * @var string|null $method
      */
-    protected ?string $method = null;
+    private ?string $method = null;
 
     /**
      * @var string|null $uri
      */
-    protected ?string $uri = null;
+    private ?string $uri = null;
 
     /**
      * @var array $headers
      */
-    protected array $headers = [];
+    private array $headers = [];
 
     /**
      * @var string|null $body
      */
-    protected ?string $body = '';
+    private ?string $body = '';
 
     /**
      * @return string|null
@@ -33,6 +33,8 @@ class Request {
     }
 
     /**
+     * @internal Populated by the SDK; shall not be called outside the library.
+     *
      * @param string|null $method
      */
     public function setMethod(?string $method): void {
@@ -47,6 +49,8 @@ class Request {
     }
 
     /**
+     * @internal Populated by the SDK; shall not be called outside the library.
+     *
      * @param string|null $uri
      */
     public function setUri(?string $uri): void {
@@ -61,6 +65,8 @@ class Request {
     }
 
     /**
+     * @internal Populated by the SDK; shall not be called outside the library.
+     *
      * @param array $headers
      */
     public function setHeaders(array $headers): void {
@@ -75,6 +81,8 @@ class Request {
     }
 
     /**
+     * @internal Populated by the SDK; shall not be called outside the library.
+     *
      * @param string|null $body
      */
     public function setBody(?string $body): void {

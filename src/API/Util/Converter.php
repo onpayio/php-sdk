@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace OnPay\API\Util;
 
-class Converter {
+/**
+ * Parses the API's date format into \DateTime.
+ *
+ * @internal Shall not be used outside the library.
+ */
+final class Converter {
     private function __construct() {
     }
 

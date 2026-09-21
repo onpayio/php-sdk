@@ -20,8 +20,8 @@ use OnPay\API\Exception\TokenException;
  * @package OnPay
  */
 
-class StaticToken implements TokenStorageInterface {
-    protected string $staticToken;
+final class StaticToken implements TokenStorageInterface {
+    private string $staticToken;
 
     /**
      * StaticToken constructor.

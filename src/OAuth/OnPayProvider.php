@@ -30,18 +30,18 @@ use Psr\Http\Message\ResponseInterface;
  *
  * @internal Shall not be used outside the library.
  *
- * @psalm-suppress PropertyNotSetInConstructor AbstractProvider fills its properties from $options via GuardedPropertyTrait
+ * @psalm-suppress PropertyNotSetInConstructor The inherited AbstractProvider properties ($clientId, $httpClient, …) are filled by its constructor from $options/$collaborators
  */
-class OnPayProvider extends AbstractProvider {
+final class OnPayProvider extends AbstractProvider {
     use BearerAuthorizationTrait;
 
     const DEFAULT_SCOPE = 'full';
 
-    protected string $urlAuthorize;
+    private string $urlAuthorize;
 
-    protected string $urlAccessToken;
+    private string $urlAccessToken;
 
-    protected bool $pkceEnabled = false;
+    private bool $pkceEnabled = false;
 
     /**
      * @param array<string,mixed> $options

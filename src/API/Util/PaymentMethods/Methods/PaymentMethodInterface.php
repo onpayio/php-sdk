@@ -7,6 +7,9 @@ namespace OnPay\API\Util\PaymentMethods\Methods;
 use OnPay\API\Enum\PaymentMethod;
 use OnPay\API\Util\Currency;
 
+/**
+ * @internal Internal use only
+ */
 interface PaymentMethodInterface {
 
     public function isAvailableForCurrency(Currency $currency): bool;

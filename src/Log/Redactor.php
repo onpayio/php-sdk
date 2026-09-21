@@ -13,7 +13,7 @@ namespace OnPay\Log;
  *
  * @internal Shall not be used outside the library.
  */
-class Redactor {
+final class Redactor {
     public const REDACTED = '[redacted]';
 
     private const SENSITIVE_HEADERS = [

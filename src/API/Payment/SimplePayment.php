@@ -6,7 +6,7 @@ namespace OnPay\API\Payment;
 
 use OnPay\API\Util\DataReader;
 
-class SimplePayment {
+final class SimplePayment {
 
     private string $uuid;
     private ?int $amount;
@@ -17,6 +17,8 @@ class SimplePayment {
     private string $paymentLink;
 
     /**
+     * @internal Shall not be used outside the library
+     *
      * @param array $response
      *
      * @throws \OnPay\API\Exception\ApiException

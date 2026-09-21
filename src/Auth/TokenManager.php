@@ -25,7 +25,7 @@ use Psr\Http\Message\RequestInterface;
  *
  * @internal
  */
-class TokenManager {
+final class TokenManager {
     private OnPayProvider $oauth2Provider;
 
     private InternalTokenStorage $tokenStorage;

@@ -6,7 +6,7 @@ namespace OnPay\API\Subscription;
 
 use OnPay\API\Util\DataReader;
 
-class SubscriptionHistory
+final class SubscriptionHistory
 {
     /**
      * @internal Shall not be used outside the library

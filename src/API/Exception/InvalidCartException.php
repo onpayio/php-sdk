@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OnPay\API\Exception;
 
-class InvalidCartException extends OnPayException {
+final class InvalidCartException extends OnPayException {
     /**
      * Contains all the errors
      *
@@ -13,6 +13,8 @@ class InvalidCartException extends OnPayException {
     public array $errors = [];
 
     /**
+     * @internal Raised by the SDK; shall not be constructed outside the library.
+     *
      * @param string[] $errors
      */
     public function __construct(array $errors) {
