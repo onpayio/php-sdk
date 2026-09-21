@@ -176,11 +176,11 @@ Nothing breaks for callers:
   before this SDK lists it — an unknown identifier is passed through exactly as in 1.x.
 - `PaymentWindow::getMethod()` still returns the raw `?string` sent to the gateway, not an
   enum case.
-
-The one genuine break is for code that *implements* `PaymentMethodInterface` itself: the
-interface gained `getMethod(): PaymentMethod` alongside the unchanged `getName(): string`,
-so such an implementation must add the method. The SDK's own (`@internal`) method classes
-implement it, and their `METHOD_NAME` constants are deprecated in favour of `getMethod()`.
+- The method classes returned by `Currency::getPaymentMethods()` and
+  `PaymentMethods::getAllPaymentMethods()` expose `getMethod(): PaymentMethod` alongside the
+  unchanged `getName(): string`; their `METHOD_NAME` constants are deprecated in favour of
+  `getMethod()`. `PaymentMethodInterface` is implemented only by the SDK's own method classes
+  and is not an extension point.
 
 Currencies and languages were reviewed for the same duplication and deliberately left
 alone. `Util\PaymentMethods\Enums\CurrencyCodes` is not a duplicate definition: it only
