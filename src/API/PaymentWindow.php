@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OnPay\API;
 
+use OnPay\API\Enum\DeliveryDisabled;
 use OnPay\API\Enum\PaymentMethod;
 use OnPay\API\PaymentWindow\Cart;
 use OnPay\API\PaymentWindow\PaymentInfo;
@@ -37,11 +38,16 @@ class PaymentWindow
     /** @deprecated Use {@see PaymentMethod::KLARNA} instead. */
     const METHOD_KLARNA = PaymentMethod::KLARNA->value;
 
-    const DELIVERY_DISABLED_NO_REASON = 'no-reason';
-    const DELIVERY_DISABLED_NOT_PHYSICAL = 'not-physical';
-    const DELIVERY_DISABLED_STORE_PICK_UP = 'store-pick-up';
-    const DELIVERY_DISABLED_PARCEL_SHOP_SELECTED = 'parcel-shop-selected';
-    const DELIVERY_DISABLED_PARCEL_SHOP_AUTO = 'parcel-shop-auto';
+    /** @deprecated Use {@see DeliveryDisabled::NO_REASON} instead. */
+    const DELIVERY_DISABLED_NO_REASON = DeliveryDisabled::NO_REASON->value;
+    /** @deprecated Use {@see DeliveryDisabled::NOT_PHYSICAL} instead. */
+    const DELIVERY_DISABLED_NOT_PHYSICAL = DeliveryDisabled::NOT_PHYSICAL->value;
+    /** @deprecated Use {@see DeliveryDisabled::STORE_PICK_UP} instead. */
+    const DELIVERY_DISABLED_STORE_PICK_UP = DeliveryDisabled::STORE_PICK_UP->value;
+    /** @deprecated Use {@see DeliveryDisabled::PARCEL_SHOP_SELECTED} instead. */
+    const DELIVERY_DISABLED_PARCEL_SHOP_SELECTED = DeliveryDisabled::PARCEL_SHOP_SELECTED->value;
+    /** @deprecated Use {@see DeliveryDisabled::PARCEL_SHOP_AUTO} instead. */
+    const DELIVERY_DISABLED_PARCEL_SHOP_AUTO = DeliveryDisabled::PARCEL_SHOP_AUTO->value;
 
     private ?string $gatewayId = null;
     private ?string $currency = null;
@@ -306,10 +312,17 @@ class PaymentWindow
     }
 
     /**
-     * @param string|null $deliveryDisabled
+     * Sets the reason delivery-address collection is disabled.
+     *
+     * Accepts a {@see DeliveryDisabled} case or the raw identifier as a string; null clears
+     * the field.
+     *
+     * @param string|DeliveryDisabled|null $deliveryDisabled
      */
-    public function setDeliveryDisabled(?string $deliveryDisabled): void {
-        $this->delivery_disabled = $deliveryDisabled;
+    public function setDeliveryDisabled(string|DeliveryDisabled|null $deliveryDisabled): void {
+        $this->delivery_disabled = $deliveryDisabled instanceof DeliveryDisabled
+            ? $deliveryDisabled->value
+            : $deliveryDisabled;
     }
 
     /**

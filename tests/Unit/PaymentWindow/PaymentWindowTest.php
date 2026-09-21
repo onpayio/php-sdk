@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\PaymentWindow;
 
+use OnPay\API\Enum\DeliveryDisabled;
 use OnPay\API\Enum\PaymentMethod;
 use OnPay\API\Exception\InvalidCartException;
 use OnPay\API\PaymentWindow;
@@ -189,6 +190,32 @@ class PaymentWindowTest extends TestCase
 
         $this->assertSame('some-future-method', $window->getMethod());
         $this->assertSame('some-future-method', $window->getFormFields()['onpay_method']);
+    }
+
+    public function testSetDeliveryDisabledAcceptsAStringAnEnumOrNull(): void
+    {
+        $window = new PaymentWindow();
+
+        $window->setDeliveryDisabled(DeliveryDisabled::NOT_PHYSICAL);
+        $this->assertSame('not-physical', $window->getDeliveryDisabled());
+
+        $window->setDeliveryDisabled('not-physical');
+        $this->assertSame('not-physical', $window->getDeliveryDisabled());
+
+        $window->setDeliveryDisabled(null);
+        $this->assertNull($window->getDeliveryDisabled());
+    }
+
+    public function testStringAndEnumDeliveryDisabledProduceIdenticalFormFields(): void
+    {
+        $fromString = $this->makeWindow();
+        $fromString->setDeliveryDisabled('store-pick-up');
+
+        $fromEnum = $this->makeWindow();
+        $fromEnum->setDeliveryDisabled(DeliveryDisabled::STORE_PICK_UP);
+
+        $this->assertSame($fromString->getFormFields(), $fromEnum->getFormFields());
+        $this->assertSame('store-pick-up', $fromEnum->getFormFields()['onpay_delivery_disabled']);
     }
 
     public function testSurchargeEnabledFlag(): void

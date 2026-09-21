@@ -190,6 +190,23 @@ it is not an enum and keeps its constants. The SDK has no language constants at 
 (`PaymentWindow::setLanguage()` takes a free-form string), so there was nothing to
 consolidate.
 
+### Delivery-disabled reasons are a PHP enum
+
+The payment window's `delivery_disabled` reasons are a closed set, so they are now an enum,
+`OnPay\API\Enum\DeliveryDisabled`, and `PaymentWindow::setDeliveryDisabled()` takes
+`string|DeliveryDisabled|null`:
+
+```php
+// Before (1.x, still works but deprecated)
+$paymentWindow->setDeliveryDisabled(\OnPay\API\PaymentWindow::DELIVERY_DISABLED_NOT_PHYSICAL);
+// After (2.0)
+$paymentWindow->setDeliveryDisabled(\OnPay\API\Enum\DeliveryDisabled::NOT_PHYSICAL);
+```
+
+The five `PaymentWindow::DELIVERY_DISABLED_*` constants are kept and `@deprecated` with
+their current values, a string is still passed through unvalidated, `null` still clears the
+field, and `getDeliveryDisabled()` still returns `?string`. Nothing breaks.
+
 <!--
 Template for a new entry:
 
