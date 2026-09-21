@@ -227,6 +227,30 @@ class PaymentWindowTest extends TestCase
         $this->assertTrue($window->isSurcharge_enabled());
     }
 
+    public function testSurchargeEnabledFlagViaTheCorrectlyNamedGetter(): void
+    {
+        $window = new PaymentWindow();
+        $this->assertNull($window->isSurchargeEnabled());
+
+        $window->setSurchargeEnabled(true);
+        $this->assertTrue($window->isSurchargeEnabled());
+
+        $window->setSurchargeEnabled(false);
+        $this->assertFalse($window->isSurchargeEnabled());
+    }
+
+    public function testDeprecatedSurchargeEnabledGetterReturnsTheSameValue(): void
+    {
+        $window = new PaymentWindow();
+        $this->assertSame($window->isSurchargeEnabled(), $window->isSurcharge_enabled());
+
+        $window->setSurchargeEnabled(true);
+        $this->assertSame($window->isSurchargeEnabled(), $window->isSurcharge_enabled());
+
+        $window->setSurchargeEnabled(false);
+        $this->assertSame($window->isSurchargeEnabled(), $window->isSurcharge_enabled());
+    }
+
     // ---------------------------------------------------------------------
     // 3D-Secure (incl. deprecated aliases)
     // ---------------------------------------------------------------------

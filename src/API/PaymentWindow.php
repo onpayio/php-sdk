@@ -631,10 +631,18 @@ class PaymentWindow
     }
 
     /**
+     * Returns whether surcharge is enabled, or null when the flag was never set.
+     */
+    public function isSurchargeEnabled(): ?bool {
+        return $this->surcharge_enabled;
+    }
+
+    /**
      * @return bool|null
+     * @deprecated Use {@see PaymentWindow::isSurchargeEnabled()} instead.
      */
     public function isSurcharge_enabled() {
-        return $this->surcharge_enabled;
+        return $this->isSurchargeEnabled();
     }
 
     /**
