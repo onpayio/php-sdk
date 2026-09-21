@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deprecated: using the OAuth flow without an `AuthStateStorageInterface` triggers `E_USER_DEPRECATED` from `authorize()`/`finishAuthorize()` (no `state` verification, no PKCE); a `set_error_handler` that escalates deprecations will throw. See UPGRADE.md.
 - Changed: the monolithic `OnPayAPI` was split into a facade plus two internal collaborators — `OnPay\Http\ApiClient` (the authenticated API call path and the `getLastHttpRequest()`/`getLastHttpResponse()` debug capture) and `OnPay\Auth\TokenManager` (the OAuth authorize flow and token lifecycle). The public `OnPayAPI` method surface is unchanged.
 - BREAKING: the API service classes (`TransactionService`, `SubscriptionService`, `PaymentService`, `GatewayService`) are now constructed with an `OnPay\Http\ApiClient` instead of `OnPayAPI`, and all four constructors are `@internal`. Only `PaymentService` is a practical break — it was the one service constructor not marked `@internal` in 1.x; construct it via `$onPayAPI->payment()`. The service classes and their methods remain public API. See UPGRADE.md.
+- BREAKING: `OnPayAPI` is now `final`. The `protected` members a 1.x subclass could reach (`$tokenStorage`, `$oauth2Provider`, `$client`, `$httpClient`, `$scope`, `$userId`, `$platform`, `$request`, `$response`, `getClient()`) no longer exist; the internals live in `OnPay\Auth\TokenManager` and `OnPay\Http\ApiClient`. See UPGRADE.md.
 
 ## [1.0.39] - 2026-09-01
 - Accept alphanumeric gateway_id in OnPayAPI constructor

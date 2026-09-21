@@ -121,8 +121,9 @@ surface is unchanged, but the API service classes are now constructed with an
 `OnPay\Http\ApiClient` instead of `OnPayAPI`.
 
 Only `OnPay\API\PaymentService` is affected in practice: in 1.x its constructor was the
-one service constructor not marked `@internal`. It is now `@internal` and takes an
-`ApiClient`. Construct it through the facade, not with `new`:
+one service constructor not marked `@internal`, and the 1.x README showed it being
+constructed directly. It is now `@internal` and takes an `ApiClient`. Construct it
+through the facade, not with `new`:
 
 ```php
 // Before (1.x)
@@ -135,6 +136,19 @@ $payment = $onPayApi->payment();
 `@internal` in 1.x, so their equivalent change breaks no supported usage. All four
 service classes and their methods remain part of the public API — only constructing
 them directly is unsupported.
+
+### `OnPayAPI` is `final`
+
+`OnPayAPI` can no longer be extended. A class declared `extends OnPayAPI` fatals at
+load. Its public methods are the supported surface; wrap or compose the facade instead
+of subclassing it.
+
+This formalises what the refactoring above already did: the `protected` members a 1.x
+subclass could have reached (`$tokenStorage`, `$oauth2Provider`, `$client`, `$httpClient`,
+`$scope`, `$userId`, `$platform`, `$request`, `$response` and the `getClient()` method)
+no longer exist on `OnPayAPI`. The token and HTTP internals now live in the `@internal`
+`OnPay\Auth\TokenManager` and `OnPay\Http\ApiClient` classes and are not part of the
+public API.
 
 <!--
 Template for a new entry:

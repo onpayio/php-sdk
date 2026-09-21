@@ -34,44 +34,44 @@ use Psr\Log\LoggerInterface;
  * Public facade for the OnPay API. Validates options and wires up the collaborators,
  * then delegates: authorization/token work to {@see \OnPay\Auth\TokenManager} and the
  * API call path (plus the last-request/response debug accessors) to
- * {@see \OnPay\Http\ApiClient}. The public method surface is unchanged from 1.x.
+ * {@see \OnPay\Http\ApiClient}.
  */
-class OnPayAPI {
+final class OnPayAPI {
     const SDK_VERSION = '1.0.39';
 
     /**
      * @var array<array-key, mixed>
      */
-    protected array $options = [];
+    private array $options = [];
 
     /**
      * @var TransactionService|null
      */
-    protected ?TransactionService $transactionService = null;
+    private ?TransactionService $transactionService = null;
 
     /**
      * @var SubscriptionService|null
      */
-    protected ?SubscriptionService $subscriptionService = null;
+    private ?SubscriptionService $subscriptionService = null;
 
     /**
      * @var PaymentService|null
      */
-    protected ?PaymentService $paymentService = null;
+    private ?PaymentService $paymentService = null;
 
     /**
      * @var GatewayService|null
      */
-    protected ?GatewayService $gatewayService = null;
+    private ?GatewayService $gatewayService = null;
 
     /**
      * @var LoggerInterface
      */
-    protected LoggerInterface $logger;
+    private LoggerInterface $logger;
 
-    protected TokenManager $tokenManager;
+    private TokenManager $tokenManager;
 
-    protected ApiClient $apiClient;
+    private ApiClient $apiClient;
 
     /**
      * OnPayAPI constructor.

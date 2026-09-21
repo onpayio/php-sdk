@@ -285,8 +285,7 @@ if($onPayAPI->isAuthorized()) {
     $paymentWindow->setCart($paymentCart);
     
     // Finally - submit the payment request via the api
-    $paymentService = new OnPay\API\PaymentService($onPayAPI);
-    $paymentResult = $paymentService->createNewPayment($paymentWindow);
+    $paymentResult = $onPayAPI->payment()->createNewPayment($paymentWindow);
 }
 
 ```

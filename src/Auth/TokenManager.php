@@ -155,7 +155,7 @@ class TokenManager {
      * @throws TokenException
      * @throws ClientExceptionInterface
      */
-    public function getValidAccessToken(): ?AccessTokenInterface {
+    private function getValidAccessToken(): ?AccessTokenInterface {
         $token = $this->tokenStorage->getAccessToken();
         if (null === $token || !self::hasExpired($token)) {
             return $token;
