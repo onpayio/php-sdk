@@ -20,7 +20,7 @@ use OnPay\API\Util\PaymentMethods\Methods\Swish;
 use OnPay\API\Util\PaymentMethods\Methods\ViaBill;
 use OnPay\API\Util\PaymentMethods\Methods\Vipps;
 
-class PaymentMethods {
+final class PaymentMethods {
 
     /**
      * @var PaymentMethodInterface[]

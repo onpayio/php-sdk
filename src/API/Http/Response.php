@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OnPay\API\Http;
 
-class Response {
+final class Response {
     /**
      * @var int|null $statusCode
      */

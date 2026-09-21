@@ -12,7 +12,7 @@ use OnPay\API\Gateway\SimplePaymentWindowDesign;
 use OnPay\API\Util\DataReader;
 use OnPay\Http\ApiClient;
 
-class GatewayService
+final class GatewayService
 {
 
     private ApiClient $api;

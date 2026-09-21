@@ -7,7 +7,7 @@ namespace OnPay\API\PaymentWindow;
 
 use OnPay\API\Exception\InvalidFormatException;
 
-class PaymentInfo {
+final class PaymentInfo {
     const DELIVERY_TIMEFRAME_ELECTRONIC = '01';
     const DELIVERY_TIMEFRAME_SAMEDAY = '02';
     const DELIVERY_TIMEFRAME_OVERNIGHT = '03';

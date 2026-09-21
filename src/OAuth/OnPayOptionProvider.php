@@ -19,7 +19,7 @@ use OnPay\API\Util\DataReader;
  *
  * @internal Shall not be used outside the library.
  */
-class OnPayOptionProvider extends PostAuthOptionProvider {
+final class OnPayOptionProvider extends PostAuthOptionProvider {
     /**
      * @param string $method
      * @param array<array-key,mixed> $params

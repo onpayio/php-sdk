@@ -10,7 +10,7 @@ use OnPay\API\PaymentWindow\Cart;
 use OnPay\API\PaymentWindow\PaymentInfo;
 use OnPay\OnPayAPI;
 
-class PaymentWindow
+final class PaymentWindow
 {
     const SDK_VERSION = OnPayAPI::SDK_VERSION;
     const SDK_VERSION_STRING = 'php-sdk' . '/' . OnPayAPI::SDK_VERSION;

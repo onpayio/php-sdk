@@ -16,7 +16,7 @@ use OnPay\API\Exception\ApiException;
  *
  * @internal Shall not be used outside the library.
  */
-class DataReader
+final class DataReader
 {
     private function __construct()
     {

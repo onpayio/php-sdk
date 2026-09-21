@@ -7,7 +7,7 @@ namespace OnPay\API\PaymentWindow;
 /**
  * @internal Use the methods on the Cart class instead
  */
-class CartShipping {
+final class CartShipping {
     public int $price = 0;
     public ?int $discount = null;
     public int $tax = 0;

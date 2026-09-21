@@ -6,7 +6,7 @@ namespace OnPay\API\Gateway;
 
 use OnPay\API\Util\DataReader;
 
-class Information
+final class Information
 {
     /**
      * @internal Shall not be used outside the library

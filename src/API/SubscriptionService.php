@@ -14,7 +14,7 @@ use OnPay\API\Util\DataReader;
 use OnPay\API\Util\Pagination;
 use OnPay\Http\ApiClient;
 
-class SubscriptionService
+final class SubscriptionService
 {
     private ApiClient $api;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OnPay\API\PaymentWindow;
 
-class CartItem {
+final class CartItem {
     const TYPE_PHYSICAL = 'physical';
     const TYPE_VIRTUAL = 'virtual';
     const TYPE_GIFTCARD = 'giftcard';

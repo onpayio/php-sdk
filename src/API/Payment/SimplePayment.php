@@ -6,7 +6,7 @@ namespace OnPay\API\Payment;
 
 use OnPay\API\Util\DataReader;
 
-class SimplePayment {
+final class SimplePayment {
 
     private string $uuid;
     private ?int $amount;

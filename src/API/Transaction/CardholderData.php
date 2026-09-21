@@ -6,7 +6,7 @@ namespace OnPay\API\Transaction;
 
 use OnPay\API\Util\DataReader;
 
-class CardholderData {
+final class CardholderData {
     /**
      * @internal Shall not be used outside the library
      * CardholderData constructor.

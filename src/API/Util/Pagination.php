@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OnPay\API\Util;
 
-class Pagination
+final class Pagination
 {
     /**
      * @internal Shall not be used outside library

@@ -9,7 +9,7 @@ use OnPay\API\Exception\MissingDataException;
 use OnPay\API\Payment\SimplePayment;
 use OnPay\Http\ApiClient;
 
-class PaymentService {
+final class PaymentService {
 
     /**
      * @var array<array-key, mixed> Submitted Payment Data

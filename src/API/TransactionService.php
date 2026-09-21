@@ -12,7 +12,7 @@ use OnPay\API\Util\DataReader;
 use OnPay\API\Util\Pagination;
 use OnPay\Http\ApiClient;
 
-class TransactionService {
+final class TransactionService {
 
     private ApiClient $api;
 

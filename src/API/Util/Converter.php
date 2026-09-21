@@ -9,7 +9,7 @@ namespace OnPay\API\Util;
  *
  * @internal Shall not be used outside the library.
  */
-class Converter {
+final class Converter {
     private function __construct() {
     }
 

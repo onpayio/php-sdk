@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OnPay\API\Http;
 
-class Request {
+final class Request {
     /**
      * @var string|null $method
      */

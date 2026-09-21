@@ -19,7 +19,7 @@ use Psr\Log\LogLevel;
  *
  * @internal Shall not be used outside the library.
  */
-class ErrorLogLogger implements LoggerInterface {
+final class ErrorLogLogger implements LoggerInterface {
     use LoggerTrait;
 
     private const SEVERITY = [

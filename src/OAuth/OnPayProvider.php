@@ -32,7 +32,7 @@ use Psr\Http\Message\ResponseInterface;
  *
  * @psalm-suppress PropertyNotSetInConstructor AbstractProvider fills its properties from $options via GuardedPropertyTrait
  */
-class OnPayProvider extends AbstractProvider {
+final class OnPayProvider extends AbstractProvider {
     use BearerAuthorizationTrait;
 
     const DEFAULT_SCOPE = 'full';

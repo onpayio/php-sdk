@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OnPay\API\Util;
 
-class Link
+final class Link
 {
     /**
      * @internal Shall not be used outside the library
