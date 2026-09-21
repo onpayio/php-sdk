@@ -218,15 +218,10 @@ replacements:
 | `isSurcharge_enabled()` | `isSurchargeEnabled(): ?bool` |
 | `setTestMode($mixed)` | `setTestModeEnabled(bool $enabled): void` |
 | `getTestMode()` | `isTestModeEnabled(): bool` |
-| `setSecureEnabled()` | `set3DSecure()` |
-| `hasSecureEnabled()` | `is3DSecure()` |
 
 `isSurcharge_enabled()` was the SDK's only method mixing snake_case and camelCase; the
 setter `setSurchargeEnabled()` was already correct. The new getter returns the same
 `?bool`, including `null` when the flag was never set.
-
-`setSecureEnabled()`/`hasSecureEnabled()` have been deprecated since 1.x and are unchanged
-here — only their docblocks now name the replacement.
 
 Test mode was `PaymentWindow`'s one untyped setter — `setTestMode()` accepted anything and
 `getTestMode()` returned `int|bool|string|null`, so nothing in the signature said test mode
@@ -241,6 +236,150 @@ $paymentWindow->setTestModeEnabled(true);
 
 `isTestModeEnabled()` also reads a value stored through the deprecated setter —
 `setTestMode('yes')` then `isTestModeEnabled() === true`.
+
+`PaymentWindow` had two further misnamed methods, `setSecureEnabled()`/`hasSecureEnabled()`.
+Those were already `@deprecated` in 1.x and 2.0 removes them outright rather than renaming
+them again — see [The 1.x deprecations are removed](#the-1x-deprecations-are-removed).
+
+### The 1.x deprecations are removed
+
+Everything that already carried a `@deprecated` tag in the 1.x branch is gone in 2.0. It
+had a documented replacement for years; the tags are not renewed.
+
+| Removed | Use instead |
+| --- | --- |
+| `PaymentWindow::setSecureEnabled(bool)` | `PaymentWindow::set3DSecure(bool)` |
+| `PaymentWindow::hasSecureEnabled()` | `PaymentWindow::is3DSecure()` |
+| `Transaction\CardholderData::$street` | `$address1` / `$address2` |
+| `Transaction\CardholderData::$number` | `$address1` / `$address2` |
+| `Transaction\CardholderData::$floor` | `$address1` / `$address2` |
+| `Transaction\CardholderData::$door` | `$address1` / `$address2` |
+| `Transaction\CardholderData::$deliveryStreet` | `$deliveryAddress1` / `$deliveryAddress2` |
+| `Transaction\CardholderData::$deliveryNumber` | `$deliveryAddress1` / `$deliveryAddress2` |
+| `Transaction\CardholderData::$deliveryFloor` | `$deliveryAddress1` / `$deliveryAddress2` |
+| `Transaction\CardholderData::$deliveryDoor` | `$deliveryAddress1` / `$deliveryAddress2` |
+
+The two `PaymentWindow` methods were one-line aliases, so swapping the names over is a
+mechanical change with no behavioural difference.
+
+**The `CardholderData` properties are different, and worth reading carefully: this is a
+removal of data access, not a cleanup of dead code.** The OnPay API still sends the split
+address components — `street`, `number`, `floor` and `door`, in both the billing block and
+`delivery_address` — and 1.x surfaced them verbatim. 2.0 stops reading those keys, so the
+SDK no longer exposes information that is still on the wire. If your integration read the
+components individually (to re-render an address, or to feed a shipping system that wants
+street and house number apart), the `address1`/`address2` pair is what you get from now on
+and you will have to split it yourself, or read the raw payload:
+
+```php
+// Before (1.x)
+$street = $transaction->cardholderData->street;
+$number = $transaction->cardholderData->number;
+
+// After (2.0) — the composed lines
+$line1 = $transaction->cardholderData->address1; // e.g. "Hovedgaden 1"
+$line2 = $transaction->cardholderData->address2;
+
+// After (2.0) — still on the wire, if you genuinely need the components
+$raw = $onPayAPI->get('transaction/' . $transactionNumber);
+$street = $raw['data']['cardholder_data']['street'] ?? null;
+```
+
+Reading a removed property now raises `Warning: Undefined property` (and yields `null`)
+rather than failing loudly, so grep your code for the eight names rather than relying on
+the runtime to find them for you.
+
+### Internal-by-default: `final` classes and tightened visibility
+
+2.0 makes the SDK's public API contract explicit and small: a class or member is part of it
+only when it is deliberately meant to be consumed. Everything else is marked `@internal`,
+`final`, or `private`. Nothing here changes runtime behaviour — **the only code affected is
+code that extends an SDK class, overrides one of its methods, or redeclares one of its
+properties.** If you only construct and call the SDK, this section does not apply to you.
+
+Psalm's `ClassMustBeFinal` check is no longer suppressed in `psalm.xml`, so the rule is
+enforced in CI rather than merely documented.
+
+#### Classes that are now `final`
+
+48 classes, i.e. every class in `src/` that is neither abstract nor extended by the SDK
+itself:
+
+- **Payment window builders:** `API\PaymentWindow`, `API\PaymentWindow\Cart`,
+  `API\PaymentWindow\CartItem`, `API\PaymentWindow\CartShipping`,
+  `API\PaymentWindow\CartHandling`, `API\PaymentWindow\PaymentInfo`.
+- **API services:** `API\TransactionService`, `API\SubscriptionService`,
+  `API\PaymentService`, `API\GatewayService`.
+- **Response value objects (leaves):** `API\Transaction\DetailedTransaction`,
+  `API\Transaction\CardholderData`, `API\Transaction\TransactionHistory`,
+  `API\Transaction\TransactionCollection`, `API\Subscription\DetailedSubscription`,
+  `API\Subscription\SubscriptionHistory`, `API\Subscription\SubscriptionCollection`,
+  `API\Payment\SimplePayment`, `API\Gateway\Information`,
+  `API\Gateway\PaymentWindowIntegrationSettings`,
+  `API\Gateway\SimplePaymentWindowDesign`, `API\Gateway\PaymentWindowDesignCollection`,
+  `API\Util\Pagination`, `API\Util\Link`, `API\Http\Request`, `API\Http\Response`.
+- **Exceptions:** `API\Exception\ApiException`, `ConnectionException`, `TokenException`,
+  `InvalidFormatException`, `MissingDataException`, `InvalidCartException`.
+- **Helpers:** `API\Util\Currency`, `API\Util\Converter`, `API\Util\DataReader`,
+  `API\Util\PaymentMethods\PaymentMethods`.
+- **Transport, OAuth and logging internals:** `Http\ApiClient`, `Http\Psr18HttpClient`,
+  `Http\LoggingHttpClient`, `Http\GuzzleClientAdapter`, `Auth\TokenManager`,
+  `InternalTokenStorage`, `StaticToken`, `OAuth\OnPayProvider`,
+  `OAuth\OnPayOptionProvider`, `OAuth\Psr17RequestFactory`, `Log\ErrorLogLogger`,
+  `Log\Redactor`.
+
+(`OnPayAPI`, `API\Util\Currencies`, `Http\MessageUtil`, the eleven concrete payment-method
+classes and the two constant holders were already `final` earlier in the 2.0 series.)
+
+**What is still open, and why:**
+
+- `API\Transaction\SimpleTransaction` and `API\Subscription\SimpleSubscription` —
+  `DetailedTransaction`/`DetailedSubscription` extend them.
+- `API\Exception\OnPayException` and
+  `API\Util\PaymentMethods\Methods\PaymentMethodAbstract` — abstract bases.
+- `TokenStorageInterface`, `AuthStateStorageInterface` and
+  `API\Util\PaymentMethods\Methods\PaymentMethodInterface` — interfaces you are meant to
+  implement. They are not `@internal` and they are not going anywhere.
+
+If you extended one of the now-`final` classes, wrap it instead of inheriting from it: hold
+the SDK object as a property and expose your own methods. The same applies to test doubles —
+a `final` class cannot be mocked by PHPUnit, so if you mocked `TransactionService` (or any
+other service) in your own tests, put your own interface in front of the SDK and mock that.
+`OnPayAPI` has been `final` since earlier in the 2.0 series, so that seam is likely already
+where you need it.
+
+#### Members that lost visibility
+
+- `API\PaymentWindow\PaymentInfo`: all 42 field properties (`$account_id`,
+  `$billing_address_*`, `$shipping_address_*`, `$phone_*`, `$delivery_*`, …) plus
+  `$availableFields` and `validateField()` are `private` (were `protected`). The payload is
+  built and read through the setters and `getFields()`/`getFieldsWithoutPrefix()`.
+- `API\Http\Request`: `$method`, `$uri`, `$headers`, `$body` are `private`.
+  `API\Http\Response`: `$statusCode`, `$body` are `private`. The getters are unchanged and
+  remain the supported way to inspect `OnPayAPI::getLastHttpRequest()`/`getLastHttpResponse()`;
+  the setters are now `@internal` — only the SDK fills these objects.
+- `StaticToken`: `$staticToken` is `private`.
+- `OAuth\OnPayProvider`: `$urlAuthorize`, `$urlAccessToken` and `$pkceEnabled` are
+  `private`. Its five `protected` method overrides stay `protected`, since
+  `league/oauth2-client`'s `AbstractProvider` declares them that way.
+
+#### Members that were removed as internal plumbing
+
+- `Http\LoggingHttpClient::getInnerClient()` — a public accessor on an `@internal` class
+  that nothing outside the SDK's own tests ever called.
+
+#### Newly `@internal`
+
+`@internal` marks code the SDK may change in a patch release. Most of the internals were
+already annotated earlier in the 2.0 series; this release adds the stragglers:
+
+- the `API\Http\Request` / `API\Http\Response` setters,
+- `API\Util\Converter` (the API date-format parser),
+- the `API\Util\Link`, `API\Payment\SimplePayment` and
+  `API\Exception\InvalidCartException` constructors.
+
+The classes themselves stay public where consumers legitimately receive instances of them —
+only the SDK constructs or fills them.
 
 <!--
 Template for a new entry:
