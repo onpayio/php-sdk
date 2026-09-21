@@ -262,29 +262,6 @@ had a documented replacement for years; the tags are not renewed.
 The two `PaymentWindow` methods were one-line aliases, so swapping the names over is a
 mechanical change with no behavioural difference.
 
-**The `CardholderData` properties are different, and worth reading carefully: this is a
-removal of data access, not a cleanup of dead code.** The OnPay API still sends the split
-address components — `street`, `number`, `floor` and `door`, in both the billing block and
-`delivery_address` — and 1.x surfaced them verbatim. 2.0 stops reading those keys, so the
-SDK no longer exposes information that is still on the wire. If your integration read the
-components individually (to re-render an address, or to feed a shipping system that wants
-street and house number apart), the `address1`/`address2` pair is what you get from now on
-and you will have to split it yourself, or read the raw payload:
-
-```php
-// Before (1.x)
-$street = $transaction->cardholderData->street;
-$number = $transaction->cardholderData->number;
-
-// After (2.0) — the composed lines
-$line1 = $transaction->cardholderData->address1; // e.g. "Hovedgaden 1"
-$line2 = $transaction->cardholderData->address2;
-
-// After (2.0) — still on the wire, if you genuinely need the components
-$raw = $onPayAPI->get('transaction/' . $transactionNumber);
-$street = $raw['data']['cardholder_data']['street'] ?? null;
-```
-
 Reading a removed property now raises `Warning: Undefined property` (and yields `null`)
 rather than failing loudly, so grep your code for the eight names rather than relying on
 the runtime to find them for you.
