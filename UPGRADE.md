@@ -87,12 +87,13 @@ a non-nullable parameter throws `TypeError`. Most likely to affect you:
 ### OAuth `state` (CSRF) verification and PKCE
 
 The OAuth authorization flow can now verify the CSRF `state` and use PKCE. To enable
-both, implement `OnPay\AuthStateStorageInterface` and pass it as the seventh argument
-to the `OnPayAPI` constructor. It stores the `state` and PKCE `code_verifier` that
-`authorize()` generates so `finishAuthorize()` can verify the callback:
+both, implement `OnPay\AuthStateStorageInterface` and pass it as the third argument
+to the `OnPayAPI` constructor, immediately after `$options`. It stores the `state`
+and PKCE `code_verifier` that `authorize()` generates so `finishAuthorize()` can
+verify the callback:
 
 ```php
-$api = new OnPayAPI($tokenStorage, $options, null, null, null, null, $authStateStorage);
+$api = new OnPayAPI($tokenStorage, $options, $authStateStorage);
 
 // Build the redirect (state + verifier are saved via the storage):
 $redirectUrl = $api->authorize();
