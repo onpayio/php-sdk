@@ -20,6 +20,7 @@ use OnPay\TokenStorageInterface;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Tests\Support\ApiTestCase;
+use Tests\Support\FakeAuthStateStorage;
 
 /**
  * Drives the real OnPayAPI end-to-end against the {@see \Tests\Support\FakeHttpClient}
@@ -354,7 +355,7 @@ class OnPayApiCoreTest extends ApiTestCase
 
     public function testAuthorizeReturnsProviderUrlWithExpectedQuery(): void
     {
-        $api = $this->createApi();
+        $api = $this->createApi([], null, new FakeAuthStateStorage());
 
         $url = $api->authorize();
 
@@ -377,9 +378,9 @@ class OnPayApiCoreTest extends ApiTestCase
             'scope' => 'full',
         ], 200, 'POST', 'oauth2/access_token');
 
-        $api = $this->createApi();
+        $api = $this->createApi([], null, new FakeAuthStateStorage('the-state', 'the-verifier'));
 
-        $api->finishAuthorize('the-auth-code');
+        $api->finishAuthorize('the-auth-code', 'the-state');
 
         // The debug DTOs only track API calls, not the token exchange.
         $this->assertNull($api->getLastHttpRequest());
@@ -422,6 +423,11 @@ class OnPayApiCoreTest extends ApiTestCase
             'base_authorize_uri' => self::BASE_AUTHORIZE_URI,
         ]);
 
+        // No auth-state storage wired here, so building the authorize URL is deprecated.
+        $this->expectUserDeprecationMessage(
+            'Calling authorize() without an AuthStateStorageInterface is deprecated: '
+            . 'CSRF state verification and PKCE are disabled. Pass one to the OnPayAPI constructor.'
+        );
         $url = $api->authorize();
         parse_str(parse_url($url, PHP_URL_QUERY), $query);
         $this->assertArrayHasKey('redirect_uri', $query);
@@ -469,6 +475,7 @@ class OnPayApiCoreTest extends ApiTestCase
                 'base_uri' => self::BASE_URI,
                 'base_authorize_uri' => self::BASE_AUTHORIZE_URI,
             ],
+            null,
             $client,
             $factory,
             $factory,

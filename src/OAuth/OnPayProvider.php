@@ -16,11 +16,17 @@ use Psr\Http\Message\ResponseInterface;
  *
  * OnPay issues public (secret-less) clients, so the token endpoint is called with
  * the bare client_id and a `Basic client_id:` header (see {@see OnPayOptionProvider}),
- * requests the `full` scope by default and uses PKCE (S256).
+ * and requests the `full` scope by default.
+ *
+ * PKCE (S256) is opt-in: it is only advertised on the authorize URL when the caller
+ * can persist the verifier across the redirect (i.e. an {@see \OnPay\AuthStateStorageInterface}
+ * is wired into {@see \OnPay\OnPayAPI}). Without it there is no way to carry the
+ * verifier to the exchange, so no `code_challenge` is emitted at all.
  *
  * Options (in addition to the AbstractProvider ones):
  *  - `urlAuthorize`   the authorization endpoint, e.g. https://manage.onpay.io/oauth2/authorize
  *  - `urlAccessToken` the token endpoint, e.g. https://api.onpay.io/oauth2/access_token
+ *  - `pkceEnabled`    whether to advertise an S256 code_challenge (default false)
  *
  * @internal Shall not be used outside the library.
  *
@@ -35,6 +41,8 @@ class OnPayProvider extends AbstractProvider {
 
     protected string $urlAccessToken;
 
+    protected bool $pkceEnabled = false;
+
     /**
      * @param array<string,mixed> $options
      * @param array<string,mixed> $collaborators
@@ -47,7 +55,8 @@ class OnPayProvider extends AbstractProvider {
         }
         $this->urlAuthorize = $urlAuthorize;
         $this->urlAccessToken = $urlAccessToken;
-        unset($options['urlAuthorize'], $options['urlAccessToken']);
+        $this->pkceEnabled = (bool) ($options['pkceEnabled'] ?? false);
+        unset($options['urlAuthorize'], $options['urlAccessToken'], $options['pkceEnabled']);
 
         if (empty($collaborators['optionProvider'])) {
             $collaborators['optionProvider'] = new OnPayOptionProvider();
@@ -89,10 +98,13 @@ class OnPayProvider extends AbstractProvider {
     }
 
     /**
-     * @return string
+     * S256 only when the caller can persist the verifier across the redirect;
+     * otherwise no challenge is advertised (see the class docblock).
+     *
+     * @return string|null
      */
     protected function getPkceMethod() {
-        return self::PKCE_METHOD_S256;
+        return $this->pkceEnabled ? self::PKCE_METHOD_S256 : null;
     }
 
     /**

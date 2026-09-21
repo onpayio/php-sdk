@@ -51,9 +51,9 @@ class OnPayProviderTest extends TestCase
         self::assertSame($custom, $provider->getOptionProvider());
     }
 
-    public function testAuthorizationUrlUsesPkceS256AndDefaultScopeWithoutApprovalPrompt(): void
+    public function testAuthorizationUrlUsesPkceS256AndDefaultScopeWithoutApprovalPromptWhenEnabled(): void
     {
-        $provider = $this->provider();
+        $provider = $this->provider([], true);
 
         $url = $provider->getAuthorizationUrl();
         parse_str(parse_url($url, PHP_URL_QUERY), $query);
@@ -66,6 +66,20 @@ class OnPayProviderTest extends TestCase
 
         $expectedChallenge = rtrim(strtr(base64_encode(hash('sha256', $provider->getPkceCode(), true)), '+/', '-_'), '=');
         self::assertSame($expectedChallenge, $query['code_challenge']);
+    }
+
+    public function testAuthorizationUrlOmitsPkceChallengeWhenDisabled(): void
+    {
+        $provider = $this->provider();
+
+        $url = $provider->getAuthorizationUrl();
+        parse_str(parse_url($url, PHP_URL_QUERY), $query);
+
+        self::assertSame('full', $query['scope']);
+        self::assertSame($provider->getState(), $query['state']);
+        self::assertArrayNotHasKey('code_challenge', $query);
+        self::assertArrayNotHasKey('code_challenge_method', $query);
+        self::assertNull($provider->getPkceCode());
     }
 
     public function testResourceOwnerIsNotSupported(): void
@@ -156,7 +170,7 @@ class OnPayProviderTest extends TestCase
     /**
      * @param array<string,mixed> $collaborators
      */
-    private function provider(array $collaborators = []): OnPayProvider
+    private function provider(array $collaborators = [], bool $pkceEnabled = false): OnPayProvider
     {
         $factory = new HttpFactory();
 
@@ -166,6 +180,7 @@ class OnPayProviderTest extends TestCase
                 'redirectUri' => 'https://example.test/redirect',
                 'urlAuthorize' => self::AUTHORIZE_URL,
                 'urlAccessToken' => self::TOKEN_URL,
+                'pkceEnabled' => $pkceEnabled,
             ],
             $collaborators + [
                 'httpClient' => new GuzzleClientAdapter($this->http),

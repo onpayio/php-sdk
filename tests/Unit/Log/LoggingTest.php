@@ -47,7 +47,7 @@ class LoggingTest extends ApiTestCase
             'redirect_uri' => self::REDIRECT_URI,
             'base_uri' => self::BASE_URI,
             'base_authorize_uri' => self::BASE_AUTHORIZE_URI,
-        ], $this->http, $factory, $factory);
+        ], null, $this->http, $factory, $factory);
 
         $logger = (new \ReflectionProperty(OnPayAPI::class, 'logger'))->getValue($api);
         $this->assertInstanceOf(ErrorLogLogger::class, $logger);
@@ -63,7 +63,7 @@ class LoggingTest extends ApiTestCase
             'redirect_uri' => self::REDIRECT_URI,
             'base_uri' => self::BASE_URI,
             'base_authorize_uri' => self::BASE_AUTHORIZE_URI,
-        ], $this->http, $factory, $factory, new NullLogger());
+        ], null, $this->http, $factory, $factory, new NullLogger());
 
         // Only proves the NullLogger is accepted and nothing blows up; the fallback
         // logger's own output is covered in ErrorLogLoggerTest.
@@ -137,7 +137,7 @@ class LoggingTest extends ApiTestCase
             'redirect_uri' => self::REDIRECT_URI,
             'base_uri' => self::BASE_URI,
             'base_authorize_uri' => self::BASE_AUTHORIZE_URI,
-        ], $client, $factory, $factory, $this->logger);
+        ], null, $client, $factory, $factory, $this->logger);
 
         try {
             $api->ping();

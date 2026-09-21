@@ -440,7 +440,6 @@ class PaymentWindowTest extends TestCase
 
     public function testValidatePaymentReturnsTrueForCorrectHmac(): void
     {
-        // asserts current behaviour; 6329 changes this (=== instead of hash_equals)
         $window = new PaymentWindow();
         $window->setSecret('hmacsecret');
 
@@ -490,32 +489,12 @@ class PaymentWindowTest extends TestCase
         $this->assertTrue($window->validatePayment($fields));
     }
 
-    public function testValidatePaymentLooseMatchWronglyIncludesEmbeddedField(): void
+    public function testValidatePaymentExcludesFieldWhoseNameMerelyContainsThePrefix(): void
     {
-        // asserts current behaviour; 6329 changes this
-        // The loose strpos($key, 'onpay_') !== false check wrongly includes a
-        // field whose name merely CONTAINS "onpay_" (foo_onpay_bar). The signed
-        // set therefore contains it, so a signature computed over that set
-        // (including foo_onpay_bar) validates as true.
-        $window = new PaymentWindow();
-        $window->setSecret('hmacsecret');
-
-        $fields = [
-            'onpay_uuid'      => 'abc-123',
-            'onpay_number'    => '9001',
-            'foo_onpay_bar'   => 'sneaky',
-            'onpay_hmac_sha1' => '3d97d760c3ec47f52bdc2728a97f6afb285d5a80',
-        ];
-
-        $this->assertTrue($window->validatePayment($fields));
-    }
-
-    public function testValidatePaymentLooseMatchRejectsStrictlyPrefixedSignature(): void
-    {
-        // asserts current behaviour; 6329 changes this
-        // A signature computed over ONLY the strictly onpay_-prefixed subset
-        // (i.e. excluding foo_onpay_bar, as a correct prefix check would) is
-        // rejected, because the current loose check signs foo_onpay_bar too.
+        // Prefix-anchored match: foo_onpay_bar (contains but does not START WITH
+        // "onpay_") is NOT part of the signed set, mirroring the server. A signature
+        // over only the strictly-prefixed fields validates even when foo_onpay_bar
+        // is present in the callback.
         $window = new PaymentWindow();
         $window->setSecret('hmacsecret');
 
@@ -531,6 +510,24 @@ class PaymentWindowTest extends TestCase
             'onpay_number'    => '9001',
             'foo_onpay_bar'   => 'sneaky',
             'onpay_hmac_sha1' => $strictHmac,
+        ];
+
+        $this->assertTrue($window->validatePayment($fields));
+    }
+
+    public function testValidatePaymentRejectsSignatureThatIncludedANonPrefixedField(): void
+    {
+        // The old loose strpos() check folded foo_onpay_bar into the signed set. A
+        // signature computed that way (the previously-pinned value) is now rejected,
+        // because foo_onpay_bar is correctly excluded.
+        $window = new PaymentWindow();
+        $window->setSecret('hmacsecret');
+
+        $fields = [
+            'onpay_uuid'      => 'abc-123',
+            'onpay_number'    => '9001',
+            'foo_onpay_bar'   => 'sneaky',
+            'onpay_hmac_sha1' => '3d97d760c3ec47f52bdc2728a97f6afb285d5a80',
         ];
 
         $this->assertFalse($window->validatePayment($fields));

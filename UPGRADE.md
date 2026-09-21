@@ -84,6 +84,35 @@ a non-nullable parameter throws `TypeError`. Most likely to affect you:
 - `PaymentWindow::setGatewayId/setCurrency/setAmount/setReference/setAcceptUrl/setType/setMethod/setLanguage/setDeclineUrl/setCallbackUrl/setDesign/setSecret/setPlatform` — pass a value, not `null`.
 - `CartItem::__construct(string $name, int $price, int $quantity, int $tax, …)` — the first four are required and non-null.
 
+### OAuth `state` (CSRF) verification and PKCE
+
+The OAuth authorization flow can now verify the CSRF `state` and use PKCE. To enable
+both, implement `OnPay\AuthStateStorageInterface` and pass it as the seventh argument
+to the `OnPayAPI` constructor. It stores the `state` and PKCE `code_verifier` that
+`authorize()` generates so `finishAuthorize()` can verify the callback:
+
+```php
+$api = new OnPayAPI($tokenStorage, $options, null, null, null, null, $authStateStorage);
+
+// Build the redirect (state + verifier are saved via the storage):
+$redirectUrl = $api->authorize();
+
+// On the callback, pass the returned state so it is verified:
+$api->finishAuthorize($_GET['code'], $_GET['state']);
+```
+
+A mismatched or missing `state` throws `OnPay\API\Exception\TokenException` before any
+token is exchanged. The storage is cleared once the flow completes.
+
+**Backwards compatibility:** the new constructor argument and the second
+`finishAuthorize()` argument are both optional. When no `AuthStateStorageInterface` is
+supplied, the flow behaves as before (no `state` verification, no PKCE) but now emits an
+`E_USER_DEPRECATED` notice from `authorize()` and `finishAuthorize()`. This is silent
+under PHP's default error handler, but **a project whose `set_error_handler` escalates
+`E_USER_DEPRECATED` to an exception will now throw** when building the authorize URL or
+finishing authorization — wire up an `AuthStateStorageInterface` to resolve it (and gain
+the CSRF/PKCE protection).
+
 <!--
 Template for a new entry:
 

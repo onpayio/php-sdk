@@ -511,12 +511,15 @@ class PaymentWindow
      * @param array<string, string> $fields
      * @return bool
      */
-    public function validatePayment(array $fields) {
+    public function validatePayment(array $fields): bool {
 
         $validFields = [];
 
         foreach ($fields as $key => $value) {
-            if(strpos($key, 'onpay_') !== false) {
+            // Only the fields OnPay signs: those whose key starts with "onpay_".
+            // A prefix match (not a substring one) mirrors the server's signing,
+            // so a field like "foo_onpay_bar" is correctly excluded.
+            if (str_starts_with($key, 'onpay_')) {
                 $validFields[$key] = $value;
             }
         }
@@ -534,11 +537,7 @@ class PaymentWindow
         $queryString = strtolower(http_build_query($validFields));
         $hmac = hash_hmac('sha1', $queryString, (string) $this->secret);
 
-        if($verify === $hmac) {
-            return true;
-        }
-
-        return false;
+        return hash_equals($hmac, $verify);
     }
 
     /**

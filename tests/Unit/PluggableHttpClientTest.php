@@ -60,7 +60,7 @@ class PluggableHttpClientTest extends TestCase {
         });
 
         $factory = new HttpFactory();
-        $api = new OnPayAPI($this->validTokenStorage(), $this->options(), $psrClient, $factory, $factory);
+        $api = new OnPayAPI($this->validTokenStorage(), $this->options(), null, $psrClient, $factory, $factory);
 
         $result = $api->ping();
 
@@ -85,7 +85,7 @@ class PluggableHttpClientTest extends TestCase {
         );
 
         $factory = new HttpFactory();
-        $api = new OnPayAPI($this->validTokenStorage(), $this->options(), $psrClient, $factory, $factory);
+        $api = new OnPayAPI($this->validTokenStorage(), $this->options(), null, $psrClient, $factory, $factory);
 
         $api->ping();
 
@@ -107,7 +107,7 @@ class PluggableHttpClientTest extends TestCase {
         $psrClient->method('sendRequest')->willThrowException($psrException);
 
         $factory = new HttpFactory();
-        $api = new OnPayAPI($this->validTokenStorage(), $this->options(), $psrClient, $factory, $factory);
+        $api = new OnPayAPI($this->validTokenStorage(), $this->options(), null, $psrClient, $factory, $factory);
 
         $this->expectException(ConnectionException::class);
         $api->ping();
@@ -124,7 +124,7 @@ class PluggableHttpClientTest extends TestCase {
         );
 
         $factory = new HttpFactory();
-        $api = new OnPayAPI($this->validTokenStorage(), $this->options(), $psrClient, $factory, $factory);
+        $api = new OnPayAPI($this->validTokenStorage(), $this->options(), null, $psrClient, $factory, $factory);
 
         try {
             $api->ping();
@@ -150,7 +150,7 @@ class PluggableHttpClientTest extends TestCase {
         );
 
         // Only the client is injected; the PSR-17 factories are auto-discovered.
-        $api = new OnPayAPI($this->validTokenStorage(), $this->options(), $psrClient);
+        $api = new OnPayAPI($this->validTokenStorage(), $this->options(), null, $psrClient);
 
         $this->assertInstanceOf(Psr18HttpClient::class, $this->getHttpClient($api));
         $this->assertSame(['data' => ['pong' => 'ok']], $api->ping());
@@ -177,7 +177,7 @@ class PluggableHttpClientTest extends TestCase {
             $this->expectException(\InvalidArgumentException::class);
             $this->expectExceptionMessage('PSR-17 request/stream factory');
 
-            new OnPayAPI($this->validTokenStorage(), $this->options(), $psrClient);
+            new OnPayAPI($this->validTokenStorage(), $this->options(), null, $psrClient);
         });
     }
 
@@ -189,7 +189,7 @@ class PluggableHttpClientTest extends TestCase {
         );
 
         $this->withoutDiscovery(function () use ($psrClient, $factory): void {
-            $api = new OnPayAPI($this->validTokenStorage(), $this->options(), $psrClient, $factory, $factory);
+            $api = new OnPayAPI($this->validTokenStorage(), $this->options(), null, $psrClient, $factory, $factory);
 
             $this->assertSame(['data' => ['pong' => 'ok']], $api->ping());
             $this->assertStringStartsWith($this->baseAuthUri . '/oauth2/authorize?', $api->authorize());

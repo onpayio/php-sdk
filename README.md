@@ -128,15 +128,27 @@ class TokenStorage implements \OnPay\TokenStorageInterface {
     }
 }
 
+// Persists the OAuth CSRF state and PKCE code_verifier across the redirect. Here it is
+// backed by the PHP session; scope it to the visitor and treat the values as single-use.
+class SessionAuthStateStorage implements \OnPay\AuthStateStorageInterface {
+    public function saveState(string $state): void { $_SESSION['onpay_state'] = $state; }
+    public function getState(): ?string { return $_SESSION['onpay_state'] ?? null; }
+    public function saveCodeVerifier(string $codeVerifier): void { $_SESSION['onpay_verifier'] = $codeVerifier; }
+    public function getCodeVerifier(): ?string { return $_SESSION['onpay_verifier'] ?? null; }
+    public function clear(): void { unset($_SESSION['onpay_state'], $_SESSION['onpay_verifier']); }
+}
+
 // TODO: It is extremely important that the .token.bin file is not accessible from the internet.
 // It gives complete API access to anyone that gets a hold of it, treat it like a database password!
 $tokenStorage = new TokenStorage(__DIR__ . '/.token.bin');
+
+session_start();
 
 $onPayAPI = new \OnPay\OnPayAPI($tokenStorage, [
     'client_id' => 'example.com', // It is recommended to set it to the domain name the integration resides on
     'redirect_uri' => 'http://localhost/onpay-php-sdk/example2.php?auth',
     'gateway_id' => '1234', // Should be set to the gateway id you are integrating with
-]);
+], authStateStorage: new SessionAuthStateStorage()); // enables CSRF state verification + PKCE
 
 // Special handling if we are about to auth against the API
 if (isset($_GET['auth'])) {
@@ -144,7 +156,8 @@ if (isset($_GET['auth'])) {
         $authUrl = $onPayAPI->authorize();
         header('Location: ' . $authUrl);
     } else {
-        $onPayAPI->finishAuthorize($_GET['code']);
+        // Pass the returned state so it is verified against the value saved above.
+        $onPayAPI->finishAuthorize($_GET['code'], $_GET['state'] ?? null);
         echo 'Authorized :tada:' . PHP_EOL;
     }
     exit;
