@@ -337,9 +337,13 @@ classes and the two constant holders were already `final` earlier in the 2.0 ser
   `DetailedTransaction`/`DetailedSubscription` extend them.
 - `API\Exception\OnPayException` and
   `API\Util\PaymentMethods\Methods\PaymentMethodAbstract` — abstract bases.
-- `TokenStorageInterface`, `AuthStateStorageInterface` and
-  `API\Util\PaymentMethods\Methods\PaymentMethodInterface` — interfaces you are meant to
+- `TokenStorageInterface` and `AuthStateStorageInterface` — interfaces you are meant to
   implement. They are not `@internal` and they are not going anywhere.
+- `API\Util\PaymentMethods\Methods\PaymentMethodInterface` is the read-side type of the
+  objects returned by `Currency::getPaymentMethods()` and
+  `PaymentMethods::getAllPaymentMethods()`. It is now `@internal` like the classes that
+  implement it: call `getMethod()`/`getName()`/`getCurrencies()` on what the SDK hands you,
+  but do not implement it yourself.
 
 If you extended one of the now-`final` classes, wrap it instead of inheriting from it: hold
 the SDK object as a property and expose your own methods. The same applies to test doubles —
