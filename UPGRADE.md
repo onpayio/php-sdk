@@ -207,6 +207,41 @@ The five `PaymentWindow::DELIVERY_DISABLED_*` constants are kept and `@deprecate
 their current values, a string is still passed through unvalidated, `null` still clears the
 field, and `getDeliveryDisabled()` still returns `?string`. Nothing breaks.
 
+### Inconsistently named `PaymentWindow` methods have properly named replacements
+
+Three spots on `PaymentWindow` did not match the rest of its method surface. All three
+keep working — the old names are now `@deprecated` aliases — but new code should use the
+replacements:
+
+| Deprecated | Use instead |
+| --- | --- |
+| `isSurcharge_enabled()` | `isSurchargeEnabled(): ?bool` |
+| `setTestMode($mixed)` | `setTestModeEnabled(bool $enabled): void` |
+| `getTestMode()` | `isTestModeEnabled(): bool` |
+| `setSecureEnabled()` | `set3DSecure()` |
+| `hasSecureEnabled()` | `is3DSecure()` |
+
+`isSurcharge_enabled()` was the SDK's only method mixing snake_case and camelCase; the
+setter `setSurchargeEnabled()` was already correct. The new getter returns the same
+`?bool`, including `null` when the flag was never set.
+
+`setSecureEnabled()`/`hasSecureEnabled()` have been deprecated since 1.x and are unchanged
+here — only their docblocks now name the replacement.
+
+Test mode was `PaymentWindow`'s one untyped setter — `setTestMode()` accepted anything and
+`getTestMode()` returned `int|bool|string|null`, so nothing in the signature said test mode
+is a flag. The typed pair does:
+
+```php
+// Before (1.x, still works but deprecated)
+$paymentWindow->setTestMode(true);
+// After (2.0)
+$paymentWindow->setTestModeEnabled(true);
+```
+
+`isTestModeEnabled()` also reads a value stored through the deprecated setter —
+`setTestMode('yes')` then `isTestModeEnabled() === true`.
+
 <!--
 Template for a new entry:
 

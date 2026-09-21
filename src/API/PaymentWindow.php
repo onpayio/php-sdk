@@ -211,7 +211,7 @@ class PaymentWindow
 
     /**
      * @param bool $secureEnabled
-     * @deprecated
+     * @deprecated Use {@see PaymentWindow::set3DSecure()} instead.
      */
     public function setSecureEnabled(bool $secureEnabled): void
     {
@@ -220,7 +220,7 @@ class PaymentWindow
 
     /**
      * @return bool
-     * @deprecated
+     * @deprecated Use {@see PaymentWindow::is3DSecure()} instead.
      */
     public function hasSecureEnabled() {
         return $this->is3DSecure();
@@ -384,7 +384,32 @@ class PaymentWindow
     }
 
     /**
+     * Enables or disables test mode.
+     *
+     * When enabled the window is opened with `onpay_testmode=1`; when disabled the field
+     * is left out of the form fields entirely, the same way {@see PaymentWindow::set3DSecure()}
+     * clears its field. Either way the create-payment API call sends `testmode` as a boolean.
+     */
+    public function setTestModeEnabled(bool $enabled): void
+    {
+        $this->testMode = $enabled ? 1 : null;
+    }
+
+    /**
+     * Returns whether test mode is enabled.
+     *
+     * Applies the same `boolval()` that `PaymentService::buildCreatePaymentData()` applies
+     * before the API call, so a value stored through the deprecated
+     * {@see PaymentWindow::setTestMode()} is read back the same way it is sent.
+     */
+    public function isTestModeEnabled(): bool
+    {
+        return boolval($this->testMode);
+    }
+
+    /**
      * @param int|bool|string|null $testMode
+     * @deprecated Use {@see PaymentWindow::setTestModeEnabled()} instead.
      */
     public function setTestMode($testMode): void
     {
@@ -393,6 +418,7 @@ class PaymentWindow
 
     /**
      * @return int|bool|string|null
+     * @deprecated Use {@see PaymentWindow::isTestModeEnabled()} instead.
      */
     public function getTestMode() {
         return $this->testMode;
@@ -631,10 +657,18 @@ class PaymentWindow
     }
 
     /**
+     * Returns whether surcharge is enabled, or null when the flag was never set.
+     */
+    public function isSurchargeEnabled(): ?bool {
+        return $this->surcharge_enabled;
+    }
+
+    /**
      * @return bool|null
+     * @deprecated Use {@see PaymentWindow::isSurchargeEnabled()} instead.
      */
     public function isSurcharge_enabled() {
-        return $this->surcharge_enabled;
+        return $this->isSurchargeEnabled();
     }
 
     /**
