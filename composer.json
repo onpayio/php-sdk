@@ -29,7 +29,7 @@
         "vimeo/psalm": "~6.17.0"
     },
     "suggest": {
-        "guzzlehttp/guzzle": "A PSR-18 client + PSR-17 factories the SDK will auto-discover (currently also pulled in by league/oauth2-client 2.x).",
+        "guzzlehttp/guzzle": "A PSR-18 client + PSR-17 factories the SDK will auto-discover.",
         "nyholm/psr7": "A lightweight PSR-7/PSR-17 implementation to pair with a custom PSR-18 client."
     },
     "config": {
