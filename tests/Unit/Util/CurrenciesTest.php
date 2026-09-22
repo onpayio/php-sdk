@@ -38,12 +38,20 @@ class CurrenciesTest extends TestCase
         $this->assertFalse(Currencies::isValidAlpha3('XXX'));
     }
 
-    public function testIsValidAlpha3IsCaseSensitive(): void
+    public function testIsValidAlpha3IsCaseInsensitiveAndReturnsTheCanonicalCode(): void
     {
-        // Pinned behaviour: alpha3 lookup is case-sensitive (array key match), so a
-        // lowercase code is not accepted, unlike the case-insensitive method lookup
-        // in PaymentMethods::getCurrenciesByMethod.
-        $this->assertFalse(Currencies::isValidAlpha3('dkk'));
+        // The API accepts a lowercase currency on input but always returns it uppercase,
+        // so the lookup folds case and answers with the canonical form either way.
+        foreach (['dkk', 'Dkk', 'dKK', 'DKK'] as $spelling) {
+            $this->assertSame('DKK', Currencies::isValidAlpha3($spelling));
+        }
+        $this->assertFalse(Currencies::isValidAlpha3('xxx'));
+    }
+
+    public function testIsValidAlpha3RejectsANonString(): void
+    {
+        // An int can only be a numeric code; isValidISO4217() is the lookup for those.
+        $this->assertFalse(Currencies::isValidAlpha3(208));
     }
 
     public function testIsValidISO4217ReturnsCodeForKnownNumericCode(): void
@@ -57,12 +65,31 @@ class CurrenciesTest extends TestCase
         $this->assertFalse(Currencies::isValidISO4217(999));
     }
 
-    public function testIsValidISO4217IsStrictlyTyped(): void
+    /**
+     * The parameter is `int`, so what a numeric string does depends on the *caller's*
+     * mode: this file is weak-mode, so PHP coerces '208' to 208 before the call and the
+     * lookup succeeds. A strict-mode caller gets a TypeError instead — see
+     * {@see CurrenciesStrictTypesTest}. Either way the value is never silently mismatched
+     * the way the old `int|string` signature allowed.
+     */
+    public function testIsValidISO4217CoercesANumericStringForAWeakModeCaller(): void
     {
-        // Pinned behaviour: the comparison uses === against an int, so a numeric
-        // string does not match even though the docblock accepts "a valid ISO4217
-        // value". Passing '208' as a string returns false.
-        $this->assertFalse(Currencies::isValidISO4217('208'));
+        $this->assertSame('DKK', Currencies::isValidISO4217('208'));
+        // Zero-padded codes coerce too, which matters because AUD is 36, not 036.
+        $this->assertSame('AUD', Currencies::isValidISO4217('036'));
+    }
+
+    public function testIsValidISO4217RejectsAStringThatIsNotNumeric(): void
+    {
+        // PHP will not coerce these to int even in weak mode.
+        foreach (['', 'abc', '36abc'] as $notNumeric) {
+            try {
+                Currencies::isValidISO4217($notNumeric);
+                $this->fail(sprintf('%s was accepted.', var_export($notNumeric, true)));
+            } catch (\TypeError $e) {
+                $this->assertStringContainsString('must be of type int', $e->getMessage());
+            }
+        }
     }
 
     /**

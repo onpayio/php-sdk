@@ -28,13 +28,15 @@ final class Currency {
     private int $exponent;
 
     /**
-     * @param string|int $currencyCode This can be either a valid ISO4217 value or a valid Alpha3 value.
+     * @param string|int $currencyCode An alpha-3 code as a string ('DKK'), or an ISO 4217
+     *                                 numeric code as an int (208).
      * @throws ApiException
      */
     public function __construct(int|string $currencyCode) {
-        $alpha3 = Currencies::isValidAlpha3($currencyCode);
-        if ($alpha3 === false) {
+        if (is_int($currencyCode)) {
             $alpha3 = Currencies::isValidISO4217($currencyCode);
+        } else {
+            $alpha3 = Currencies::isValidAlpha3($currencyCode);
         }
         if ($alpha3 === false) {
             throw new ApiException("Unsupported currency provided: " . $currencyCode);

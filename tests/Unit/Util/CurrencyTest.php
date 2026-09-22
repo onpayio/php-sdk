@@ -25,7 +25,8 @@ class CurrencyTest extends TestCase
 
     public function testConstructFromNumericIso4217ResolvesAlpha3(): void
     {
-        // alpha3 lookup fails for an int, so the ISO4217 branch resolves it instead.
+        // An int can only be a numeric code, so the constructor dispatches to the
+        // ISO4217 lookup rather than the alpha-3 one.
         $currency = new Currency(208);
 
         $this->assertSame('DKK', $currency->getAlpha3());
@@ -50,11 +51,22 @@ class CurrencyTest extends TestCase
         new Currency('XXX');
     }
 
+    public function testConstructIsCaseInsensitiveForAlpha3(): void
+    {
+        // The alpha-3 lookup folds case and answers with the canonical spelling, so
+        // getAlpha3() is uppercase whatever the caller passed.
+        foreach (['dkk', 'Dkk', 'dKK'] as $spelling) {
+            $currency = new Currency($spelling);
+
+            $this->assertSame('DKK', $currency->getAlpha3());
+            $this->assertSame(208, $currency->getISO4217());
+        }
+    }
+
     public function testConstructThrowsForNumericStringIso4217(): void
     {
-        // Pinned behaviour: ISO4217 matching is strict (=== against int), so passing
-        // the numeric code as a string is rejected even though the docblock advertises
-        // "a valid ISO4217 value". '208' as a string therefore throws.
+        // A numeric code must be passed as an int: a string is only ever read as an
+        // alpha-3 code, and '208' is not one.
         $this->expectException(ApiException::class);
         $this->expectExceptionMessage('Unsupported currency provided: 208');
 

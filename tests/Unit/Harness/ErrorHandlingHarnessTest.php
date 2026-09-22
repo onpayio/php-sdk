@@ -31,6 +31,53 @@ class ErrorHandlingHarnessTest extends ApiTestCase
         $api->transaction()->getTransaction('does-not-exist');
     }
 
+    /**
+     * The API can answer a lookup for a resource that does not exist with HTTP 200 and an
+     * HTML error page, so a 2xx alone is not enough to attempt a decode.
+     */
+    public function testHtmlBodyOn200NamesTheRealCause(): void
+    {
+        $this->http->willReturn(
+            new Response(200, ['Content-Type' => 'text/html; charset=UTF-8'], '<!DOCTYPE html><html>404</html>'),
+            'GET'
+        );
+
+        $api = $this->createApi();
+
+        try {
+            $api->transaction()->getTransaction('99999999');
+            $this->fail('Expected ApiException was not thrown.');
+        } catch (ApiException $e) {
+            $this->assertStringContainsString('Expected a JSON body', $e->getMessage());
+            $this->assertStringContainsString('text/html', $e->getMessage());
+            $this->assertSame(200, $e->getCode());
+        }
+    }
+
+    public function testMissingContentTypeOn200IsStillDecoded(): void
+    {
+        $this->http->willReturn(
+            new Response(200, [], json_encode(['data' => ['status' => 'ok']])),
+            'GET'
+        );
+
+        $api = $this->createApi();
+
+        $this->assertSame(['data' => ['status' => 'ok']], $api->ping());
+    }
+
+    public function testJsonContentTypeWithCharsetOn200IsDecoded(): void
+    {
+        $this->http->willReturn(
+            new Response(200, ['Content-Type' => 'application/json; charset=utf-8'], json_encode(['data' => []])),
+            'GET'
+        );
+
+        $api = $this->createApi();
+
+        $this->assertSame(['data' => []], $api->ping());
+    }
+
     public function testInvalidJsonOn200BecomesApiException(): void
     {
         $this->http->willReturn(

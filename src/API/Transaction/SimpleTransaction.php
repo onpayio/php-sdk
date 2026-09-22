@@ -72,6 +72,9 @@ class SimpleTransaction {
 
     public ?string $wallet = null;
 
+    /**
+     * True does not guarantee the cardholder data is present; check the object itself.
+     */
     public bool $hasCardholderData = false;
 
     public bool $testMode = false;

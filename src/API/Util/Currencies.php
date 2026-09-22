@@ -44,20 +44,24 @@ final class Currencies {
 
     /**
      * @param int|string $alpha3
-     * @return string|false
+     * @return string|false the canonical uppercase code, or false if it is unknown
      */
     public static function isValidAlpha3(int|string $alpha3): string|false {
-        if (is_string($alpha3) && isset(self::CURRENCIES[$alpha3])) {
-            return $alpha3;
+        if (!is_string($alpha3)) {
+            return false;
+        }
+        $canonical = strtoupper($alpha3);
+        if (isset(self::CURRENCIES[$canonical])) {
+            return $canonical;
         }
         return false;
     }
 
     /**
-     * @param int|string $ISO4217
-     * @return string|false
+     * @param int $ISO4217
+     * @return string|false the alpha-3 code, or false if the code is unknown
      */
-    public static function isValidISO4217(int|string $ISO4217): string|false {
+    public static function isValidISO4217(int $ISO4217): string|false {
         foreach (self::CURRENCIES as $alpha3 => $currencyData) {
             if ($currencyData['ISO4217'] === $ISO4217) {
                 return $alpha3;

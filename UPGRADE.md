@@ -363,6 +363,67 @@ already annotated earlier in the 2.0 series; this release adds the stragglers:
 The classes themselves stay public where consumers legitimately receive instances of them —
 only the SDK constructs or fills them.
 
+### `PaymentInfo` validation patterns are now correctly anchored
+
+`PaymentWindow\PaymentInfo`'s validation patterns are interpolated into `^`/`$` anchors,
+but the alternation patterns were not grouped, so `'Y|N'` became `/^Y|N$/u` — which PCRE
+reads as `(^Y)|(N$)`, not `^(Y|N)$`. Any value that merely *started* with `Y` or *ended*
+with `N` was accepted. The patterns are now grouped, and the `D` modifier is applied so `$`
+means end-of-subject rather than "end-of-subject, or before a final newline".
+
+Values that 1.x accepted and 2.0 now rejects with `InvalidFormatException`:
+
+- On the five `Y`/`N` fields — `setAccountShippingIdenticalName()`,
+  `setAccountSuspicious()`, `setAddressIdenticalShipping()`, `setPreorder()` and
+  `setReorder()` — anything but exactly `Y` or `N`. Previously `'Yes'`, `'YOLO'` (start with
+  `Y`) and `'ON'`, `'GREEN'` (end with `N`) all passed.
+- On every field, a value with a trailing newline (e.g. `"208\n"` for a country code).
+
+Exactly `Y` or `N` is what OnPay's API accepts for the equivalent fields, so this brings
+`PaymentInfo` in line with the documented contract. Pass a literal `Y` or `N`, and trim
+your input.
+
+### `Currencies::isValidISO4217()` takes an `int`
+
+The method compared the stored numeric codes with `===` against an `int|string` argument,
+so a numeric string could never match: `Currencies::isValidISO4217('208')` returned `false`
+while `isValidISO4217(208)` returned `'DKK'`, even though the signature advertised both.
+The parameter is now `int`, which is how the API emits `currency_code`.
+
+What a numeric string now does depends on your own file's mode, not the SDK's:
+
+- Under `declare(strict_types=1)`, `isValidISO4217('208')` throws `\TypeError`. Cast it:
+  `isValidISO4217((int) $code)`.
+- Without `strict_types`, PHP coerces `'208'` to `208` and the lookup now *succeeds* where
+  it previously returned `false`.
+- A string PHP cannot coerce (`''`, `'abc'`, `'36abc'`) throws `\TypeError` in either mode.
+
+`Util\Currency` is unaffected: it dispatches on the argument type, so `new Currency('DKK')`
+and `new Currency(208)` behave exactly as before, and `new Currency('208')` still throws
+`ApiException` — a numeric code must be passed as an int.
+
+### `Currencies::isValidAlpha3()` is case-insensitive
+
+`isValidAlpha3('dkk')` returned `false`; it now returns `'DKK'`, and
+`new Currency('dkk')->getAlpha3()` is `'DKK'`. The lookup answers with the canonical
+uppercase code whatever spelling you pass. This only widens what is accepted.
+
+### A 2xx with a non-JSON body is reported as such
+
+The SDK decoded every 2xx body as JSON. The API can answer a lookup for a resource that
+does not exist with **HTTP 200 and an HTML error page** rather than a 404, which produced
+`ApiException('Failed to decode JSON body-response: Syntax error', 200)` — loud, but it
+reads like SDK or transport breakage rather than "that transaction does not exist".
+
+The SDK now checks the `Content-Type` first and throws an `ApiException` naming what it got.
+It is still an `ApiException` with the same status code, so no `catch` site needs to change;
+only the message differs. Only a `Content-Type` that is present and is not JSON is rejected,
+so a response without the header is still decoded, and `application/json; charset=utf-8` is
+unaffected.
+
+This is distinct from a **malformed** identifier, which does return a proper `400` with a
+JSON error envelope.
+
 <!--
 Template for a new entry:
 
