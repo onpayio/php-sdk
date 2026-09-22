@@ -37,7 +37,7 @@ use Psr\Log\LoggerInterface;
  * {@see \OnPay\Http\ApiClient}.
  */
 final class OnPayAPI {
-    const SDK_VERSION = '1.0.39';
+    const SDK_VERSION = '2.0.0';
 
     /**
      * @var array<array-key, mixed>
