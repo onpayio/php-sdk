@@ -40,6 +40,36 @@ class PluggableHttpClientTest extends TestCase {
         return $tokenStorage;
     }
 
+    /**
+     * Unwraps down to the PSR-18 client the SDK actually sends through.
+     */
+    private function getPsr18Client(OnPayAPI $api): ClientInterface {
+        $transport = $this->getHttpClient($api);
+        $this->assertInstanceOf(Psr18HttpClient::class, $transport);
+
+        $client = (new \ReflectionProperty(Psr18HttpClient::class, 'client'))->getValue($transport);
+        $this->assertInstanceOf(ClientInterface::class, $client);
+
+        return $client;
+    }
+
+    /**
+     * Runs $test with $strategy consulted before php-http/discovery's own strategies.
+     */
+    private function withDiscoveryStrategy(string $strategy, callable $test): void {
+        $originalStrategies = (new \ReflectionProperty(ClassDiscovery::class, 'strategies'))->getValue();
+
+        try {
+            ClassDiscovery::prependStrategy($strategy);
+            ClassDiscovery::clearCache();
+
+            $test();
+        } finally {
+            ClassDiscovery::setStrategies($originalStrategies);
+            ClassDiscovery::clearCache();
+        }
+    }
+
     private function getHttpClient(OnPayAPI $api): object {
         // Private members are reflection-accessible without setAccessible() on PHP 8.1+.
         $apiClient = (new \ReflectionProperty(OnPayAPI::class, 'apiClient'))->getValue($api);
@@ -144,6 +174,34 @@ class PluggableHttpClientTest extends TestCase {
         $this->assertInstanceOf(Psr18HttpClient::class, $this->getHttpClient($api));
     }
 
+    public function testDiscoveredGuzzleClientGetsATimeout(): void {
+        // Guzzle's default is no timeout at all; a client the SDK discovers itself
+        // is rebuilt with one, since nobody else had the chance to configure it.
+        $api = new OnPayAPI($this->validTokenStorage(), $this->options());
+
+        $transport = $this->getPsr18Client($api);
+        $this->assertInstanceOf(\GuzzleHttp\Client::class, $transport);
+        $this->assertSame(30, $transport->getConfig('timeout'));
+        $this->assertSame(5, $transport->getConfig('connect_timeout'));
+    }
+
+    public function testDiscoveredNonGuzzleClientIsUsedAsFound(): void {
+        // Any other discovered client is the consumer's choice and is used untouched.
+        $this->withDiscoveryStrategy(NonGuzzleClientStrategy::class, function (): void {
+            $api = new OnPayAPI($this->validTokenStorage(), $this->options());
+
+            $this->assertInstanceOf(NonGuzzlePsr18Client::class, $this->getPsr18Client($api));
+        });
+    }
+
+    public function testInjectedGuzzleClientKeepsItsOwnConfiguration(): void {
+        $injected = new \GuzzleHttp\Client(['timeout' => 3]);
+
+        $api = new OnPayAPI($this->validTokenStorage(), $this->options(), null, $injected);
+
+        $this->assertSame($injected, $this->getPsr18Client($api));
+    }
+
     public function testInjectedClientDiscoversMissingFactories(): void {
         $psrClient = $this->createMock(ClientInterface::class);
         $psrClient->method('sendRequest')->willReturn(
@@ -229,5 +287,25 @@ class PluggableHttpClientTest extends TestCase {
             $token['refresh_token'] = $refreshToken;
         }
         return json_encode($token);
+    }
+}
+
+/**
+ * A PSR-18 client that is not Guzzle, for the discovery tests.
+ */
+final class NonGuzzlePsr18Client implements ClientInterface {
+    public function sendRequest(RequestInterface $request): \Psr\Http\Message\ResponseInterface {
+        return new GuzzleResponse(200, ['Content-Type' => 'application/json'], '{"data":{"pong":"ok"}}');
+    }
+}
+
+/**
+ * Makes php-http/discovery hand out {@see NonGuzzlePsr18Client} as the PSR-18 client.
+ */
+final class NonGuzzleClientStrategy implements \Http\Discovery\Strategy\DiscoveryStrategy {
+    public static function getCandidates($type) {
+        return ClientInterface::class === $type
+            ? [['class' => NonGuzzlePsr18Client::class, 'condition' => true]]
+            : [];
     }
 }

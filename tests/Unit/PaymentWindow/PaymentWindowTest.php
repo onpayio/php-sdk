@@ -421,6 +421,8 @@ class PaymentWindowTest extends TestCase
     public function testGetFormFieldsBuildsPrefixedFieldsAndPinnedHmac(): void
     {
         $window = $this->makeWindow();
+        // The platform is signed too, so pin it: the default carries the SDK version.
+        $window->setPlatform('test-shop', '9.9');
 
         // Pinned literal: a regression in the signing logic must change this.
         $expected = [
@@ -428,10 +430,10 @@ class PaymentWindowTest extends TestCase
             'onpay_amount'    => '12300',
             'onpay_currency'  => 'DKK',
             'onpay_gatewayid' => '1234567',
-            'onpay_platform'  => 'php-sdk/' . OnPayAPI::SDK_VERSION,
+            'onpay_platform'  => 'test-shop/9.9',
             'onpay_reference' => 'order-42',
             // hmac is appended AFTER ksort(), so it stays last, not alphabetical.
-            'onpay_hmac_sha1' => '927a0a061a4795f0adb7c236dbe1bdb3e53a4dad',
+            'onpay_hmac_sha1' => 'd14553e9e31dcfe415e9d31f5346610bf6c72ef7',
         ];
 
         $this->assertSame($expected, $window->getFormFields());
@@ -440,7 +442,8 @@ class PaymentWindowTest extends TestCase
     public function testGenerateSecretMatchesPinnedHmac(): void
     {
         $window = $this->makeWindow();
-        $this->assertSame('927a0a061a4795f0adb7c236dbe1bdb3e53a4dad', $window->generateSecret());
+        $window->setPlatform('test-shop', '9.9');
+        $this->assertSame('d14553e9e31dcfe415e9d31f5346610bf6c72ef7', $window->generateSecret());
     }
 
     public function testGetAvailableFieldsHasNoPrefix(): void

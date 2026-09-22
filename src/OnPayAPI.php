@@ -37,7 +37,14 @@ use Psr\Log\LoggerInterface;
  * {@see \OnPay\Http\ApiClient}.
  */
 final class OnPayAPI {
-    const SDK_VERSION = '1.0.39';
+    const SDK_VERSION = '2.0.0';
+
+    /**
+     * Timeouts, in seconds, given to a Guzzle client the SDK discovers itself: the same
+     * values the 1.x cURL client used. An injected client keeps whatever its caller configured.
+     */
+    private const DISCOVERED_CLIENT_TIMEOUT = 30;
+    private const DISCOVERED_CLIENT_CONNECT_TIMEOUT = 5;
 
     /**
      * @var array<array-key, mixed>
@@ -83,6 +90,9 @@ final class OnPayAPI {
      * installed packages (php-http/discovery). The SDK ships no HTTP client of
      * its own: if nothing can be discovered an \InvalidArgumentException is
      * thrown, install any PSR-18 client (and PSR-17 factories) or inject them.
+     * A discovered Guzzle client is created with a 30-second timeout and a
+     * 5-second connect timeout, since Guzzle's own default is no timeout; an
+     * injected client is used as given.
      *
      * The logger is optional. Failed API and OAuth round trips (non-2xx responses
      * and transport errors) are reported to it with credentials and cardholder
@@ -149,7 +159,7 @@ final class OnPayAPI {
 
         $this->logger = $logger ?? new ErrorLogLogger();
         try {
-            $httpClient = $httpClient ?? Psr18ClientDiscovery::find();
+            $httpClient = $httpClient ?? $this->discoverHttpClient();
             $requestFactory = $requestFactory ?? Psr17FactoryDiscovery::findRequestFactory();
             $streamFactory = $streamFactory ?? Psr17FactoryDiscovery::findStreamFactory();
         } catch (NotFoundException $e) {
@@ -271,6 +281,25 @@ final class OnPayAPI {
      */
     public function post(string $url, mixed $postBody = null): array {
         return $this->apiClient->post($url, $postBody);
+    }
+
+    /**
+     * Finds an installed PSR-18 client. Guzzle ships with no timeout at all, so when the
+     * discovered client is Guzzle it is rebuilt with one; any other client is used as found.
+     *
+     * @throws NotFoundException when no PSR-18 client is installed
+     */
+    private function discoverHttpClient(): ClientInterface {
+        $client = Psr18ClientDiscovery::find();
+
+        if ($client instanceof \GuzzleHttp\Client) {
+            return new \GuzzleHttp\Client([
+                'timeout' => self::DISCOVERED_CLIENT_TIMEOUT,
+                'connect_timeout' => self::DISCOVERED_CLIENT_CONNECT_TIMEOUT,
+            ]);
+        }
+
+        return $client;
     }
 
     /**
