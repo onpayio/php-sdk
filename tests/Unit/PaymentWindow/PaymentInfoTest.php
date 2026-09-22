@@ -220,21 +220,37 @@ class PaymentInfoTest extends TestCase
         $info->setPhoneWork('45', 'notanumber');
     }
 
-    public function testPhoneNumberFailureLeavesCountryCodeAlreadyStored(): void
+    /**
+     * A rejected pair must leave the object untouched. Previously the setter stored the
+     * country code first and then threw on the number, leaving `phone_*_cc` set.
+     *
+     * @param 'setPhoneHome'|'setPhoneMobile'|'setPhoneWork' $setter
+     */
+    #[DataProvider('phonePairProvider')]
+    public function testARejectedPhonePairStoresNeitherValue(string $setter): void
     {
-        // asserts current behaviour; see Phase 2
-        // setPhoneHome() calls setPhoneHomeCc() before setPhoneHomeNumber(),
-        // so a failing number leaves the country code partially mutated.
-        $info = new PaymentInfo();
-
-        try {
-            $info->setPhoneHome('45', 'notanumber');
-            $this->fail('Expected InvalidFormatException was not thrown.');
-        } catch (InvalidFormatException $e) {
-            // expected
+        // A bad number with a good country code, then the reverse.
+        foreach ([['45', 'notanumber'], ['1234', '12345678']] as [$countryCode, $number]) {
+            $info = new PaymentInfo();
+            try {
+                $info->{$setter}($countryCode, $number);
+                $this->fail(sprintf('%s(%s, %s) was accepted.', $setter, $countryCode, $number));
+            } catch (InvalidFormatException $e) {
+                $this->assertSame([], $info->getFieldsWithoutPrefix());
+            }
         }
+    }
 
-        $this->assertSame(['phone_home_cc' => '45'], $info->getFieldsWithoutPrefix());
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function phonePairProvider(): array
+    {
+        return [
+            'home' => ['setPhoneHome'],
+            'mobile' => ['setPhoneMobile'],
+            'work' => ['setPhoneWork'],
+        ];
     }
 
     /**

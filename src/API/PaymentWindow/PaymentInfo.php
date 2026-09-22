@@ -520,30 +520,12 @@ final class PaymentInfo {
      * @throws InvalidFormatException
      */
     public function setPhoneHome($countryCode, $number): void {
-        $this->setPhoneHomeCc($countryCode);
-        $this->setPhoneHomeNumber($number);
-    }
-
-    /**
-     * @param string $phone_home_cc
-     * @throws InvalidFormatException
-     */
-    private function setPhoneHomeCc($phone_home_cc): void {
-        if (!$this->validateField('phone_home_cc', $phone_home_cc)) {
+        if (!$this->validateField('phone_home_cc', $countryCode)
+            || !$this->validateField('phone_home_number', $number)) {
             throw new InvalidFormatException();
         }
-        $this->phone_home_cc = $phone_home_cc;
-    }
-
-    /**
-     * @param string $phone_home_number
-     * @throws InvalidFormatException
-     */
-    private function setPhoneHomeNumber($phone_home_number): void {
-        if (!$this->validateField('phone_home_number', $phone_home_number)) {
-            throw new InvalidFormatException();
-        }
-        $this->phone_home_number = $phone_home_number;
+        $this->phone_home_cc = $countryCode;
+        $this->phone_home_number = $number;
     }
 
     /**
@@ -552,30 +534,12 @@ final class PaymentInfo {
      * @throws InvalidFormatException
      */
     public function setPhoneMobile($countryCode, $number): void {
-        $this->setPhoneMobileCc($countryCode);
-        $this->setPhoneMobileNumber($number);
-    }
-
-    /**
-     * @param string $phone_mobile_cc
-     * @throws InvalidFormatException
-     */
-    private function setPhoneMobileCc($phone_mobile_cc): void {
-        if (!$this->validateField('phone_mobile_cc', $phone_mobile_cc)) {
+        if (!$this->validateField('phone_mobile_cc', $countryCode)
+            || !$this->validateField('phone_mobile_number', $number)) {
             throw new InvalidFormatException();
         }
-        $this->phone_mobile_cc = $phone_mobile_cc;
-    }
-
-    /**
-     * @param string $phone_mobile_number
-     * @throws InvalidFormatException
-     */
-    private function setPhoneMobileNumber($phone_mobile_number): void {
-        if (!$this->validateField('phone_mobile_number', $phone_mobile_number)) {
-            throw new InvalidFormatException();
-        }
-        $this->phone_mobile_number = $phone_mobile_number;
+        $this->phone_mobile_cc = $countryCode;
+        $this->phone_mobile_number = $number;
     }
 
     /**
@@ -584,30 +548,12 @@ final class PaymentInfo {
      * @throws InvalidFormatException
      */
     public function setPhoneWork($countryCode, $number): void {
-        $this->setPhoneWorkCc($countryCode);
-        $this->setPhoneWorkNumber($number);
-    }
-
-    /**
-     * @param string $phone_work_cc
-     * @throws InvalidFormatException
-     */
-    private function setPhoneWorkCc($phone_work_cc): void {
-        if (!$this->validateField('phone_work_cc', $phone_work_cc)) {
+        if (!$this->validateField('phone_work_cc', $countryCode)
+            || !$this->validateField('phone_work_number', $number)) {
             throw new InvalidFormatException();
         }
-        $this->phone_work_cc = $phone_work_cc;
-    }
-
-    /**
-     * @param string $phone_work_number
-     * @throws InvalidFormatException
-     */
-    private function setPhoneWorkNumber($phone_work_number): void {
-        if (!$this->validateField('phone_work_number', $phone_work_number)) {
-            throw new InvalidFormatException();
-        }
-        $this->phone_work_number = $phone_work_number;
+        $this->phone_work_cc = $countryCode;
+        $this->phone_work_number = $number;
     }
 
     /**
