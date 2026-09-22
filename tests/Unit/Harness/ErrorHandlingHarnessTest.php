@@ -48,8 +48,6 @@ class ErrorHandlingHarnessTest extends ApiTestCase
             $api->transaction()->getTransaction('99999999');
             $this->fail('Expected ApiException was not thrown.');
         } catch (ApiException $e) {
-            // Not the bare 'Failed to decode JSON body-response: Syntax error' this used
-            // to produce, which reads like SDK or transport breakage.
             $this->assertStringContainsString('Expected a JSON body', $e->getMessage());
             $this->assertStringContainsString('text/html', $e->getMessage());
             $this->assertSame(200, $e->getCode());
