@@ -402,6 +402,12 @@ What a numeric string now does depends on your own file's mode, not the SDK's:
 and `new Currency(208)` behave exactly as before, and `new Currency('208')` still throws
 `ApiException` — a numeric code must be passed as an int.
 
+### `Currencies::isValidAlpha3()` is case-insensitive
+
+`isValidAlpha3('dkk')` returned `false`; it now returns `'DKK'`, and
+`new Currency('dkk')->getAlpha3()` is `'DKK'`. The lookup answers with the canonical
+uppercase code whatever spelling you pass. This only widens what is accepted.
+
 <!--
 Template for a new entry:
 

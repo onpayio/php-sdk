@@ -38,12 +38,20 @@ class CurrenciesTest extends TestCase
         $this->assertFalse(Currencies::isValidAlpha3('XXX'));
     }
 
-    public function testIsValidAlpha3IsCaseSensitive(): void
+    public function testIsValidAlpha3IsCaseInsensitiveAndReturnsTheCanonicalCode(): void
     {
-        // Pinned behaviour: alpha3 lookup is case-sensitive (array key match), so a
-        // lowercase code is not accepted, unlike the case-insensitive method lookup
-        // in PaymentMethods::getCurrenciesByMethod.
-        $this->assertFalse(Currencies::isValidAlpha3('dkk'));
+        // The API accepts a lowercase currency on input but always returns it uppercase,
+        // so the lookup folds case and answers with the canonical form either way.
+        foreach (['dkk', 'Dkk', 'dKK', 'DKK'] as $spelling) {
+            $this->assertSame('DKK', Currencies::isValidAlpha3($spelling));
+        }
+        $this->assertFalse(Currencies::isValidAlpha3('xxx'));
+    }
+
+    public function testIsValidAlpha3RejectsANonString(): void
+    {
+        // An int can only be a numeric code; isValidISO4217() is the lookup for those.
+        $this->assertFalse(Currencies::isValidAlpha3(208));
     }
 
     public function testIsValidISO4217ReturnsCodeForKnownNumericCode(): void
