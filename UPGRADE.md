@@ -408,6 +408,22 @@ and `new Currency(208)` behave exactly as before, and `new Currency('208')` stil
 `new Currency('dkk')->getAlpha3()` is `'DKK'`. The lookup answers with the canonical
 uppercase code whatever spelling you pass. This only widens what is accepted.
 
+### A 2xx with a non-JSON body is reported as such
+
+The SDK decoded every 2xx body as JSON. The API can answer a lookup for a resource that
+does not exist with **HTTP 200 and an HTML error page** rather than a 404, which produced
+`ApiException('Failed to decode JSON body-response: Syntax error', 200)` — loud, but it
+reads like SDK or transport breakage rather than "that transaction does not exist".
+
+The SDK now checks the `Content-Type` first and throws an `ApiException` naming what it got.
+It is still an `ApiException` with the same status code, so no `catch` site needs to change;
+only the message differs. Only a `Content-Type` that is present and is not JSON is rejected,
+so a response without the header is still decoded, and `application/json; charset=utf-8` is
+unaffected.
+
+This is distinct from a **malformed** identifier, which does return a proper `400` with a
+JSON error envelope.
+
 <!--
 Template for a new entry:
 

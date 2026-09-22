@@ -128,6 +128,16 @@ final class ApiClient {
         $responseBody = (string) $response->getBody();
 
         if ($statusCode >= 200 && $statusCode < 300) {
+            // A 2xx does not guarantee JSON: an error page can be served with a 2xx status.
+            $contentType = $response->getHeaderLine('Content-Type');
+            if ('' !== $contentType && !self::isJson($contentType)) {
+                throw new ApiException(sprintf(
+                    'Expected a JSON body, got %s with HTTP %d',
+                    $contentType,
+                    $statusCode
+                ), $statusCode);
+            }
+
             try {
                 /** @var mixed $decoded */
                 $decoded = json_decode($responseBody, true, 512, JSON_THROW_ON_ERROR);
@@ -142,7 +152,7 @@ final class ApiClient {
         }
 
         $message = '';
-        if ('' !== $responseBody && $response->getHeaderLine('Content-Type') === 'application/json') {
+        if ('' !== $responseBody && self::isJson($response->getHeaderLine('Content-Type'))) {
             try {
                 /** @var mixed $decoded */
                 $decoded = json_decode($responseBody, true, 512, JSON_THROW_ON_ERROR);
@@ -161,6 +171,13 @@ final class ApiClient {
             $message = 'Not found';
         }
         throw new ApiException($message, $statusCode);
+    }
+
+    /**
+     * Matches `application/json` and its variants (`+json` suffixes, charset parameters).
+     */
+    private static function isJson(string $contentType): bool {
+        return str_contains(strtolower($contentType), 'json');
     }
 
     private function setLastHttpRequest(?RequestInterface $request): void {
