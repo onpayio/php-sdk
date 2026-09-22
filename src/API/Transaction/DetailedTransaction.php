@@ -42,6 +42,9 @@ final class DetailedTransaction extends SimpleTransaction {
         $this->subscriptionUuid = DataReader::stringOrNull($data, 'subscription_uuid');
     }
 
+    /**
+     * ISO 3166-1 numeric code, zero-padded to three characters ("208", "004").
+     */
     public ?string $cardCountry = null;
 
     public ?string $cardBin = null;
@@ -54,6 +57,9 @@ final class DetailedTransaction extends SimpleTransaction {
 
     public ?string $ip = null;
 
+    /**
+     * Zero-padded ISO 3166-1 numeric code, like {@see self::$cardCountry}.
+     */
     public ?string $ipCountry = null;
 
     public bool $hasCardholderData = false;
@@ -65,10 +71,20 @@ final class DetailedTransaction extends SimpleTransaction {
      */
     public array $history = [];
 
+    /**
+     * Null unless the transaction is merchant-initiated.
+     */
     public ?int $subscriptionNumber = null;
 
+    /**
+     * Null unless the transaction is merchant-initiated.
+     */
     public ?string $subscriptionUuid = null;
 
+    /**
+     * Surcharge in minor units; null when the endpoint did not report it. A zero surcharge
+     * is reported as 0, so null never means "no surcharge".
+     */
     public ?int $fee = null;
 
 }

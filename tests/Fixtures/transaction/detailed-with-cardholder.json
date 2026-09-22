@@ -38,7 +38,7 @@
             "door": "th",
             "postal_code": "1000",
             "city": "Koebenhavn",
-            "country": "208",
+            "country": 208,
             "email": "jens@example.test",
             "phone": "+4512345678",
             "delivery_address": {
@@ -54,7 +54,7 @@
                 "door": "tv",
                 "postal_code": "2000",
                 "city": "Frederiksberg",
-                "country": "208"
+                "country": 208
             },
             "extra": {
                 "custom_reference": "ref-123",
