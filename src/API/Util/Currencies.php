@@ -54,10 +54,10 @@ final class Currencies {
     }
 
     /**
-     * @param int|string $ISO4217
-     * @return string|false
+     * @param int $ISO4217
+     * @return string|false the alpha-3 code, or false if the code is unknown
      */
-    public static function isValidISO4217(int|string $ISO4217): string|false {
+    public static function isValidISO4217(int $ISO4217): string|false {
         foreach (self::CURRENCIES as $alpha3 => $currencyData) {
             if ($currencyData['ISO4217'] === $ISO4217) {
                 return $alpha3;

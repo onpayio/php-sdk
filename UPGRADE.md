@@ -383,6 +383,25 @@ Exactly `Y` or `N` is what OnPay's API accepts for the equivalent fields, so thi
 `PaymentInfo` in line with the documented contract. Pass a literal `Y` or `N`, and trim
 your input.
 
+### `Currencies::isValidISO4217()` takes an `int`
+
+The method compared the stored numeric codes with `===` against an `int|string` argument,
+so a numeric string could never match: `Currencies::isValidISO4217('208')` returned `false`
+while `isValidISO4217(208)` returned `'DKK'`, even though the signature advertised both.
+The parameter is now `int`, which is how the API emits `currency_code`.
+
+What a numeric string now does depends on your own file's mode, not the SDK's:
+
+- Under `declare(strict_types=1)`, `isValidISO4217('208')` throws `\TypeError`. Cast it:
+  `isValidISO4217((int) $code)`.
+- Without `strict_types`, PHP coerces `'208'` to `208` and the lookup now *succeeds* where
+  it previously returned `false`.
+- A string PHP cannot coerce (`''`, `'abc'`, `'36abc'`) throws `\TypeError` in either mode.
+
+`Util\Currency` is unaffected: it dispatches on the argument type, so `new Currency('DKK')`
+and `new Currency(208)` behave exactly as before, and `new Currency('208')` still throws
+`ApiException` — a numeric code must be passed as an int.
+
 <!--
 Template for a new entry:
 
