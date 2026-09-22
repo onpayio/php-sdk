@@ -237,29 +237,64 @@ class PaymentInfoTest extends TestCase
         $this->assertSame(['phone_home_cc' => '45'], $info->getFieldsWithoutPrefix());
     }
 
-    public function testYesNoPatternAcceptsWordsBeyondYAndN(): void
+    /**
+     * The alternation patterns ('Y|N') are interpolated into the anchors, so they must be
+     * grouped: without the group, /^Y|N$/u parses as (^Y)|(N$) and accepts any value that
+     * merely starts with Y or ends with N.
+     */
+    #[DataProvider('yesNoFieldProvider')]
+    public function testYesNoFieldsAcceptOnlyYAndN(string $setter, string $field): void
     {
-        // asserts current behaviour; see Phase 2
-        // Pattern is interpolated as /^Y|N$/u which PCRE reads as (^Y)|(N$),
-        // not ^(Y|N)$. So "Yes" matches ^Y and "ON" matches N$; both are accepted.
-        $info = new PaymentInfo();
-        $info->setPreorder('Yes');
-        $this->assertSame(['preorder' => 'Yes'], $info->getFieldsWithoutPrefix());
+        foreach (['Y', 'N'] as $accepted) {
+            $info = new PaymentInfo();
+            $info->{$setter}($accepted);
+            $this->assertSame([$field => $accepted], $info->getFieldsWithoutPrefix());
+        }
 
-        $info2 = new PaymentInfo();
-        $info2->setReorder('ON');
-        $this->assertSame(['reorder' => 'ON'], $info2->getFieldsWithoutPrefix());
+        // 'Yes' starts with Y and 'ON' ends with N: both were accepted before the
+        // alternation was grouped.
+        foreach (['Yes', 'ON', 'YN', 'yes', 'n'] as $rejected) {
+            $info = new PaymentInfo();
+            try {
+                $info->{$setter}($rejected);
+                $this->fail(sprintf('%s(%s) was accepted.', $setter, var_export($rejected, true)));
+            } catch (InvalidFormatException $e) {
+                $this->assertSame([], $info->getFieldsWithoutPrefix());
+            }
+        }
     }
 
-    public function testTrailingNewlineIsAcceptedByAnchoredPattern(): void
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function yesNoFieldProvider(): array
     {
-        // asserts current behaviour; see Phase 2
-        // No /D modifier, so $ matches before a trailing newline: "208\n"
-        // satisfies /^[0-9]{3}$/u and is stored with the newline intact.
-        $info = new PaymentInfo();
-        $info->setBillingAddressCountry("208\n");
+        return [
+            'account_shipping_identical_name' => ['setAccountShippingIdenticalName', 'account_shipping_identical_name'],
+            'account_suspicious' => ['setAccountSuspicious', 'account_suspicious'],
+            'address_identical_shipping' => ['setAddressIdenticalShipping', 'address_identical_shipping'],
+            'preorder' => ['setPreorder', 'preorder'],
+            'reorder' => ['setReorder', 'reorder'],
+        ];
+    }
 
-        $this->assertSame(['billing_address_country' => "208\n"], $info->getFieldsWithoutPrefix());
+    public function testTrailingNewlineIsRejected(): void
+    {
+        // The /D modifier makes $ mean end-of-subject rather than "end of subject, or
+        // before a final newline", so "208\n" no longer satisfies [0-9]{3}.
+        $info = new PaymentInfo();
+
+        $this->expectException(InvalidFormatException::class);
+        $info->setBillingAddressCountry("208\n");
+    }
+
+    public function testTrailingNewlineIsRejectedOnAnOpenEndedPattern(): void
+    {
+        // Also covers a pattern that is not fixed-length: account_purchases is [0-9]+.
+        $info = new PaymentInfo();
+
+        $this->expectException(InvalidFormatException::class);
+        $info->setAccountPurchases("12\n");
     }
 
     public function testDeliveryTimeframeConstants(): void

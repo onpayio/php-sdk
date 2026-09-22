@@ -123,7 +123,7 @@ final class PaymentInfo {
             if (null === $value) {
                 return true;
             }
-            if (1 === preg_match('/^' . $this->availableFields[$name] . '$/u', $value)) {
+            if (1 === preg_match('/^(?:' . $this->availableFields[$name] . ')$/uD', $value)) {
                 return true;
             }
         }

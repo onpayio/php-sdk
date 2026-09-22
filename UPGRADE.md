@@ -363,6 +363,26 @@ already annotated earlier in the 2.0 series; this release adds the stragglers:
 The classes themselves stay public where consumers legitimately receive instances of them —
 only the SDK constructs or fills them.
 
+### `PaymentInfo` validation patterns are now correctly anchored
+
+`PaymentWindow\PaymentInfo`'s validation patterns are interpolated into `^`/`$` anchors,
+but the alternation patterns were not grouped, so `'Y|N'` became `/^Y|N$/u` — which PCRE
+reads as `(^Y)|(N$)`, not `^(Y|N)$`. Any value that merely *started* with `Y` or *ended*
+with `N` was accepted. The patterns are now grouped, and the `D` modifier is applied so `$`
+means end-of-subject rather than "end-of-subject, or before a final newline".
+
+Values that 1.x accepted and 2.0 now rejects with `InvalidFormatException`:
+
+- On the five `Y`/`N` fields — `setAccountShippingIdenticalName()`,
+  `setAccountSuspicious()`, `setAddressIdenticalShipping()`, `setPreorder()` and
+  `setReorder()` — anything but exactly `Y` or `N`. Previously `'Yes'`, `'YOLO'` (start with
+  `Y`) and `'ON'`, `'GREEN'` (end with `N`) all passed.
+- On every field, a value with a trailing newline (e.g. `"208\n"` for a country code).
+
+Exactly `Y` or `N` is what OnPay's API accepts for the equivalent fields, so this brings
+`PaymentInfo` in line with the documented contract. Pass a literal `Y` or `N`, and trim
+your input.
+
 <!--
 Template for a new entry:
 
