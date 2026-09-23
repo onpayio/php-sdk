@@ -4,7 +4,7 @@
 
 - PHP 8.2 or later.
 - The SDK now depends on `psr/http-client`, `psr/http-factory`, `psr/http-message`,
-  `php-http/discovery`, `psr/log` (`^1.1 || ^2.0 || ^3.0`) and `league/oauth2-client` (`^2.9`).
+  `php-http/discovery`, `psr/log` (`^1.0.2 || ^2.0 || ^3.0`) and `league/oauth2-client` (`^2.9`).
 
 ## The bundled cURL client is replaced by a PSR-18 client
 
