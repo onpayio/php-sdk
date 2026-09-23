@@ -684,4 +684,39 @@ class PaymentWindowTest extends TestCase
 
         $this->assertFalse($window->validatePayment($fields));
     }
+
+    public function testValidatePaymentSkipsNumericKeys(): void
+    {
+        // PHP casts a numeric query key (?0=x) to int, so the raw $_GET a merchant
+        // passes in can have int keys. They are not onpay_ fields and must be
+        // skipped, not fed to str_starts_with() (TypeError under strict_types).
+        $window = new PaymentWindow();
+        $window->setSecret('hmacsecret');
+
+        $fields = [
+            0                 => 'x',
+            'onpay_uuid'      => 'abc-123',
+            'onpay_number'    => '9001',
+            'onpay_amount'    => '12300',
+            'onpay_currency'  => '208',
+            'onpay_hmac_sha1' => '96dfc5291e1fdf96dd76737a9ac7b26c097a01b2',
+        ];
+
+        $this->assertTrue($window->validatePayment($fields));
+    }
+
+    public function testValidatePaymentReturnsFalseForNonStringHmac(): void
+    {
+        // ?onpay_hmac_sha1[]=x arrives as an array; it must fail validation
+        // rather than reach hash_equals() and throw a TypeError.
+        $window = new PaymentWindow();
+        $window->setSecret('hmacsecret');
+
+        $fields = [
+            'onpay_uuid'      => 'abc-123',
+            'onpay_hmac_sha1' => ['x'],
+        ];
+
+        $this->assertFalse($window->validatePayment($fields));
+    }
 }

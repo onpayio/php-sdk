@@ -550,23 +550,26 @@ final class PaymentWindow
 
     /**
      * Validate payment
-     * @param array<string, string> $fields
+     *
+     * Accepts the raw callback query (e.g. `$_GET`) as-is: PHP turns numeric keys
+     * into ints and `name[]` into arrays, so non-string keys are skipped and a
+     * non-string HMAC fails validation rather than raising a TypeError.
+     *
+     * @param array<array-key, mixed> $fields
      * @return bool
      */
     public function validatePayment(array $fields): bool {
 
-        $validFields = [];
+        // Only the fields OnPay signs: those whose key starts with "onpay_".
+        // A prefix match (not a substring one) mirrors the server's signing,
+        // so a field like "foo_onpay_bar" is correctly excluded.
+        $validFields = array_filter(
+            $fields,
+            static fn (int|string $key): bool => is_string($key) && str_starts_with($key, 'onpay_'),
+            ARRAY_FILTER_USE_KEY,
+        );
 
-        foreach ($fields as $key => $value) {
-            // Only the fields OnPay signs: those whose key starts with "onpay_".
-            // A prefix match (not a substring one) mirrors the server's signing,
-            // so a field like "foo_onpay_bar" is correctly excluded.
-            if (str_starts_with($key, 'onpay_')) {
-                $validFields[$key] = $value;
-            }
-        }
-
-        if (!isset($validFields['onpay_hmac_sha1'])) {
+        if (!isset($validFields['onpay_hmac_sha1']) || !is_string($validFields['onpay_hmac_sha1'])) {
             return false;
         }
 
