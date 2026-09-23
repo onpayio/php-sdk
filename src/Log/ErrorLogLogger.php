@@ -43,13 +43,19 @@ final class ErrorLogLogger implements LoggerInterface {
     }
 
     /**
+     * $message stays untyped so the signature satisfies psr/log 1.x, whose
+     * interface declares no parameter types, as well as 2.x and 3.x.
+     *
      * @param mixed $level
-     * @param string|\Stringable $message
+     * @param mixed $message
      * @param array<array-key, mixed> $context
      */
-    public function log($level, string|\Stringable $message, array $context = []): void {
+    public function log($level, $message, array $context = []): void {
         if (!\is_string($level)) {
             throw new InvalidArgumentException('Log level must be a string');
+        }
+        if (!\is_string($message) && !$message instanceof \Stringable) {
+            throw new InvalidArgumentException('Log message must be a string or Stringable');
         }
 
         if (self::severityOf($level) < $this->minimumSeverity) {

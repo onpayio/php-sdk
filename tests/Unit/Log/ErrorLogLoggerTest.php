@@ -127,6 +127,13 @@ class ErrorLogLoggerTest extends TestCase
         (new ErrorLogLogger())->log(3, 'nope');
     }
 
+    public function testRejectsNonStringableMessage(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Log message must be a string or Stringable');
+        (new ErrorLogLogger())->log('error', ['nope']);
+    }
+
     public function testRejectsUnknownLevel(): void
     {
         $this->expectException(InvalidArgumentException::class);
