@@ -1,0 +1,79 @@
+# Creates the GitHub release for a version tag: title = tag, notes = the tag's
+# section of CHANGELOG.md. Nothing is built or attached.
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+  # (Re)create the release for an existing tag by hand.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag, e.g. 1.0.0
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate tag
+        run: |
+          if ! [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::'$TAG' is not a version tag (x.y.z)"
+            exit 1
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ env.TAG }}
+
+      # Everything between "## [<tag>]" and the next "## [" heading, with
+      # leading and trailing blank lines trimmed.
+      - name: Extract release notes
+        run: |
+          awk -v heading="## [$TAG]" '
+            index($0, heading) == 1 { found = 1; next }
+            found && /^## \[/       { exit }
+            found                   { lines[++n] = $0 }
+            END {
+              first = 1; while (first <= n && lines[first] !~ /[^[:space:]]/) first++
+              last = n;  while (last >= first && lines[last] !~ /[^[:space:]]/) last--
+              for (i = first; i <= last; i++) print lines[i]
+            }
+          ' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          if ! [ -s "$RUNNER_TEMP/notes.md" ]; then
+            echo "::error file=CHANGELOG.md::No '## [$TAG]' section with content in CHANGELOG.md"
+            exit 1
+          fi
+          cat "$RUNNER_TEMP/notes.md"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          # Only the highest version is marked "Latest", so a maintenance release
+          # (e.g. 1.x after 2.0.0) or a re-run for an old tag doesn't take it.
+          highest=$(git ls-remote --tags --refs origin | sed 's|.*refs/tags/||' \
+            | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
+          latest=false
+          [ "$TAG" = "$highest" ] && latest=true
+          echo "Highest version tag: $highest; marking $TAG as latest: $latest"
+
+          # An existing release (manual re-run) keeps its assets; only title and notes are updated.
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release edit "$TAG" --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md" --latest="$latest"
+          else
+            # --verify-tag: never let GitHub create a tag the mirror does not have.
+            gh release create "$TAG" --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md" --latest="$latest"
+          fi

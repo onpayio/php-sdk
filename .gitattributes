@@ -1,0 +1,3 @@
+# Keep the GitHub workflows out of the dist archive Composer downloads.
+/.gitattributes export-ignore
+/.github export-ignore
