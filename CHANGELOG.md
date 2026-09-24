@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.0.0] - 2026-09-24
 - BREAKING: Dropped support for PHP < 8.2; the SDK now requires PHP 8.2 or later. See UPGRADE.md.
 - Added: Psalm static analysis (errorLevel 1, `src/`) runs in CI; `src/` is now fully typed and JSON responses are narrowed through a typed reader.
 - BREAKING: most public methods gained native parameter/return types and several getters/returns became nullable to reflect the values they can return (e.g. `Http\Response::getStatusCode(): ?int`, `OnPayAPI::get()/post(): array`, `Transaction`/`Subscription` `Collection::$pagination: ?Pagination`). The return types match the values 1.x already returned; the parameter types mean `null` or a wrong-typed scalar now throws `TypeError` where 1.x coerced or passed it on. See UPGRADE.md.
