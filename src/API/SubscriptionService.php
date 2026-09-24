@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace OnPay\API;
 
 
@@ -7,37 +10,40 @@ use OnPay\API\Subscription\SimpleSubscription;
 use OnPay\API\Subscription\SubscriptionCollection;
 use OnPay\API\Transaction\DetailedTransaction;
 use OnPay\API\Exception\ApiException;
+use OnPay\API\Util\DataReader;
 use OnPay\API\Util\Pagination;
-use OnPay\OnPayAPI;
+use OnPay\Http\ApiClient;
 
-class SubscriptionService
+final class SubscriptionService
 {
-    private $api;
+    private ApiClient $api;
 
     /**
      * @internal Should never be called outside library
      * SubscriptionService constructor.
-     * @param OnPayAPI $api
+     * @param ApiClient $apiClient
      */
-    public function __construct(OnPayAPI $api)
+    public function __construct(ApiClient $apiClient)
     {
-        $this->api = $api;
+        $this->api = $apiClient;
     }
 
     /**
      * Get list of subscriptions
-     * @param null $page
-     * @param null $pageSize
-     * @param null $orderBy
-     * @param null $query
-     * @param null $status
-     * @param null $dateAfter
-     * @param null $dateBefore
+     * @param int|null $page
+     * @param int|null $pageSize
+     * @param string|null $orderBy
+     * @param string|null $query
+     * @param string|null $status
+     * @param string|null $dateAfter
+     * @param string|null $dateBefore
      * @param string $direction
      * @return SubscriptionCollection
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \OnPay\API\Exception\ConnectionException
+     * @throws \OnPay\API\Exception\TokenException
+     * @throws \OnPay\API\Exception\ApiException when the API response omits a field the SDK requires
      */
-    public function getSubscriptions($page = null, $pageSize = null, $orderBy = null, $query = null, $status = null, $dateAfter = null, $dateBefore = null, $direction = 'DESC')  {
+    public function getSubscriptions(?int $page = null, ?int $pageSize = null, ?string $orderBy = null, ?string $query = null, ?string $status = null, ?string $dateAfter = null, ?string $dateBefore = null, string $direction = 'DESC'): SubscriptionCollection  {
         $direction = strtoupper($direction);
         if ($direction !== 'ASC') {
             $direction = 'DESC';
@@ -57,65 +63,74 @@ class SubscriptionService
         $results = $this->api->get('subscription/?' . $queryString);
         $subscriptions = [];
 
-        foreach ($results['data'] as $result) {
+        $data = DataReader::arrayOr($results, 'data');
+        foreach (array_keys($data) as $key) {
+            $result = DataReader::arrayOr($data, (string) $key);
             $subscription = new SimpleSubscription($result);
-            $subscription->setLinks($result['links']);
+            $subscription->setLinks(DataReader::arrayOr($result, 'links'));
             $subscriptions[] = $subscription;
         }
 
         $collection = new SubscriptionCollection();
         $collection->subscriptions = $subscriptions;
-        $collection->pagination = new Pagination($results['meta']['pagination']);
+        $meta = DataReader::arrayOr($results, 'meta');
+        $collection->pagination = new Pagination(DataReader::arrayOr($meta, 'pagination'));
 
         return $collection;
     }
 
     /**
      * Get specific subscription
-     * @param $subscriptionId
+     * @param string $subscriptionId
      * @return DetailedSubscription
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \OnPay\API\Exception\ConnectionException
+     * @throws \OnPay\API\Exception\TokenException
+     * @throws \OnPay\API\Exception\ApiException when the API response omits a field the SDK requires
      */
-    public function getSubscription($subscriptionId) {
+    public function getSubscription(string $subscriptionId): DetailedSubscription {
         if (empty($subscriptionId)) {
             throw new ApiException('Subscription ID must be provided');
         }
 
         $result = $this->api->get('subscription/' . $subscriptionId);
-        $subscription = new DetailedSubscription($result['data']);
-        $subscription->setLinks($result['links']);
+        $subscription = new DetailedSubscription(DataReader::arrayOr($result, 'data'));
+        $subscription->setLinks(DataReader::arrayOr($result, 'links'));
 
         return $subscription;
     }
 
     /**
      * Cancel specific subscription
-     * @param $subscriptionId
+     * @param string $subscriptionId
      * @return DetailedSubscription
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \OnPay\API\Exception\ConnectionException
+     * @throws \OnPay\API\Exception\TokenException
+     * @throws \OnPay\API\Exception\ApiException when the API response omits a field the SDK requires
      */
-    public function cancelSubscription($subscriptionId) {
+    public function cancelSubscription(string $subscriptionId): DetailedSubscription {
         if (empty($subscriptionId)) {
             throw new ApiException('Subscription ID must be provided');
         }
 
         $result = $this->api->post('subscription/' . $subscriptionId . '/cancel');
-        $subscription = new DetailedSubscription($result['data']);
-        $subscription->setLinks($result['links']);
+        $subscription = new DetailedSubscription(DataReader::arrayOr($result, 'data'));
+        $subscription->setLinks(DataReader::arrayOr($result, 'links'));
         return $subscription;
     }
 
     /**
      * Create transaction from subscription
-     * @param $uuid
+     * @param string $uuid
      * @param int $amount
      * @param string $orderId
      * @param bool $surchargeEnabled
      * @param int $surchargeVatRate
      * @return DetailedTransaction
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \OnPay\API\Exception\ConnectionException
+     * @throws \OnPay\API\Exception\TokenException
+     * @throws \OnPay\API\Exception\ApiException when the API response omits a field the SDK requires
      */
-    public function createTransactionFromSubscription($uuid, $amount, $orderId, $surchargeEnabled = false, $surchargeVatRate = 0) {
+    public function createTransactionFromSubscription(string $uuid, int $amount, string $orderId, bool $surchargeEnabled = false, int $surchargeVatRate = 0): DetailedTransaction {
         if (empty($uuid)) {
             throw new ApiException('Subscription UUID must be provided');
         }
@@ -131,8 +146,8 @@ class SubscriptionService
 
         $result = $this->api->post('subscription/' . $uuid . '/authorize', $json);
 
-        $transaction = new DetailedTransaction($result['data']);
-        $transaction->setLinks($result['links']);
+        $transaction = new DetailedTransaction(DataReader::arrayOr($result, 'data'));
+        $transaction->setLinks(DataReader::arrayOr($result, 'links'));
 
         return $transaction;
     }

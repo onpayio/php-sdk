@@ -1,18 +1,19 @@
 <?php
 
+declare(strict_types=1);
 
 namespace OnPay\API\Util;
 
-
-class Converter {
+/**
+ * Parses the API's date format into \DateTime.
+ *
+ * @internal Shall not be used outside the library.
+ */
+final class Converter {
     private function __construct() {
     }
 
-    /**
-     * @param $string
-     * @return bool|\DateTime
-     */
-    public static function toDateTimeFromString($string) {
+    public static function toDateTimeFromString(string $string): \DateTime|false {
         return \DateTime::createFromFormat('Y-m-d H:i:s', $string, new \DateTimeZone('UTC'));
     }
 }

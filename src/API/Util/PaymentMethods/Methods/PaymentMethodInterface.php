@@ -1,14 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Util\PaymentMethods\Methods;
 
+use OnPay\API\Enum\PaymentMethod;
 use OnPay\API\Util\Currency;
 
+/**
+ * @internal Internal use only
+ */
 interface PaymentMethodInterface {
 
-    public function isAvailableForCurrency(Currency $currency);
+    public function isAvailableForCurrency(Currency $currency): bool;
 
-    public function getCurrencies();
+    /**
+     * @return Currency[]
+     */
+    public function getCurrencies(): array;
 
-    public function getName();
+    /**
+     * The payment method this class represents.
+     */
+    public function getMethod(): PaymentMethod;
+
+    /**
+     * The method's raw identifier, i.e. {@see PaymentMethod::$value}.
+     */
+    public function getName(): string;
 }

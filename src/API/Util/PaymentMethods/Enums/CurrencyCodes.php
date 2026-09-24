@@ -1,7 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Util\PaymentMethods\Enums;
 
+/**
+ * Alpha-3 names for the currencies the SDK knows, plus the {@see CurrencyCodes::ALL_CURRENCY_CODES}
+ * sentinel used by a payment method that accepts every currency.
+ *
+ * Deliberately not a PHP enum: the sentinel is not a currency, and the codes are used as keys
+ * into {@see \OnPay\API\Util\Currencies::CURRENCIES}, which is the single source of truth for
+ * the supported currencies — this class only names them. There is nothing to consolidate.
+ */
 final class CurrencyCodes {
     const AUD = 'AUD';
     const CAD = 'CAD';

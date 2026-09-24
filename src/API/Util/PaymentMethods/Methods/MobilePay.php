@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Util\PaymentMethods\Methods;
 
+use OnPay\API\Enum\PaymentMethod;
 use OnPay\API\Util\PaymentMethods\Enums\CurrencyCodes;
-use OnPay\API\Util\PaymentMethods\Enums\Methods;
 
 /**
  * @internal Internal use only
@@ -17,5 +19,10 @@ final class MobilePay extends PaymentMethodAbstract {
         CurrencyCodes::USD,
         CurrencyCodes::EUR,
     ];
-    const METHOD_NAME = Methods::MOBILEPAY;
+    /** @deprecated Use {@see MobilePay::getMethod()} or {@see PaymentMethod::MOBILEPAY} instead. */
+    const METHOD_NAME = PaymentMethod::MOBILEPAY->value;
+
+    public function getMethod(): PaymentMethod {
+        return PaymentMethod::MOBILEPAY;
+    }
 }

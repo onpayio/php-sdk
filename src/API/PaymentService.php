@@ -1,34 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API;
 
 use OnPay\API\Exception\InvalidFormatException;
 use OnPay\API\Exception\MissingDataException;
 use OnPay\API\Payment\SimplePayment;
-use OnPay\OnPayAPI;
+use OnPay\Http\ApiClient;
 
-class PaymentService {
+final class PaymentService {
 
     /**
-     * @var string[] Submitted Payment Data
+     * @var array<array-key, mixed> Submitted Payment Data
      */
-    private $paymentData;
+    private array $paymentData = [];
     /**
      * @var string[] An array of fields that must be present for creating new payments
      */
-    private $requiredFields;
+    private array $requiredFields;
     /**
-     * @var PaymentWindow Holds the data for this payment request
+     * @var PaymentWindow|null Holds the data for this payment request
      */
-    private $paymentWindow;
-    /**
-     * @var OnPayAPI
-     */
-    private $api;
+    private ?PaymentWindow $paymentWindow = null;
+    private ApiClient $api;
 
     const CREATE_PAYMENT_API = 'payment/create';
 
-    public function __construct(OnPayAPI $onPayAPI) {
+    /**
+     * @internal Should never be called outside the library
+     * PaymentService constructor.
+     * @param ApiClient $apiClient
+     */
+    public function __construct(ApiClient $apiClient) {
         //Specifically required fields for the create payment endpoint
         $this->requiredFields = [
             "currency",
@@ -36,7 +40,7 @@ class PaymentService {
             "reference",
             "website",
         ];
-        $this->api = $onPayAPI;
+        $this->api = $apiClient;
     }
 
     /**
@@ -48,27 +52,28 @@ class PaymentService {
      * @throws InvalidFormatException
      * @throws MissingDataException
      */
-    public function createNewPayment($paymentWindow) {
+    public function createNewPayment($paymentWindow): SimplePayment {
+        //We can only proceed with this request if we have a valid PaymentWindow Object.
+        if (!$paymentWindow instanceof PaymentWindow) {
+            throw new InvalidFormatException("Creating a payment request requires a valid PaymentWindow object.");
+        }
+
         // If api has a platform string, and window platform is not modified.
-        if (null !== $this->api->getPlatform() && $paymentWindow::SDK_VERSION_STRING === $paymentWindow->getPlatform()) {
-            $paymentWindow->setPlatform($this->api->getPlatform());
+        $apiPlatform = $this->api->getPlatform();
+        if (null !== $apiPlatform && $paymentWindow::SDK_VERSION_STRING === $paymentWindow->getPlatform()) {
+            $paymentWindow->setPlatform($apiPlatform);
         }
 
         $this->paymentWindow = $paymentWindow;
 
-        //We can only proceed with this request if we have a valid PaymentWindow Object.
-        if (!$this->paymentWindow instanceof PaymentWindow) {
-            throw new InvalidFormatException("Creating a payment request requires a valid PaymentWindow object.");
-        }
-
         //Use the PaymentWindow and PaymentInfo objects to build the data array.
-        $this->buildPaymentDataFromSubmittedFields();
+        $this->buildPaymentDataFromSubmittedFields($this->paymentWindow);
 
         //Ensure required fields are present.
         $this->validatePaymentData();
 
         //Build data as array in correct format as required by the API endpoint
-        $requestData = $this->buildCreatePaymentData();
+        $requestData = $this->buildCreatePaymentData($this->paymentWindow);
 
         $result = $this->api->post(self::CREATE_PAYMENT_API, $requestData);
 
@@ -95,20 +100,21 @@ class PaymentService {
     /**
      * Populate submitted fields
      */
-    private function buildPaymentDataFromSubmittedFields() {
-        $this->paymentData = $this->paymentWindow->getAvailableFields();
+    private function buildPaymentDataFromSubmittedFields(PaymentWindow $paymentWindow): void {
+        $this->paymentData = $paymentWindow->getAvailableFields();
 
-        if ($this->paymentWindow->getInfo() !== null) {
+        $info = $paymentWindow->getInfo();
+        if ($info !== null) {
             $this->paymentData = array_merge(
                 $this->paymentData,
-                $this->paymentWindow->getInfo()->getFieldsWithoutPrefix()
+                $info->getFieldsWithoutPrefix()
             );
         }
         //Remove unnecessary hmac value
         unset($this->paymentData['hmac_sha1']);
     }
 
-    private function buildCreatePaymentData() {
+    private function buildCreatePaymentData(PaymentWindow $paymentWindow): array {
         $paymentData = [];
 
         $paymentData['accepturl'] = $this->getPaymentDataByKey('accepturl');
@@ -177,8 +183,8 @@ class PaymentService {
         $paymentData['info']['phone']['work_number'] = $this->getPaymentDataByKey('phone_work_number');
 
 
-        if (null !== $this->paymentWindow->getCart()) {
-            $cart = $this->paymentWindow->getCart();
+        $cart = $paymentWindow->getCart();
+        if (null !== $cart) {
             $paymentData['cart'] = [];
             $paymentData['cart']['shipping'] = $cart->getShipping();
             $paymentData['cart']['handling'] = $cart->getHandling();
@@ -194,15 +200,16 @@ class PaymentService {
         return $this->cleanData($paymentData);
     }
 
-    private function cleanData(array $data) {
+    private function cleanData(array $data): array {
         $output = [];
+        /** @var mixed $item */
         foreach ($data as $key => $item) {
             if (is_array($item)) {
-                $item = $this->cleanData($item);
-                if (count($item) > 0) {
-                    $output[$key] = $item;
+                $cleaned = $this->cleanData($item);
+                if (count($cleaned) > 0) {
+                    $output[$key] = $cleaned;
                 }
-            } else if (!is_null($item)) {
+            } else if (is_scalar($item) || is_object($item)) {
                 $output[$key] = $item;
             }
         }
@@ -210,11 +217,16 @@ class PaymentService {
         return $output;
     }
 
-    private function getPaymentDataByKey($key) {
+    /**
+     * @return scalar|array<array-key, mixed>|null
+     */
+    private function getPaymentDataByKey(string $key) {
         if (!array_key_exists($key, $this->paymentData)) {
             return null;
         }
-        return $this->paymentData[$key];
+        return is_scalar($this->paymentData[$key]) || is_array($this->paymentData[$key])
+            ? $this->paymentData[$key]
+            : null;
     }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API;
 
 
@@ -7,20 +9,21 @@ use OnPay\API\Gateway\Information;
 use OnPay\API\Gateway\PaymentWindowDesignCollection;
 use OnPay\API\Gateway\PaymentWindowIntegrationSettings;
 use OnPay\API\Gateway\SimplePaymentWindowDesign;
-use OnPay\OnPayAPI;
+use OnPay\API\Util\DataReader;
+use OnPay\Http\ApiClient;
 
-class GatewayService
+final class GatewayService
 {
 
-    private $api;
+    private ApiClient $api;
 
     /**
      * @internal Should never be called outside the library
-     * TransactionService constructor.
-     * @param OnPayAPI $onPayAPI
+     * GatewayService constructor.
+     * @param ApiClient $apiClient
      */
-    public function __construct(OnPayAPI $onPayAPI) {
-        $this->api = $onPayAPI;
+    public function __construct(ApiClient $apiClient) {
+        $this->api = $apiClient;
     }
 
     /**
@@ -28,10 +31,10 @@ class GatewayService
      * @throws Exception\ApiException
      * @throws Exception\ConnectionException
      */
-    public function getInformation() {
+    public function getInformation(): Information {
         $result = $this->api->get('gateway/information');
 
-        $information = new Information($result['data']);
+        $information = new Information(DataReader::arrayOr($result, 'data'));
         return $information;
     }
 
@@ -40,10 +43,10 @@ class GatewayService
      * @throws Exception\ApiException
      * @throws Exception\ConnectionException
      */
-    public function getPaymentWindowIntegrationSettings() {
+    public function getPaymentWindowIntegrationSettings(): PaymentWindowIntegrationSettings {
         $result = $this->api->get('gateway/window/v3/integration');
 
-        $settings = new PaymentWindowIntegrationSettings($result['data']);
+        $settings = new PaymentWindowIntegrationSettings(DataReader::arrayOr($result, 'data'));
         return $settings;
     }
 
@@ -52,12 +55,13 @@ class GatewayService
      * @throws Exception\ApiException
      * @throws Exception\ConnectionException
      */
-    public function getPaymentWindowDesigns() {
+    public function getPaymentWindowDesigns(): PaymentWindowDesignCollection {
         $results = $this->api->get('gateway/window/v3/design/');
 
+        $data = DataReader::arrayOr($results, 'data');
         $designs = [];
-        foreach ($results['data'] as $result) {
-            $designs[] = new SimplePaymentWindowDesign($result);
+        foreach (array_keys($data) as $key) {
+            $designs[] = new SimplePaymentWindowDesign(is_array($data[$key]) ? $data[$key] : []);
         }
 
         $collection = new PaymentWindowDesignCollection();

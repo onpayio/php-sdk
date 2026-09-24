@@ -1,64 +1,46 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Subscription;
 
-use OnPay\API\Util\Converter;
+use OnPay\API\Util\DataReader;
 
-class SubscriptionHistory
+final class SubscriptionHistory
 {
     /**
      * @internal Shall not be used outside the library
      * SubscriptionHistory constructor.
-     * @param array $data
+     * @param array<array-key, mixed> $data
      */
     public function __construct(array $data)
     {
-        $this->action = isset($data['action']) ? $data['action'] : null;
-        $this->author = isset($data['author']) ? $data['author'] : null;
-        $this->ip = isset($data['ip']) ? $data['ip'] : null;
-        $this->resultText = isset($data['result_text']) ? $data['result_text'] : null;
-        $this->resultCode = isset($data['result_code']) ? $data['result_code'] : null;
-        $this->successful = isset($data['successful']) ? $data['successful'] : false;
+        $this->action = DataReader::requireString($data, 'action');
+        $this->author = DataReader::requireString($data, 'author');
+        $this->uuid = DataReader::requireString($data, 'uuid');
+        $this->ip = DataReader::requireString($data, 'ip');
+        $this->resultText = DataReader::stringOrNull($data, 'result_text');
+        $this->resultCode = DataReader::stringOrNull($data, 'result_code');
+        $this->successful = DataReader::boolOr($data, 'successful', false);
 
-        if(isset($data['date_time'])) {
-            $this->date = Converter::toDateTimeFromString($data['date_time']);
-        }
+        $this->date = DataReader::requireDateTime($data, 'date_time');
     }
 
 
-    /**
-     * @var string
-     */
-    public $action;
+    public string $action;
 
-    /**
-     * @var string
-     */
-    public $author;
+    public string $author;
 
-    /**
-     * @var \DateTime
-     */
-    public $date;
+    public string $uuid;
 
-    /**
-     * @var string
-     */
-    public $ip;
+    public \DateTime $date;
 
-    /**
-     * @var string
-     */
-    public $resultCode;
+    public string $ip;
 
-    /**
-     * @var string
-     */
-    public $resultText;
+    public ?string $resultCode = null;
 
-    /**
-     * @var bool
-     */
-    public $successful;
+    public ?string $resultText = null;
+
+    public bool $successful = false;
 
 }

@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Transaction;
 
-class DetailedTransaction extends SimpleTransaction {
+use OnPay\API\Util\DataReader;
+
+final class DetailedTransaction extends SimpleTransaction {
 
     /**
      * @internal Shall not be used outside the library
@@ -13,94 +17,74 @@ class DetailedTransaction extends SimpleTransaction {
     {
         parent::__construct($data);
 
-        $this->fee = isset($data['fee']) ? $data['fee'] : null;
-        $this->expiryYear = isset($data['expiry_year']) ? $data['expiry_year'] :  null;
-        $this->expiryMonth = isset($data['expiry_month']) ? $data['expiry_month'] : null;
-        $this->cardCountry = isset($data['card_country']) ? $data['card_country'] : null;
-        $this->cardBin = isset($data['card_bin']) ? $data['card_bin'] : null;
-        $this->cardMask = isset($data['card_mask']) ? $data['card_mask'] : null;
-        $this->ip = isset($data['ip']) ? $data['ip'] : null;
-        $this->ipCountry = isset($data['ip_country']) ? $data['ip_country'] : null;
+        $this->fee = DataReader::intOrNull($data, 'fee');
+        $this->expiryYear = DataReader::intOrNull($data, 'expiry_year');
+        $this->expiryMonth = DataReader::intOrNull($data, 'expiry_month');
+        $this->cardCountry = DataReader::stringOrNull($data, 'card_country');
+        $this->cardBin = DataReader::stringOrNull($data, 'card_bin');
+        $this->cardMask = DataReader::stringOrNull($data, 'card_mask');
+        $this->ip = DataReader::stringOrNull($data, 'ip');
+        $this->ipCountry = DataReader::stringOrNull($data, 'ip_country');
 
-        $this->hasCardholderData = isset($data['has_cardholder_data']) ? $data['has_cardholder_data'] : false;
+        $this->hasCardholderData = DataReader::boolOr($data, 'has_cardholder_data', false);
 
-        $this->cardholderData = null;
-        if(isset($data['cardholder_data']) && null !== $data['cardholder_data']) {
-            $this->cardholderData = new CardholderData($data['cardholder_data']);
+        $cardholderData = DataReader::arrayOrNull($data, 'cardholder_data');
+        if (null !== $cardholderData) {
+            $this->cardholderData = new CardholderData($cardholderData);
         }
 
-        foreach ($data['history'] as $history) {
-            $historyItem = new TransactionHistory($history);
-            $this->history[] = $historyItem;
+        $history = DataReader::arrayOr($data, 'history');
+        foreach (array_keys($history) as $key) {
+            $this->history[] = new TransactionHistory(is_array($history[$key]) ? $history[$key] : []);
         }
 
-        $this->subscriptionNumber = isset($data['subscription_number']) ? $data['subscription_number'] :  null;
-        $this->subscriptionUuid = isset($data['subscription_uuid']) ? $data['subscription_uuid'] : null;
+        $this->subscriptionNumber = DataReader::intOrNull($data, 'subscription_number');
+        $this->subscriptionUuid = DataReader::stringOrNull($data, 'subscription_uuid');
     }
 
     /**
-     * @var int
+     * ISO 3166-1 numeric code, zero-padded to three characters ("208", "004").
      */
-    public $cardCountry;
+    public ?string $cardCountry = null;
+
+    public ?string $cardBin = null;
+
+    public ?string $cardMask = null;
+
+    public ?int $expiryMonth = null;
+
+    public ?int $expiryYear = null;
+
+    public ?string $ip = null;
 
     /**
-     * @var string
+     * Zero-padded ISO 3166-1 numeric code, like {@see self::$cardCountry}.
      */
-    public $cardBin;
+    public ?string $ipCountry = null;
 
-    /**
-     * @var string
-     */
-    public $cardMask;
+    public bool $hasCardholderData = false;
 
-    /**
-     * @var int
-     */
-    public $expiryMonth;
-
-    /**
-     * @var int
-     */
-    public $expiryYear;
-
-    /**
-     * @var string
-     */
-    public $ip;
-
-    /**
-     * @var int
-     */
-    public $ipCountry;
-
-    /**
-     * @var bool
-     */
-    public $hasCardholderData = false;
-
-    /**
-     * @var CardholderData|null
-     */
-    public $cardholderData = null;
+    public ?CardholderData $cardholderData = null;
 
     /**
      * @var TransactionHistory[]
      */
-    public $history = [];
+    public array $history = [];
 
     /**
-     * @var string
+     * Null unless the transaction is merchant-initiated.
      */
-    public $subscriptionNumber;
-    
+    public ?int $subscriptionNumber = null;
+
     /**
-     * @var string
+     * Null unless the transaction is merchant-initiated.
      */
-    public $subscriptionUuid;
-    
+    public ?string $subscriptionUuid = null;
+
     /**
-     * @var int
+     * Surcharge in minor units; null when the endpoint did not report it. A zero surcharge
+     * is reported as 0, so null never means "no surcharge".
      */
-    public $fee = null;
+    public ?int $fee = null;
 
 }

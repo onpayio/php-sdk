@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use OnPay\OAuth\Client\Provider;
+use OnPay\OAuth\OnPayProvider;
 use OnPay\OnPayAPI;
 use OnPay\TokenStorageInterface;
 use PHPUnit\Framework\MockObject\Exception;
@@ -31,8 +31,10 @@ class OnPayApiTest extends TestCase {
     public function testInitializeApi(): void {
         $tokenStorage = $this->createMock(TokenStorageInterface::class);
         $tokenStorage->method('getToken')->willReturn('test_token');
-        $this->expectNotToPerformAssertions();
-        new OnPayAPI($tokenStorage, ['client_id' => 'test_id', 'redirect_uri' => 'test_uri']);
+        $api = new OnPayAPI($tokenStorage, ['client_id' => 'test_id', 'redirect_uri' => 'test_uri']);
+        // A successful construct exposes the default platform and default authorize endpoint.
+        $this->assertSame('php-sdk/' . OnPayAPI::SDK_VERSION, $api->getPlatform());
+        $this->assertSame('https://manage.onpay.io/oauth2/authorize', $this->getAuthorizationEndpoint($api));
     }
 
     /** @throws Exception */
@@ -109,12 +111,21 @@ class OnPayApiTest extends TestCase {
         ]);
     }
 
+    public function testInitializeThrowsOnNonStringOption(): void {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Option "base_uri" must be a string');
+        new OnPayAPI($this->createMock(TokenStorageInterface::class), [
+            'client_id' => 'test_id',
+            'redirect_uri' => 'test_uri',
+            'base_uri' => 123,
+        ]);
+    }
+
     private function getAuthorizationEndpoint(OnPayAPI $api): string {
-        $ref = new \ReflectionClass($api);
-        $prop = $ref->getProperty('oauth2Provider');
-        $prop->setAccessible(true);
-        /** @var Provider $provider */
-        $provider = $prop->getValue($api);
-        return $provider->getAuthorizationEndpoint();
+        // Private members are reflection-accessible without setAccessible() on PHP 8.1+.
+        $tokenManager = (new \ReflectionProperty(OnPayAPI::class, 'tokenManager'))->getValue($api);
+        /** @var OnPayProvider $provider */
+        $provider = (new \ReflectionProperty(\OnPay\Auth\TokenManager::class, 'oauth2Provider'))->getValue($tokenManager);
+        return $provider->getBaseAuthorizationUrl();
     }
 }

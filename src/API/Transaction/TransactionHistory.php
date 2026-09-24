@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
 
 namespace OnPay\API\Transaction;
 
 
-use OnPay\API\Util\Converter;
+use OnPay\API\Util\DataReader;
 
-class TransactionHistory {
+final class TransactionHistory {
 
     /**
      * @internal Shall not be used outside the library
@@ -15,57 +16,33 @@ class TransactionHistory {
      */
     public function __construct(array $data)
     {
-        $this->action = isset($data['action']) ? $data['action'] : null;
-        $this->amount = isset($data['amount']) ? $data['amount'] : null;
-        $this->author = isset($data['author']) ? $data['author'] : null;
-        $this->ip = isset($data['ip']) ? $data['ip'] :  null;
-        $this->resultCode = isset($data['result_code']) ? $data['result_code'] : null;
-        $this->resultText = isset($data['result_text']) ? $data['result_text'] : null;
-        $this->successful = isset($data['successful']) ? $data['successful'] : false;
+        $this->action = DataReader::requireString($data, 'action');
+        $this->amount = DataReader::requireInt($data, 'amount');
+        $this->author = DataReader::requireString($data, 'author');
+        $this->uuid = DataReader::requireString($data, 'uuid');
+        $this->ip = DataReader::requireString($data, 'ip');
+        $this->resultCode = DataReader::stringOrNull($data, 'result_code');
+        $this->resultText = DataReader::stringOrNull($data, 'result_text');
+        $this->successful = DataReader::boolOr($data, 'successful', false);
 
-        if(isset($data['date_time'])) {
-            $this->dateTime = Converter::toDateTimeFromString($data['date_time']);
-        }
+        $this->dateTime = DataReader::requireDateTime($data, 'date_time');
     }
 
-    /**
-     * @var string
-     */
-    public $action;
+    public string $action;
 
-    /**
-     * @var int
-     */
-    public $amount;
+    public int $amount;
 
-    /**
-     * @var string
-     */
-    public $author;
+    public string $author;
 
-    /**
-     * @var \DateTime
-     */
-    public $dateTime;
+    public \DateTime $dateTime;
 
-    /**
-     * @var string
-     */
-    public $ip;
+    public string $ip;
 
-    /**
-     * @var string
-     */
-    public $resultCode;
+    public string $uuid;
 
-    /**
-     * @var string
-     */
-    public $resultText;
+    public ?string $resultCode = null;
 
-    /**
-     * @var bool
-     */
-    public $successful;
+    public ?string $resultText = null;
+
+    public bool $successful = false;
 }
-

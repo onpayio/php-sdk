@@ -1,6 +1,10 @@
 <?php
+
+declare(strict_types=1);
+
 namespace OnPay\API\Util;
-class Pagination
+
+final class Pagination
 {
     /**
      * @internal Shall not be used outside library
@@ -9,26 +13,18 @@ class Pagination
      */
     public function __construct(array $data)
     {
-        $this->total = isset($data['total']) ? $data['total'] :  null;
-        $this->totalPages = isset($data['total_pages']) ? $data['total_pages'] : null;
-        $this->nextUrl = isset($data['links']['next']) ? $data['links']['next'] : null;
-        $this->previousUrl = isset($data['links']['previous']) ? $data['links']['previous'] : null;
+        $this->total = DataReader::requireInt($data, 'total');
+        $this->totalPages = DataReader::requireInt($data, 'total_pages');
+        $links = DataReader::arrayOr($data, 'links');
+        $this->nextUrl = DataReader::stringOrNull($links, 'next');
+        $this->previousUrl = DataReader::stringOrNull($links, 'previous');
     }
-    /**
-     * @var int
-     */
-    public $total;
-    /**
-     * @var int
-     */
-    public $totalPages;
-    /**
-     * @var string
-     */
-    public $nextUrl;
-    /**
-     * @var string
-     */
-    public $previousUrl;
-}
 
+    public int $total;
+
+    public int $totalPages;
+
+    public ?string $nextUrl = null;
+
+    public ?string $previousUrl = null;
+}

@@ -1,43 +1,49 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Http;
 
-class Response {
+final class Response {
     /**
-     * @var string $statusCode
+     * @var int|null $statusCode
      */
-    protected $statusCode;
+    private ?int $statusCode = null;
 
     /**
-     * @var string $body
+     * @var string|null $body
      */
-    protected $body;
+    private ?string $body = null;
 
     /**
-     * @return string
+     * @return int|null
      */
-    public function getStatusCode() {
+    public function getStatusCode(): ?int {
         return $this->statusCode;
     }
 
     /**
-     * @param string $statusCode
+     * @internal Populated by the SDK; shall not be called outside the library.
+     *
+     * @param int|null $statusCode
      */
-    public function setStatusCode($statusCode) {
+    public function setStatusCode(?int $statusCode): void {
         $this->statusCode = $statusCode;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getBody() {
+    public function getBody(): ?string {
         return $this->body;
     }
 
     /**
-     * @param string $body
+     * @internal Populated by the SDK; shall not be called outside the library.
+     *
+     * @param string|null $body
      */
-    public function setBody($body) {
+    public function setBody(?string $body): void {
         $this->body = $body;
     }
 }

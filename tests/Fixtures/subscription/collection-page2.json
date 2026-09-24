@@ -1,0 +1,49 @@
+{
+    "data": [
+        {
+            "uuid": "a47ac10b-58cc-4372-a567-0e02b2c3d480",
+            "subscription_number": 5002,
+            "status": "active",
+            "order_id": "order-9002",
+            "currency_code": 208,
+            "card_type": "Visa",
+            "acquirer": "clearhaus",
+            "wallet": "applepay",
+            "3dsecure": true,
+            "testmode": true,
+            "created": "2026-09-18 09:30:00",
+            "links": {
+                "self": "/subscription/a47ac10b-58cc-4372-a567-0e02b2c3d480",
+                "cancel": "/subscription/a47ac10b-58cc-4372-a567-0e02b2c3d480/cancel"
+            }
+        },
+        {
+            "uuid": "b47ac10b-58cc-4372-a567-0e02b2c3d481",
+            "subscription_number": 5003,
+            "status": "active",
+            "order_id": "order-9003",
+            "currency_code": 208,
+            "card_type": "Mastercard",
+            "acquirer": "clearhaus",
+            "3dsecure": true,
+            "testmode": false,
+            "created": "2026-09-18 09:45:00",
+            "links": {
+                "self": "/subscription/b47ac10b-58cc-4372-a567-0e02b2c3d481"
+            }
+        }
+    ],
+    "meta": {
+        "pagination": {
+            "total": 5,
+            "count": 2,
+            "per_page": 2,
+            "current_page": 2,
+            "total_pages": 3,
+            "links": {
+                "previous": "https://api.onpay.io/v1/subscription/?page=1",
+                "next": "https://api.onpay.io/v1/subscription/?page=3"
+            }
+        }
+    }
+}

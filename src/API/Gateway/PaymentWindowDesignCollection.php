@@ -1,15 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Gateway;
 
 
 use OnPay\API\Gateway\SimplePaymentWindowDesign;
 
-class PaymentWindowDesignCollection
+final class PaymentWindowDesignCollection
 {
     /**
      * @var SimplePaymentWindowDesign[]
      */
-    public $paymentWindowDesigns = [];
+    public array $paymentWindowDesigns = [];
 }
 

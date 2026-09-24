@@ -1,23 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Util;
 
-
-class Link
+final class Link
 {
-    public function __construct($rel = null, $link = null)
+    /**
+     * @internal Shall not be used outside the library
+     */
+    public function __construct(?string $rel = null, ?string $link = null)
     {
         $this->rel = $rel;
         $this->uri = $link;
     }
 
-    /**
-     * @var string
-     */
-    public $rel;
+    public ?string $rel = null;
 
-    /**
-     * @var string
-     */
-    public $uri;
+    public ?string $uri = null;
 }

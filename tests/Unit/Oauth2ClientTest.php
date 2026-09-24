@@ -2,298 +2,361 @@
 
 namespace Tests\Unit;
 
-use OnPay\OAuth\Client\Http\Request;
-use OnPay\OAuth\Client\Http\Response;
+use OnPay\API\Exception\ConnectionException;
 use OnPay\API\Exception\TokenException;
-use OnPay\CurlHttpClientLogger;
+use OnPay\AuthStateStorageInterface;
 use OnPay\OnPayAPI;
-use OnPay\TokenStorageInterface;
-use PHPUnit\Framework\TestCase;
+use Psr\Http\Client\ClientExceptionInterface;
+use Psr\Http\Client\ClientInterface;
+use Tests\Support\ApiTestCase;
+use Tests\Support\FakeAuthStateStorage;
+use Tests\Unit\TokenStorage\FakeTokenStorage;
 
-class Oauth2ClientTest extends TestCase {
-    protected TokenStorageInterface $tokenStorage;
-    protected OnPayAPI $onPayAPI;
-    protected CurlHttpClientLogger $httpClient;
-    protected Request $lastHttpRequest;
+/**
+ * The OAuth flow of OnPayAPI on top of league/oauth2-client: authorize URL, code
+ * exchange, bearer requests, refresh and the failure modes, driven end-to-end through
+ * the {@see \Tests\Support\FakeHttpClient}.
+ */
+class Oauth2ClientTest extends ApiTestCase {
+    private FakeTokenStorage $tokenStorage;
 
-    protected string $clientId = 'test_client_id';
-    protected string $baseUri = 'test_base_uri';
-    protected string $baseAuthUri = 'test_base_authorize_uri';
-    protected string $redirectUri = 'test_redirect_uri';
-
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
-
-        // Construct API
-        $this->tokenStorage = $this->createMock(TokenStorageInterface::class);
-        $this->onPayAPI = new OnPayAPI($this->tokenStorage, [
-            'base_uri' => $this->baseUri,
-            'base_authorize_uri' => $this->baseAuthUri,
-            'client_id' => $this->clientId,
-            'redirect_uri' => $this->redirectUri,
-        ]);
-
-        // Construct http client, and inject into API, allowing us to intercept requests sent.
-        $this->httpClient = $this->getMockBuilder(CurlHttpClientLogger::class)
-            ->setConstructorArgs([
-                ['allowHttp']
-            ])
-            ->getMock();
-        $reflectedApi = new \ReflectionClass($this->onPayAPI);
-        $client = $reflectedApi->getProperty('httpClient');
-        $client->setAccessible(true);
-        $client->setValue($this->onPayAPI, $this->httpClient);
+        $this->tokenStorage = new FakeTokenStorage();
     }
 
+    public function testAuthorizeUrlWithStorageIncludesPkceAndStoresStateAndVerifier(): void {
+        $storage = new FakeAuthStateStorage();
+        $url = $this->api(null, $storage)->authorize();
 
-    public function testAuthorizeUrlIsExpectedFormat(): void {
-        // Get Auth URL
-        $url = $this->onPayAPI->authorize();
+        $expectedPath = self::BASE_AUTHORIZE_URI . '/oauth2/authorize';
+        $this->assertStringStartsWith($expectedPath . '?', $url);
+        parse_str(parse_url($url, PHP_URL_QUERY), $query);
 
-        // Validate that the returned Auth URL is as expected
-        $expectedPath = $this->baseAuthUri . '/oauth2/authorize';
-        $this->assertStringContainsString($expectedPath, $url);
-        parse_str(str_replace($expectedPath . '?', '', $url), $urlQueryArr);
+        $this->assertSame(self::CLIENT_ID, $query['client_id']);
+        $this->assertSame(self::REDIRECT_URI, $query['redirect_uri']);
+        $this->assertSame('full', $query['scope']);
+        $this->assertSame('code', $query['response_type']);
+        $this->assertSame('S256', $query['code_challenge_method']);
+        // State and code challenge are random per call.
+        $this->assertNotSame('', $query['state']);
+        $this->assertMatchesRegularExpression('/^[A-Za-z0-9_-]{43}$/', $query['code_challenge']);
+        // league's non-standard approval_prompt is not sent to OnPay.
+        $this->assertArrayNotHasKey('approval_prompt', $query);
 
-        // Validate that URL contains all required parameters
-        $this->assertArrayHasKey('client_id', $urlQueryArr);
-        $this->assertArrayHasKey('redirect_uri', $urlQueryArr);
-        $this->assertArrayHasKey('scope', $urlQueryArr);
-        $this->assertArrayHasKey('state', $urlQueryArr);
-        $this->assertArrayHasKey('response_type', $urlQueryArr);
-        $this->assertArrayHasKey('code_challenge_method', $urlQueryArr);
-        $this->assertArrayHasKey('code_challenge', $urlQueryArr);
-
-        // Validate that values we can calculate are as expected
-        // State and Code challenge are based on a random value in the oauth2 client
-        $this->assertEquals($this->clientId, $urlQueryArr['client_id']);
-        $this->assertEquals($this->redirectUri, $urlQueryArr['redirect_uri']);
-        $this->assertEquals('full', $urlQueryArr['scope']);
-        $this->assertEquals('code', $urlQueryArr['response_type']);
-        $this->assertEquals('S256', $urlQueryArr['code_challenge_method']);
+        // authorize() persisted the state and the verifier for the callback.
+        $this->assertSame($query['state'], $storage->getState());
+        $expectedChallenge = rtrim(strtr(base64_encode(hash('sha256', (string) $storage->getCodeVerifier(), true)), '+/', '-_'), '=');
+        $this->assertSame($expectedChallenge, $query['code_challenge']);
     }
 
-    public function testFinishAuthorize() {
-        // Intercept the value of the token being saved
-        $lastSavedToken = null;
-        $this->tokenStorage->method('saveToken')->willReturnCallback(function($token) use (&$lastSavedToken) {
-            $lastSavedToken = json_decode($token, true);
-        });
+    public function testAuthorizeUrlWithoutStorageOmitsPkceAndIsDeprecated(): void {
+        $this->expectUserDeprecationMessage(
+            'Calling authorize() without an AuthStateStorageInterface is deprecated: '
+            . 'CSRF state verification and PKCE are disabled. Pass one to the OnPayAPI constructor.'
+        );
+        $url = $this->api()->authorize();
 
-        // Intercept request made to the API
-        $testCase = $this;
-        $lastRequest = $this->createMock(Request::class);
-        $this->httpClient->method('send')->willReturnCallback(function(Request $request) use (&$lastRequest, $testCase)  {
-            $lastRequest = $request;
-            // Construct a valid refresh token response with initial refresh and access tokens
-            return new Response(200, $testCase->getToken(time(), 3600, 'initial_test_access_token', 'initial_test_refresh_token'), ['Content-Type' => 'application/json']);
-        });
+        parse_str(parse_url($url, PHP_URL_QUERY), $query);
+        $this->assertSame('full', $query['scope']);
+        $this->assertNotSame('', $query['state']);
+        $this->assertArrayNotHasKey('code_challenge', $query);
+        $this->assertArrayNotHasKey('code_challenge_method', $query);
+    }
 
-        // Perform finish authorize with test code
-        $this->onPayAPI->finishAuthorize('test_finish_code');
+    public function testFinishAuthorizeWithStorageVerifiesStateSendsRealVerifierAndClears(): void {
+        $this->http->willReturnJson($this->tokenResponse('initial_access_token', 'initial_refresh_token'), 200, 'POST', 'oauth2/access_token');
 
-        // Validate that the request is a POST request
-        $this->assertEquals('POST', $lastRequest->getMethod());
-        // Validate if the correct API endpoint is requested
-        $this->assertEquals($this->baseUri . '/oauth2/access_token', $lastRequest->getUri());
-        // Validate the post body
-        $this->assertEquals(http_build_query([
-            'client_id' => $this->clientId,
-            'grant_type' => 'authorization_code',
-            'code' => 'test_finish_code',
-            'redirect_uri' => $this->redirectUri,
-            'code_verifier' => ''
-        ]), $lastRequest->getBody());
-        // Validate that the correct header is sent to the API
-        $this->assertEquals([
-            'Accept' => 'application/json',
-            'Authorization' => 'Basic ' . base64_encode($this->clientId . ':'),
-            'Content-Type' => 'application/x-www-form-urlencoded'
-        ], $lastRequest->getHeaders());
+        $storage = new FakeAuthStateStorage();
+        $api = $this->api(null, $storage);
+        parse_str(parse_url($api->authorize(), PHP_URL_QUERY), $query);
 
-        // Validate that the saved token is the initial token provided by API
-        $this->assertNotEquals(null, $lastSavedToken);
-        $this->assertArrayHasKey('access_token', $lastSavedToken);
-        $this->assertEquals('initial_test_access_token', $lastSavedToken['access_token']);
-        $this->assertArrayHasKey('refresh_token', $lastSavedToken);
-        $this->assertEquals('initial_test_refresh_token', $lastSavedToken['refresh_token']);
+        $api->finishAuthorize('test_finish_code', $query['state']);
+
+        $request = $this->http->getLastRequest();
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertSame(self::BASE_URI . '/oauth2/access_token', (string) $request->getUri());
+
+        parse_str((string) $request->getBody(), $body);
+        $this->assertSame(self::CLIENT_ID, $body['client_id']);
+        $this->assertSame('authorization_code', $body['grant_type']);
+        $this->assertSame('test_finish_code', $body['code']);
+        $this->assertSame(self::REDIRECT_URI, $body['redirect_uri']);
+        $this->assertArrayNotHasKey('client_secret', $body);
+        // The real verifier generated by authorize() is sent, and it matches the challenge.
+        $expectedChallenge = rtrim(strtr(base64_encode(hash('sha256', $body['code_verifier'], true)), '+/', '-_'), '=');
+        $this->assertSame($expectedChallenge, $query['code_challenge']);
+
+        $this->assertSame('application/json', $request->getHeaderLine('Accept'));
+        $this->assertSame('Basic ' . base64_encode(self::CLIENT_ID . ':'), $request->getHeaderLine('Authorization'));
+        $this->assertSame('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
+
+        $saved = json_decode($this->tokenStorage->getToken(), true);
+        $this->assertSame('initial_access_token', $saved['access_token']);
+        $this->assertSame('initial_refresh_token', $saved['refresh_token']);
+        $this->assertEqualsWithDelta(time() + 3600, $saved['expires'], 5);
+
+        // The one-time state/verifier are discarded once the flow completes.
+        $this->assertTrue($storage->wasCleared());
+    }
+
+    public function testFinishAuthorizeWithoutStorageSendsNoVerifierAndIsDeprecated(): void {
+        $this->http->willReturnJson($this->tokenResponse('initial_access_token', 'initial_refresh_token'), 200, 'POST', 'oauth2/access_token');
+
+        $this->expectUserDeprecationMessage(
+            'Calling finishAuthorize() without an AuthStateStorageInterface is deprecated: '
+            . 'the OAuth state (CSRF) is not verified. Pass one to the OnPayAPI constructor '
+            . 'and pass the returned state as the second argument.'
+        );
+        $this->api()->finishAuthorize('test_finish_code');
+
+        parse_str((string) $this->http->getLastRequest()->getBody(), $body);
+        $this->assertSame('authorization_code', $body['grant_type']);
+        $this->assertSame('test_finish_code', $body['code']);
+        // Without storage there is no verifier to send at all.
+        $this->assertArrayNotHasKey('code_verifier', $body);
+    }
+
+    public function testFinishAuthorizeWithStorageRejectsMismatchedState(): void {
+        $storage = new FakeAuthStateStorage('expected-state', 'the-verifier');
+
+        try {
+            $this->api(null, $storage)->finishAuthorize('code', 'attacker-state');
+            $this->fail('Expected TokenException');
+        } catch (TokenException $e) {
+            $this->assertStringContainsString('state mismatch', $e->getMessage());
+        }
+
+        // No token exchange was attempted, and the stored values were discarded.
+        $this->assertCount(0, $this->http->getRecordedRequests());
+        $this->assertTrue($storage->wasCleared());
+    }
+
+    public function testFinishAuthorizeWithStorageRejectsMissingStoredState(): void {
+        $storage = new FakeAuthStateStorage(null, null);
+
+        try {
+            $this->api(null, $storage)->finishAuthorize('code', 'anything');
+            $this->fail('Expected TokenException');
+        } catch (TokenException $e) {
+            $this->assertStringContainsString('state mismatch', $e->getMessage());
+        }
+
+        $this->assertCount(0, $this->http->getRecordedRequests());
+        $this->assertTrue($storage->wasCleared());
+    }
+
+    public function testFinishAuthorizeMapsTokenEndpointErrorToTokenExceptionAndClears(): void {
+        $this->http->willReturnJson(['error' => 'invalid_grant'], 400, 'POST', 'oauth2/access_token');
+        $storage = new FakeAuthStateStorage('the-state', 'the-verifier');
+
+        try {
+            $this->api(null, $storage)->finishAuthorize('bad_code', 'the-state');
+            $this->fail('Expected TokenException');
+        } catch (TokenException $e) {
+            $this->assertSame('unable to obtain access_token: invalid_grant', $e->getMessage());
+        }
+
+        // The exchange failed, but the one-time values are still cleared.
+        $this->assertTrue($storage->wasCleared());
+    }
+
+    public function testFinishAuthorizeMapsTransportFailureToConnectionException(): void {
+        $client = $this->createMock(ClientInterface::class);
+        $client->method('sendRequest')->willThrowException(
+            new class ('network down') extends \RuntimeException implements ClientExceptionInterface {}
+        );
+        $storage = new FakeAuthStateStorage('the-state', 'the-verifier');
+
+        $this->expectException(ConnectionException::class);
+        $this->expectExceptionMessage('network down');
+        $this->api($client, $storage)->finishAuthorize('code', 'the-state');
     }
 
     public function testNonExpiredAccessTokenAttemptsPing(): void {
-        // Construct non-expired OAUTH2 token
-        $this->tokenStorage->method('getToken')->willReturn($this->getToken(time(), 3600));
+        $this->tokenStorage->saveToken($this->legacyToken(time(), 3600));
+        $this->http->willReturnJson(['data' => ['pong' => 'merchant_id']], 200, 'GET', 'ping');
 
-        // Intercept request made to the API
-        $lastRequest = $this->createMock(Request::class);
-        $this->httpClient->method('send')->willReturnCallback(function(Request $request) use (&$lastRequest)  {
-            $lastRequest = $request;
-            return new Response(200, json_encode([
-                'data' => [
-                    'pong' => 'merchant_id'
-                ]
-            ])); // Report that everything is OK
-        });
+        $this->assertSame(['data' => ['pong' => 'merchant_id']], $this->api()->ping());
 
-        // Perform API action that checks if authorized. Performs ping to API.
-        $authorized = $this->onPayAPI->isAuthorized();
-        // Validate that the request returned true
-        $this->assertEquals(true, $authorized);
-        // Validate that the request is a GET request
-        $this->assertEquals('GET', $lastRequest->getMethod());
-        // Validate if the correct API endpoint is requested
-        $this->assertEquals($this->baseUri . '/v1/ping', $lastRequest->getUri());
-        // Validate that the correct authorization is sent to the API
-        $this->assertEquals([
-            'Authorization' => 'Bearer test_access_token',
-            'User-Agent' => $this->onPayAPI->getPlatform()
-        ], $lastRequest->getHeaders());
+        $request = $this->http->getLastRequest();
+        $this->assertSame('GET', $request->getMethod());
+        $this->assertSame(self::BASE_URI . '/v1/ping', (string) $request->getUri());
+        $this->assertSame('Bearer ' . self::ACCESS_TOKEN, $request->getHeaderLine('Authorization'));
+    }
+
+    public function testLegacyTokenIsMigratedInPlaceWithoutRefresh(): void {
+        $issuedAt = time() - 600;
+        $this->tokenStorage->saveToken($this->legacyToken($issuedAt, 3600));
+        $this->http->willReturnJson(['data' => []], 200, 'GET', 'ping');
+
+        $this->api()->ping();
+
+        // Exactly one request was made: the ping. No token refresh happened.
+        $this->assertCount(1, $this->http->getRecordedRequests());
+
+        $saved = json_decode($this->tokenStorage->getToken(), true);
+        $this->assertSame(self::ACCESS_TOKEN, $saved['access_token']);
+        $this->assertSame('test_refresh_token', $saved['refresh_token']);
+        $this->assertSame($issuedAt + 3600, $saved['expires']);
+        $this->assertArrayNotHasKey('issued_at', $saved);
+        $this->assertArrayNotHasKey('expires_in', $saved);
+        $this->assertArrayNotHasKey('provider_id', $saved);
     }
 
     public function testExpiredAccessTokenAttemptsTokenRefresh(): void {
-        // Construct token that will cause the OAUTH2 client to attempt a renewal
-        $this->tokenStorage->method('getToken')->willReturn($this->getToken(time() - 3600, 1));
+        $this->tokenStorage->saveToken($this->legacyToken(time() - 3600, 1));
+        $this->http->willReturnJson($this->tokenResponse('new_access_token', 'new_refresh_token'), 200, 'POST', 'oauth2/access_token');
+        $this->http->willReturnJson(['data' => []], 200, 'GET', 'ping');
 
-        // Intercept request made to the API
-        $lastRequest = $this->createMock(Request::class);
-        $this->httpClient->method('send')->willReturnCallback(function(Request $request) use (&$lastRequest)  {
-            $lastRequest = $request;
-            // Construct a valid refresh token response with new refresh and access tokens
-            return new Response(200, '{}', ['Content-Type' => 'application/json']);
-        });
+        $this->assertTrue($this->api()->isAuthorized());
 
-        // Perform API action that checks if authorized. Performs ping to API.
-        $this->onPayAPI->isAuthorized();
-        // Validate that the request is a POST request
-        $this->assertEquals('POST', $lastRequest->getMethod());
-        // Validate if the correct API endpoint is requested
-        $this->assertEquals($this->baseUri . '/oauth2/access_token', $lastRequest->getUri());
-        // Validate the post body
-        $this->assertEquals(http_build_query([
-            'grant_type' => 'refresh_token',
-            'refresh_token' => 'test_refresh_token',
-            'scope' => 'full',
-        ]), $lastRequest->getBody());
-        // Validate that the correct authorization is sent to the API
-        $this->assertEquals([
-            'Accept' => 'application/json',
-            'Authorization' => 'Basic ' . base64_encode($this->clientId . ':'),
-            'Content-Type' => 'application/x-www-form-urlencoded'
-        ], $lastRequest->getHeaders());
+        [$refresh, $ping] = $this->http->getRecordedRequests();
+        $this->assertSame('POST', $refresh->getMethod());
+        $this->assertSame(self::BASE_URI . '/oauth2/access_token', (string) $refresh->getUri());
+        parse_str((string) $refresh->getBody(), $body);
+        $this->assertSame('refresh_token', $body['grant_type']);
+        $this->assertSame('test_refresh_token', $body['refresh_token']);
+        $this->assertSame('full', $body['scope']);
+        $this->assertSame('application/json', $refresh->getHeaderLine('Accept'));
+        $this->assertSame('Basic ' . base64_encode(self::CLIENT_ID . ':'), $refresh->getHeaderLine('Authorization'));
+        $this->assertSame('application/x-www-form-urlencoded', $refresh->getHeaderLine('Content-Type'));
+
+        // The ping carries the freshly issued token.
+        $this->assertSame('Bearer new_access_token', $ping->getHeaderLine('Authorization'));
     }
 
     public function testExpiredAccessTokenAttemptsToSaveToken(): void {
-        // Construct token that will cause the OAUTH2 client to attempt a renewal
-        $this->tokenStorage->method('getToken')->willReturn($this->getToken(time() - 3600, 1));
+        $this->tokenStorage->saveToken($this->legacyToken(time() - 3600, 1));
+        $this->http->willReturnJson($this->tokenResponse('new_access_token', 'new_refresh_token'), 200, 'POST', 'oauth2/access_token');
+        $this->http->willReturnJson(['data' => []], 200, 'GET', 'ping');
 
-        // Intercept the value of the token being saved
-        $lastSavedToken = null;
-        $this->tokenStorage->method('saveToken')->willReturnCallback(function($token) use (&$lastSavedToken) {
-            $lastSavedToken = json_decode($token, true);
-        });
+        $this->api()->ping();
 
-        // Intercept request made to the API
-        $testCase = $this;
-        $this->httpClient->method('send')->willReturnCallback(function(Request $request) use ($testCase)  {
-            // Construct a valid refresh token response with new refresh and access tokens
-            return new Response(200, $testCase->getToken(time(), 3600, 'new_test_access_token', 'new_test_refresh_token'), ['Content-Type' => 'application/json']);
-        });
+        $saved = json_decode($this->tokenStorage->getToken(), true);
+        $this->assertSame('new_access_token', $saved['access_token']);
+        $this->assertSame('new_refresh_token', $saved['refresh_token']);
+    }
 
-        // Perform ping to API. Will attempt to auth.
-        $this->onPayAPI->ping();
+    public function testRefreshResponseWithoutRefreshTokenKeepsTheCurrentOne(): void {
+        $this->tokenStorage->saveToken($this->legacyToken(time() - 3600, 1));
+        $this->http->willReturnJson($this->tokenResponse('new_access_token', null), 200, 'POST', 'oauth2/access_token');
+        $this->http->willReturnJson(['data' => []], 200, 'GET', 'ping');
 
-        // Validate that the saved token is the new token provided by API
-        $this->assertNotEquals(null, $lastSavedToken);
-        $this->assertArrayHasKey('access_token', $lastSavedToken);
-        $this->assertEquals('new_test_access_token', $lastSavedToken['access_token']);
-        $this->assertArrayHasKey('refresh_token', $lastSavedToken);
-        $this->assertEquals('new_test_refresh_token', $lastSavedToken['refresh_token']);
+        $this->api()->ping();
+
+        $saved = json_decode($this->tokenStorage->getToken(), true);
+        $this->assertSame('new_access_token', $saved['access_token']);
+        $this->assertSame('test_refresh_token', $saved['refresh_token']);
     }
 
     public function testDeniedAccessTokenReturnsFalse(): void {
-        // Construct non-expired OAUTH2 token
-        $this->tokenStorage->method('getToken')->willReturn($this->getToken(time(), 3600));
+        $this->tokenStorage->saveToken($this->legacyToken(time(), 3600));
+        $this->http->willReturn(new \GuzzleHttp\Psr7\Response(401), 'GET', 'ping');
 
-        // Intercept request made to the API
-        $this->httpClient->method('send')->willReturnCallback(function(Request $request) {
-            // Deny the request
-            return new Response(401, '');
-        });
+        $this->assertFalse($this->api()->isAuthorized());
+    }
 
-        // Perform API action that checks if authorized. Performs ping to API.
-        $authorized = $this->onPayAPI->isAuthorized();
-
-        // Validate that API is not authorized
-        $this->assertEquals(false, $authorized);
+    public function testMissingTokenReturnsFalse(): void {
+        $this->assertFalse($this->api()->isAuthorized());
     }
 
     public function testMissingRefreshTokenReturnsFalse(): void {
-        // Construct token that will cause the OAUTH2 client to attempt a renewal
-        // No refresh token will be present in stored token
-        $this->tokenStorage->method('getToken')->willReturn($this->getToken(time() - 3600, 1, refreshToken: ''));
+        $this->tokenStorage->saveToken($this->legacyToken(time() - 3600, 1, refreshToken: null));
 
-        // Perform API action that checks if authorized. Performs ping to API.
-        $authorized = $this->onPayAPI->isAuthorized();
-
-        // Validate that API is not authorized
-        $this->assertEquals(false, $authorized);
+        $this->assertFalse($this->api()->isAuthorized());
     }
 
     public function testInvalidGrantRefreshTokenReturnsFalse(): void {
-        // Construct token that will cause the OAUTH2 client to attempt a renewal
-        $this->tokenStorage->method('getToken')->willReturn($this->getToken(time() - 3600, 1));
+        $this->tokenStorage->saveToken($this->legacyToken(time() - 3600, 1));
+        $this->http->willReturnJson(['error' => 'invalid_grant'], 400, 'POST', 'oauth2/access_token');
 
-        // Intercept request made to the API
-        $this->httpClient->method('send')->willReturnCallback(function(Request $request) {
-            // Return invalid grant response
-            return new Response(400, json_encode([
-                'error' => 'invalid_grant'
-            ]), [
-                'Content-Type' => 'application/json'
-            ]);
-        });
-
-        // Perform API action that checks if authorized. Performs ping to API.
-        $authorized = $this->onPayAPI->isAuthorized();
-
-        // Validate that API is not authorized
-        $this->assertEquals(false, $authorized);
+        $this->assertFalse($this->api()->isAuthorized());
     }
 
     public function testInvalidRefreshTokenResponseThrowsException(): void {
-        // Construct token that will cause the OAUTH2 client to attempt a renewal
-        $this->tokenStorage->method('getToken')->willReturn($this->getToken(time() - 3600, 1));
+        $this->tokenStorage->saveToken($this->legacyToken(time() - 3600, 1));
+        $this->http->willReturnJson([], 400, 'POST', 'oauth2/access_token');
 
-        // Intercept request made to the API
-        $this->httpClient->method('send')->willReturnCallback(function(Request $request) {
-            // Deny the request
-            return new Response(400, '{}', ['Content-Type' => 'application/json']);
-        });
-
-        // We expect a ping will throw an exception now
         $this->expectException(TokenException::class);
-        $this->expectExceptionMessage('unable to refresh access_token');
-
-        // Perform ping to API. Will attempt to auth.
-        $authorized = $this->onPayAPI->ping();
-
-        // Validate that API is not authorized
-        $this->assertEquals(false, $authorized);
+        $this->expectExceptionMessage('unable to refresh access_token: token endpoint responded HTTP 400');
+        $this->api()->ping();
     }
 
-    protected function getToken(int $issuedAt, int $expiresIn, string $accessToken = 'test_access_token', string $refreshToken = 'test_refresh_token'): string {
-        $token = [
-            'provider_id' => $this->baseAuthUri . '/oauth2/authorize|' . $this->clientId,
-            'issued_at' => date('Y-m-d H:i:s', $issuedAt),
+    public function testRefreshResponseWithoutAccessTokenThrowsException(): void {
+        $this->tokenStorage->saveToken($this->legacyToken(time() - 3600, 1));
+        $this->http->willReturnJson(['token_type' => 'Bearer'], 200, 'POST', 'oauth2/access_token');
+
+        $this->expectException(TokenException::class);
+        $this->expectExceptionMessage('unable to refresh access_token: token endpoint response is missing "access_token"');
+        $this->api()->ping();
+    }
+
+    public function testNonJsonRefreshResponseThrowsException(): void {
+        $this->tokenStorage->saveToken($this->legacyToken(time() - 3600, 1));
+        $this->http->willReturn(new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'text/html'], '<html>'), 'POST', 'oauth2/access_token');
+
+        $this->expectException(TokenException::class);
+        $this->expectExceptionMessage('unable to refresh access_token: token endpoint response is missing "access_token"');
+        $this->api()->ping();
+    }
+
+    public function testRefreshTransportFailureBecomesConnectionException(): void {
+        $this->tokenStorage->saveToken($this->legacyToken(time() - 3600, 1));
+        $client = $this->createMock(ClientInterface::class);
+        $client->method('sendRequest')->willThrowException(
+            new class ('network down') extends \RuntimeException implements ClientExceptionInterface {}
+        );
+
+        $this->expectException(ConnectionException::class);
+        $this->api($client)->ping();
+    }
+
+    private function api(?ClientInterface $client = null, ?AuthStateStorageInterface $authState = null): OnPayAPI {
+        if (null === $client) {
+            return $this->createApi([], $this->tokenStorage, $authState);
+        }
+
+        $factory = new \GuzzleHttp\Psr7\HttpFactory();
+
+        return new OnPayAPI($this->tokenStorage, [
+            'client_id' => self::CLIENT_ID,
+            'redirect_uri' => self::REDIRECT_URI,
+            'base_uri' => self::BASE_URI,
+            'base_authorize_uri' => self::BASE_AUTHORIZE_URI,
+        ], $authState, $client, $factory, $factory, $this->logger);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function tokenResponse(string $accessToken, ?string $refreshToken): array {
+        $response = [
+            'access_token' => $accessToken,
             'token_type' => 'Bearer',
-            'expires_in' => $expiresIn,
+            'expires_in' => 3600,
             'scope' => 'full',
         ];
-        if ('' !== $accessToken) {
-            $token['access_token'] = $accessToken;
+        if (null !== $refreshToken) {
+            $response['refresh_token'] = $refreshToken;
         }
-        if ('' !== $refreshToken) {
-            $token['refresh_token'] = $refreshToken;
-        }
-        return json_encode($token);
+
+        return $response;
+    }
+
+    /**
+     * A token as persisted by SDK 1.x AccessToken::toJson(): same key order, and
+     * absent values written as null rather than omitted.
+     */
+    private function legacyToken(int $issuedAt, int $expiresIn, ?string $refreshToken = 'test_refresh_token'): string {
+        return json_encode([
+            'provider_id' => self::BASE_AUTHORIZE_URI . '/oauth2/authorize|' . self::CLIENT_ID,
+            'issued_at' => date('Y-m-d H:i:s', $issuedAt),
+            'access_token' => self::ACCESS_TOKEN,
+            'token_type' => 'Bearer',
+            'expires_in' => $expiresIn,
+            'refresh_token' => $refreshToken,
+            'scope' => 'full',
+        ]);
     }
 }

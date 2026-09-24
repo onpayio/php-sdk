@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Transaction;
 
 
-use OnPay\API\Util\Converter;
+use OnPay\API\Util\DataReader;
 use OnPay\API\Util\Link;
 
 class SimpleTransaction {
@@ -15,98 +17,70 @@ class SimpleTransaction {
      */
     public function __construct(array $data)
     {
-        $this->uuid = (isset($data['uuid'])) ? $data['uuid'] : null;
-        $this->threeDs = (isset($data['3dsecure'])) ? $data['3dsecure'] : null;
-        $this->acquirer = isset($data['acquirer']) ? $data['acquirer'] :  null;
-        $this->amount = (isset($data['amount'])) ? $data['amount'] : null;
-        $this->cardType = (isset($data['card_type'])) ? $data['card_type'] : null;
-        $this->charged = (isset($data['charged'])) ? $data['charged'] : null;
-        if (isset($data['created'])) {
-            $this->created = Converter::toDateTimeFromString($data['created']);
-        }
-        $this->currencyCode = (isset($data['currency_code'])) ? $data['currency_code'] : null;
-        $this->orderId = (isset($data['order_id'])) ? $data['order_id'] :  null;
-        $this->refunded = (isset($data['refunded'])) ? $data['refunded'] :  null;
-        $this->status = (isset($data['status'])) ? $data['status'] :  null;
-        $this->transactionNumber = (isset($data['transaction_number'])) ? $data['transaction_number'] :  null;
-        $this->wallet = (isset($data['wallet'])) ? $data['wallet'] : null;
-        $this->hasCardholderData = isset($data['has_cardholder_data']) ? $data['has_cardholder_data'] : false;
-        $this->testMode = isset($data['testmode']) ? $data['testmode'] : false;
+        $this->uuid = DataReader::requireString($data, 'uuid');
+        $this->threeDs = DataReader::requireBool($data, '3dsecure');
+        $this->acquirer = DataReader::stringOrNull($data, 'acquirer');
+        $this->amount = DataReader::requireInt($data, 'amount');
+        $this->cardType = DataReader::stringOrNull($data, 'card_type');
+        $this->charged = DataReader::requireInt($data, 'charged');
+        $this->created = DataReader::requireDateTime($data, 'created');
+        $this->currencyCode = DataReader::requireInt($data, 'currency_code');
+        $this->orderId = DataReader::stringOrNull($data, 'order_id');
+        $this->refunded = DataReader::requireInt($data, 'refunded');
+        $this->status = DataReader::requireString($data, 'status');
+        $this->transactionNumber = DataReader::requireInt($data, 'transaction_number');
+        $this->wallet = DataReader::stringOrNull($data, 'wallet');
+        $this->hasCardholderData = DataReader::boolOr($data, 'has_cardholder_data', false);
+        $this->testMode = DataReader::boolOr($data, 'testmode', false);
     }
 
     /**
      * @internal Shall not be used outside the library
      * @param array $links
      */
-    public function setLinks(array $links) {
-        foreach ($links as $rel => $link) {
-            $linkItem = new Link($rel, $link);
-            $this->links[] = $linkItem;
+    public function setLinks(array $links): void {
+        $result = [];
+        foreach (array_keys($links) as $rel) {
+            $result[] = new Link((string) $rel, DataReader::stringOrNull($links, (string) $rel));
         }
+        $this->links = $result;
     }
 
+    public int $amount;
+
+    public ?string $acquirer = null;
+
+    public ?string $cardType = null;
+
+    public int $charged;
+
+    public \DateTime $created;
+
+    public int $currencyCode;
+
+    public ?string $orderId = null;
+
+    public int $refunded;
+
+    public string $status;
+
+    public bool $threeDs;
+
+    public int $transactionNumber;
+
+    public string $uuid;
+
+    public ?string $wallet = null;
+
     /**
-     * @var int
+     * True does not guarantee the cardholder data is present; check the object itself.
      */
-    public $amount;
+    public bool $hasCardholderData = false;
+
+    public bool $testMode = false;
+
     /**
-     * @var string
+     * @var Link[]|null
      */
-    public $acquirer;
-    /**
-     * @var string
-     */
-    public $cardType;
-    /**
-     * @var int
-     */
-    public $charged;
-    /**
-     * @var \DateTime
-     */
-    public $created;
-    /**
-     * @var string
-     */
-    public $currencyCode;
-    /**
-     * @var string
-     */
-    public $orderId;
-    /**
-     * @var int
-     */
-    public $refunded;
-    /**
-     * @var string
-     */
-    public $status;
-    /**
-     * @var bool
-     */
-    public $threeDs;
-    /**
-     * @var string
-     */
-    public $transactionNumber;
-    /**
-     * @var string
-     */
-    public $uuid;
-    /**
-     * @var string
-     */
-    public $wallet;
-    /**
-     * @var bool
-     */
-    public $hasCardholderData;
-    /**
-     * @var bool
-     */
-    public $testMode;
-    /**
-     * @var Link[]
-     */
-    public $links;
+    public ?array $links = null;
 }

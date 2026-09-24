@@ -1,0 +1,10 @@
+{
+    "data": {
+        "gateway_id": "A5KM3QX7B",
+        "active_methods": [
+            "card",
+            "mobilepay",
+            "applepay"
+        ]
+    }
+}

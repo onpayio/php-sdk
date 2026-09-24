@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Util\PaymentMethods\Methods;
 
+use OnPay\API\Enum\PaymentMethod;
 use OnPay\API\Util\PaymentMethods\Enums\CurrencyCodes;
-use OnPay\API\Util\PaymentMethods\Enums\Methods;
 
 /**
  * @internal Internal use only
@@ -22,5 +24,10 @@ final class Klarna extends PaymentMethodAbstract {
         CurrencyCodes::EUR,
         CurrencyCodes::PLN,
     ];
-    const METHOD_NAME = Methods::KLARNA;
+    /** @deprecated Use {@see Klarna::getMethod()} or {@see PaymentMethod::KLARNA} instead. */
+    const METHOD_NAME = PaymentMethod::KLARNA->value;
+
+    public function getMethod(): PaymentMethod {
+        return PaymentMethod::KLARNA;
+    }
 }

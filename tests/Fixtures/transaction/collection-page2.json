@@ -1,0 +1,57 @@
+{
+    "data": [
+        {
+            "uuid": "323e4567-e89b-12d3-a456-426614174002",
+            "transaction_number": 1003,
+            "status": "active",
+            "order_id": "order-4244",
+            "amount": 7500,
+            "charged": 0,
+            "refunded": 0,
+            "currency_code": 208,
+            "card_type": "Visa",
+            "acquirer": "clearhaus",
+            "wallet": "applepay",
+            "3dsecure": true,
+            "testmode": true,
+            "created": "2026-09-18 12:00:00",
+            "has_cardholder_data": false,
+            "links": {
+                "self": "/transaction/323e4567-e89b-12d3-a456-426614174002",
+                "cancel": "/transaction/323e4567-e89b-12d3-a456-426614174002/cancel"
+            }
+        },
+        {
+            "uuid": "423e4567-e89b-12d3-a456-426614174003",
+            "transaction_number": 1004,
+            "status": "finished",
+            "order_id": "order-4245",
+            "amount": 3000,
+            "charged": 3000,
+            "refunded": 0,
+            "currency_code": 208,
+            "card_type": "Mastercard",
+            "acquirer": "clearhaus",
+            "3dsecure": true,
+            "testmode": false,
+            "created": "2026-09-18 13:00:00",
+            "has_cardholder_data": false,
+            "links": {
+                "self": "/transaction/423e4567-e89b-12d3-a456-426614174003"
+            }
+        }
+    ],
+    "meta": {
+        "pagination": {
+            "total": 5,
+            "count": 2,
+            "per_page": 2,
+            "current_page": 2,
+            "total_pages": 3,
+            "links": {
+                "previous": "https://api.onpay.io/v1/transaction/?page=1",
+                "next": "https://api.onpay.io/v1/transaction/?page=3"
+            }
+        }
+    }
+}

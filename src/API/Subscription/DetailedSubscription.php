@@ -1,84 +1,68 @@
 <?php
+
+declare(strict_types=1);
+
 namespace OnPay\API\Subscription;
 
 
 use OnPay\API\Transaction\SimpleTransaction;
-use OnPay\API\Transaction\TransactionHistory;
-use OnPay\API\Util\Converter;
-use OnPay\API\Util\Link;
+use OnPay\API\Util\DataReader;
 
-class DetailedSubscription extends SimpleSubscription
+final class DetailedSubscription extends SimpleSubscription
 {
     /**
      * @internal Shall not be used outside the library
      * DetailedSubscription constructor.
-     * @param array $data
+     * @param array<array-key, mixed> $data
      */
     public function __construct(array $data)
     {
         parent::__construct($data);
 
-        $this->expiryMonth = isset($data['expiry_month']) ? $data['expiry_month'] : null;
-        $this->expiryYear = isset($data['expiry_year']) ? $data['expiry_year'] : null;
-        $this->cardCountry = isset($data['card_country']) ? $data['card_country'] : null;
-        $this->cardBin = isset($data['card_bin']) ? $data['card_bin'] : null;
-        $this->ip = isset($data['ip']) ? $data['ip'] : null;
-        $this->ipCountry = isset($data['ip_country']) ? $data['ip_country'] : null;
-        $this->fee = isset($data['fee']) ? $data['fee'] : null;
+        $this->expiryMonth = DataReader::intOrNull($data, 'expiry_month');
+        $this->expiryYear = DataReader::intOrNull($data, 'expiry_year');
+        $this->cardCountry = DataReader::stringOrNull($data, 'card_country');
+        $this->cardBin = DataReader::stringOrNull($data, 'card_bin');
+        $this->cardMask = DataReader::stringOrNull($data, 'card_mask');
+        $this->ip = DataReader::stringOrNull($data, 'ip');
+        $this->ipCountry = DataReader::stringOrNull($data, 'ip_country');
+        $this->fee = DataReader::intOrNull($data, 'fee');
 
-        foreach ($data['history'] as $history) {
-            $historyItem = new SubscriptionHistory($history);
-            $this->history[] = $historyItem;
+        $history = DataReader::arrayOr($data, 'history');
+        foreach (array_keys($history) as $key) {
+            $this->history[] = new SubscriptionHistory(DataReader::arrayOr($history, (string) $key));
         }
 
-        foreach ($data['transactions'] as $transaction) {
-            $transactionItem = new SimpleTransaction($transaction);
-            $this->transactions[] = $transactionItem;
+        $transactions = DataReader::arrayOr($data, 'transactions');
+        foreach (array_keys($transactions) as $key) {
+            $this->transactions[] = new SimpleTransaction(DataReader::arrayOr($transactions, (string) $key));
         }
     }
-    /**
-     * @var string
-     */
-    public $cardBin;
+
+    public ?string $cardBin = null;
+
+    public ?string $cardCountry = null;
+
+    public ?string $cardMask = null;
+
+    public ?int $expiryMonth = null;
+
+    public ?int $expiryYear = null;
+
+    public ?string $ip = null;
+
+    public ?string $ipCountry = null;
 
     /**
-     * @var int
+     * @var SubscriptionHistory[]
      */
-    public $cardCountry;
-
-    /**
-     * @var string
-     */
-    public $expiryMonth;
-
-    /**
-     * @var string
-     */
-    public $expiryYear;
-
-    /**
-     * @var string
-     */
-    public $ip;
-
-    /**
-     * @var int
-     */
-    public $ipCountry;
-
-    /**
-     * @var TransactionHistory[]
-     */
-    public $history = [];
+    public array $history = [];
 
     /**
      * @var SimpleTransaction[]
      */
-    public $transactions = [];
+    public array $transactions = [];
 
-    /**
-     * @var int
-     */
-    public $fee = null;
+    public ?int $fee = null;
 
 }

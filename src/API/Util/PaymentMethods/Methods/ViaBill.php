@@ -1,14 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OnPay\API\Util\PaymentMethods\Methods;
 
+use OnPay\API\Enum\PaymentMethod;
 use OnPay\API\Util\PaymentMethods\Enums\CurrencyCodes;
-use OnPay\API\Util\PaymentMethods\Enums\Methods;
 
 /**
  * @internal Internal use only
  */
 final class ViaBill extends PaymentMethodAbstract {
     const CURRENCIES = [CurrencyCodes::DKK, CurrencyCodes::EUR];
-    const METHOD_NAME = Methods::VIABILL;
+    /** @deprecated Use {@see ViaBill::getMethod()} or {@see PaymentMethod::VIABILL} instead. */
+    const METHOD_NAME = PaymentMethod::VIABILL->value;
+
+    public function getMethod(): PaymentMethod {
+        return PaymentMethod::VIABILL;
+    }
 }
