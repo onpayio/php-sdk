@@ -77,6 +77,7 @@ final class PaymentWindow
     private ?int $surcharge_vat_rate = null;
     private ?int $recurring_amount = null;
     private ?int $recurring_interval_days = null;
+    private ?string $cardUuid = null;
     /**
      * @var list<string>
      */
@@ -637,6 +638,26 @@ final class PaymentWindow
         } else {
             $this->subscription_with_transaction = null;
         }
+    }
+
+    /**
+     * Makes this a cardholder-initiated payment on a stored card: the cardholder confirms and
+     * authenticates the payment on that card. Requires type `transaction`.
+     *
+     * Only available on payment links from the API, created with
+     * {@see \OnPay\API\PaymentService::createNewPayment()}.
+     *
+     * @param string $cardUuid The uuid of the subscription that holds the card
+     */
+    public function setCardUuid(string $cardUuid): void {
+        $this->cardUuid = $cardUuid;
+    }
+
+    /**
+     * Returns the stored card's subscription uuid, or null when none was set.
+     */
+    public function getCardUuid(): ?string {
+        return $this->cardUuid;
     }
 
     /**

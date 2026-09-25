@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - Added: `PaymentWindow::setRecurringAmount()`/`getRecurringAmount()` and `setRecurringIntervalDays()`/`getRecurringIntervalDays()` for the subscription estimates OnPay now accepts: the expected amount per charge in minor units and the typical number of days between charges. They are sent as `onpay_recurring_amount`/`onpay_recurring_interval_days` on the payment window and as `recurring.amount`/`recurring.interval_days` on the create-payment API. Both are optional; the OnPay documentation marks them as required for subscriptions, but the SDK does not enforce that.
+- Added: `PaymentWindow::setCardUuid()` creates a cardholder-initiated payment on a stored card: pass the subscription's uuid with type `transaction` to `PaymentService::createNewPayment()`. The payment link then asks the cardholder to confirm and authenticate the payment on that card. Only available on payment links from the API.
 
 ## [2.0.0] - 2026-09-24
 - BREAKING: Dropped support for PHP < 8.2; the SDK now requires PHP 8.2 or later. See UPGRADE.md.

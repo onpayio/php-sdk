@@ -134,6 +134,7 @@ final class PaymentService {
         $paymentData['website'] = $this->getPaymentDataByKey('website');
         $paymentData['surcharge_enabled'] = $this->getPaymentDataByKey('surcharge_enabled');
         $paymentData['surcharge_vat_rate'] = $this->getPaymentDataByKey('surcharge_vat_rate');
+        $paymentData['card_uuid'] = $paymentWindow->getCardUuid();
 
         $paymentData['recurring']['amount'] = $this->getPaymentDataByKey('recurring_amount');
         $paymentData['recurring']['interval_days'] = $this->getPaymentDataByKey('recurring_interval_days');
