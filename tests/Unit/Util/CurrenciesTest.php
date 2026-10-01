@@ -24,7 +24,10 @@ class CurrenciesTest extends TestCase
         $this->assertSame(0, Currencies::CURRENCIES[CurrencyCodes::ISK]['exponent']);
 
         $this->assertSame(978, Currencies::CURRENCIES[CurrencyCodes::EUR]['ISO4217']);
-        $this->assertCount(23, Currencies::CURRENCIES);
+        $this->assertSame(348, Currencies::CURRENCIES[CurrencyCodes::HUF]['ISO4217']);
+        $this->assertSame(946, Currencies::CURRENCIES[CurrencyCodes::RON]['ISO4217']);
+        $this->assertSame(949, Currencies::CURRENCIES[CurrencyCodes::TRY]['ISO4217']);
+        $this->assertCount(26, Currencies::CURRENCIES);
     }
 
     public function testIsValidAlpha3ReturnsCodeForKnownCurrency(): void

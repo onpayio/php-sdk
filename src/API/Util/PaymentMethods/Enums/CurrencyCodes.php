@@ -36,5 +36,8 @@ final class CurrencyCodes {
     const UAH = 'UAH';
     const PLN = 'PLN';
     const BRL = 'BRL';
+    const HUF = 'HUF';
+    const RON = 'RON';
+    const TRY = 'TRY';
     const ALL_CURRENCY_CODES = 'ALL_CURRENCY_CODES';
 }

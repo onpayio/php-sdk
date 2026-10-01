@@ -121,10 +121,10 @@ class PaymentMethodsTest extends TestCase
 
     public function testGetCurrenciesAllCurrenciesBranch(): void
     {
-        // Card uses ALL_CURRENCY_CODES, expanding to the full Currencies table (23).
+        // Card uses ALL_CURRENCY_CODES, expanding to the full Currencies table (26).
         $currencies = (new Card())->getCurrencies();
 
-        $this->assertCount(23, $currencies);
+        $this->assertCount(26, $currencies);
         $this->assertContainsOnlyInstancesOf(Currency::class, $currencies);
     }
 
