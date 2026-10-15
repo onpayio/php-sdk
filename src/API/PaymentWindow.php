@@ -75,6 +75,8 @@ final class PaymentWindow
     private ?Cart $cart = null;
     private ?bool $surcharge_enabled = null;
     private ?int $surcharge_vat_rate = null;
+    private ?int $recurring_amount = null;
+    private ?int $recurring_interval_days = null;
     /**
      * @var list<string>
      */
@@ -492,6 +494,8 @@ final class PaymentWindow
             'expiration' => $this->expiration,
             'surcharge_enabled' => $this->surcharge_enabled,
             'surcharge_vat_rate' => $this->surcharge_vat_rate,
+            'recurring_amount' => $this->recurring_amount,
+            'recurring_interval_days' => $this->recurring_interval_days,
         ];
         foreach ($values as $field => $value) {
             if (null !== $value) {
@@ -669,5 +673,43 @@ final class PaymentWindow
      */
     public function getSurchargeVatRate() {
         return $this->surcharge_vat_rate;
+    }
+
+    /**
+     * Sets the amount expected to be charged each time on the subscription, in minor units.
+     *
+     * Only an estimate, and only relevant when the type is `subscription`. Optional in the
+     * SDK, even though the OnPay documentation marks it as required; null clears the field.
+     *
+     * @param int|null $recurringAmount
+     */
+    public function setRecurringAmount(?int $recurringAmount): void {
+        $this->recurring_amount = $recurringAmount;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getRecurringAmount(): ?int {
+        return $this->recurring_amount;
+    }
+
+    /**
+     * Sets the typical number of days between charges on the subscription, from 1 to 365.
+     *
+     * Only an estimate, and only relevant when the type is `subscription`. Optional in the
+     * SDK, even though the OnPay documentation marks it as required; null clears the field.
+     *
+     * @param int|null $recurringIntervalDays
+     */
+    public function setRecurringIntervalDays(?int $recurringIntervalDays): void {
+        $this->recurring_interval_days = $recurringIntervalDays;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getRecurringIntervalDays(): ?int {
+        return $this->recurring_interval_days;
     }
 }

@@ -218,6 +218,36 @@ class PaymentWindowTest extends TestCase
         $this->assertSame('store-pick-up', $fromEnum->getFormFields()['onpay_delivery_disabled']);
     }
 
+    public function testRecurringFieldsAreOptionalAndSignedWhenSet(): void
+    {
+        $window = $this->makeWindow();
+        $window->setType('subscription');
+
+        // Neither field is required: the window is valid and omits them when unset.
+        $this->assertNull($window->getRecurringAmount());
+        $this->assertNull($window->getRecurringIntervalDays());
+        $this->assertTrue($window->isValid());
+        $unsigned = $window->getFormFields();
+        $this->assertArrayNotHasKey('onpay_recurring_amount', $unsigned);
+        $this->assertArrayNotHasKey('onpay_recurring_interval_days', $unsigned);
+
+        $window->setRecurringAmount(9900);
+        $window->setRecurringIntervalDays(30);
+        $this->assertSame(9900, $window->getRecurringAmount());
+        $this->assertSame(30, $window->getRecurringIntervalDays());
+
+        $fields = $window->getFormFields();
+        $this->assertSame(9900, $fields['onpay_recurring_amount']);
+        $this->assertSame(30, $fields['onpay_recurring_interval_days']);
+        // Both are part of the signed set, so the HMAC changes and still validates.
+        $this->assertNotSame($unsigned['onpay_hmac_sha1'], $fields['onpay_hmac_sha1']);
+        $this->assertTrue($window->validatePayment(array_map('strval', $fields)));
+
+        $window->setRecurringAmount(null);
+        $window->setRecurringIntervalDays(null);
+        $this->assertSame($unsigned, $window->getFormFields());
+    }
+
     public function testSurchargeEnabledFlag(): void
     {
         $window = new PaymentWindow();

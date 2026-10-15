@@ -300,6 +300,37 @@ class PaymentServiceTest extends ApiTestCase
     }
 
     /**
+     * The recurring estimates are optional: when set they are sent as the nested
+     * `recurring` object, when unset the key is pruned entirely.
+     */
+    public function testRecurringFieldsAreSentAsNestedObjectOnlyWhenSet(): void
+    {
+        $this->http->willReturnJson(FixtureLoader::load('payment/created'), 200, 'POST');
+        $this->http->willReturnJson(FixtureLoader::load('payment/created'), 200, 'POST');
+
+        $api = $this->createApi();
+
+        $window = new PaymentWindow();
+        $window->setCurrency('DKK');
+        $window->setAmount('0');
+        $window->setType('subscription');
+        $window->setReference('order-7001');
+        $window->setWebsite('https://shop.test');
+        $window->setAcceptUrl('https://shop.test/accept');
+
+        $api->payment()->createNewPayment($window);
+        $body = json_decode((string) $this->http->getLastRequest()->getBody(), true);
+        $this->assertArrayNotHasKey('recurring', $body);
+
+        $window->setRecurringAmount(9900);
+        $window->setRecurringIntervalDays(30);
+
+        $api->payment()->createNewPayment($window);
+        $body = json_decode((string) $this->http->getLastRequest()->getBody(), true);
+        $this->assertSame(['amount' => 9900, 'interval_days' => 30], $body['recurring']);
+    }
+
+    /**
      * An empty PaymentWindow has none of the required fields, so validatePaymentData
      * collects one message per missing field and throws. Pins the exact message format.
      */
