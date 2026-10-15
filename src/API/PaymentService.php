@@ -135,6 +135,9 @@ final class PaymentService {
         $paymentData['surcharge_enabled'] = $this->getPaymentDataByKey('surcharge_enabled');
         $paymentData['surcharge_vat_rate'] = $this->getPaymentDataByKey('surcharge_vat_rate');
 
+        $paymentData['recurring']['amount'] = $this->getPaymentDataByKey('recurring_amount');
+        $paymentData['recurring']['interval_days'] = $this->getPaymentDataByKey('recurring_interval_days');
+
         $paymentData['info']['address_identical_shipping'] = $this->getPaymentDataByKey('address_identical_shipping');
         $paymentData['info']['delivery_email'] = $this->getPaymentDataByKey('delivery_email');
         $paymentData['info']['delivery_time_frame'] = $this->getPaymentDataByKey('delivery_time_frame');

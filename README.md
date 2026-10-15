@@ -169,6 +169,15 @@ $window->setType('subscription');
 $window->setSubscriptionWithTransaction(true);
 ```
 
+You can also tell OnPay what you expect to charge later: the amount per charge in minor
+units, and the typical number of days between charges (1 to 365). Both are estimates, so
+the charges you make later may differ. The SDK treats them as optional.
+
+```php
+$window->setRecurringAmount(9900);
+$window->setRecurringIntervalDays(30);
+```
+
 ### 5. Verify the result
 
 OnPay signs the `onpay_*` parameters it appends to the accept URL and sends to the callback
