@@ -37,7 +37,7 @@ use Psr\Log\LoggerInterface;
  * {@see \OnPay\Http\ApiClient}.
  */
 final class OnPayAPI {
-    const SDK_VERSION = '2.0.0';
+    const SDK_VERSION = '2.0.1';
 
     /**
      * Timeouts, in seconds, given to a Guzzle client the SDK discovers itself: the same
