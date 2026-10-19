@@ -299,6 +299,51 @@ class PaymentServiceTest extends ApiTestCase
         ];
     }
 
+    public function testCardUuidIsSentOnTheApiRequestButNotInTheFormFields(): void
+    {
+        $this->http->willReturnJson(FixtureLoader::load('payment/created'), 200, 'POST');
+
+        $api = $this->createApi();
+
+        $window = new PaymentWindow();
+        $window->setSecret('test_hmac_secret');
+        $window->setType('transaction');
+        $window->setCurrency('DKK');
+        $window->setAmount('1000');
+        $window->setReference('order-7001');
+        $window->setWebsite('https://shop.test');
+        $window->setAcceptUrl('https://shop.test/accept');
+        $window->setCardUuid('0199a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b');
+
+        $api->payment()->createNewPayment($window);
+
+        $body = json_decode((string) $this->http->getLastRequest()->getBody(), true);
+
+        $this->assertSame('0199a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b', $body['card_uuid']);
+        $this->assertSame('transaction', $body['type']);
+        $this->assertNotContains('0199a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b', $window->getFormFields());
+    }
+
+    public function testCardUuidIsAbsentWhenNotSet(): void
+    {
+        $this->http->willReturnJson(FixtureLoader::load('payment/created'), 200, 'POST');
+
+        $api = $this->createApi();
+
+        $window = new PaymentWindow();
+        $window->setCurrency('DKK');
+        $window->setAmount('1000');
+        $window->setReference('order-7002');
+        $window->setWebsite('https://shop.test');
+        $window->setAcceptUrl('https://shop.test/accept');
+
+        $api->payment()->createNewPayment($window);
+
+        $body = json_decode((string) $this->http->getLastRequest()->getBody(), true);
+
+        $this->assertArrayNotHasKey('card_uuid', $body);
+    }
+
     /**
      * The recurring estimates are optional: when set they are sent as the nested
      * `recurring` object, when unset the key is pruned entirely.
